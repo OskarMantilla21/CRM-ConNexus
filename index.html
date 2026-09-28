@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConNexus</title>
+  <meta name="description" content="Interfaz de ConNexus: ventas, soporte y actividades.">
+  <meta name="theme-color" content="#1e6b4e">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e6b4e'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <a class="skip" href="#content">Saltar al contenido</a>
+
+  <div id="login" class="login">
+    <section class="login-brand">
+      <p class="brand-lockup">ConNexus</p>
+      <h1>Ventas, soporte y actividades en un solo lugar.</h1>
+      <p>La interfaz nueva del CRM. Misma estructura de trabajo, con la cáscara, el inicio y las fichas del día a día.</p>
+    </section>
+    <section class="login-panel">
+      <form id="login-form" autocomplete="on">
+        <h2>Entra a ConNexus</h2>
+        <p class="lede">Usa la cuenta de demostración para recorrer la interfaz.</p>
+        <p id="login-error" class="form-error" role="alert" hidden></p>
+        <label class="field">
+          <span>Usuario</span>
+          <input name="username" autocomplete="username" required value="ana">
+        </label>
+        <label class="field">
+          <span>Contraseña</span>
+          <input name="password" type="password" autocomplete="current-password" required value="conexus">
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+        <p class="hint">Demostración · usuario <strong>ana</strong> · contraseña <strong>conexus</strong></p>
+      </form>
+    </section>
+  </div>
+
+  <div id="app" class="app" hidden>
+    <header id="topbar" class="topbar"></header>
+    <div class="shell">
+      <aside id="sidebar" class="sidebar"></aside>
+      <main id="content" tabindex="-1"></main>
+    </div>
+    <button id="nav-backdrop" class="nav-backdrop" type="button" data-action="close-nav" hidden>Cerrar menú</button>
+  </div>
+
+  <div id="search-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-action="close-search"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <h2 id="search-title" class="sr-only">Búsqueda global</h2>
+      <input id="global-search" type="search" placeholder="Buscar cuentas, contactos, casos…" autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+  </div>
+
+  <div id="confirm" class="modal" hidden>
+    <div class="modal-backdrop" data-action="close-confirm"></div>
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+      <h2 id="confirm-title">Eliminar registro</h2>
+      <p id="confirm-text"></p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" data-action="close-confirm">Cancelar</button>
+        <button class="btn btn-danger" type="button" data-action="confirm-delete">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
