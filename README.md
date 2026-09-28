@@ -9,6 +9,32 @@ La personalización de esta instancia queda en `custom/`: el menú y los campos 
 
 La licencia del CRM es AGPLv3. El texto original del proyecto sigue debajo.
 
+## Comandos de Git
+
+Estos son los comandos para repetir el flujo: rama, commit, subida y pull request. Ejecútalos dentro de `C:\xampp\htdocs\CRM-ConNexus`. No añadas `config.php`: contiene la conexión a la base de datos.
+
+```powershell
+git status
+git checkout -b nombre-de-la-rama
+git add README.md index.html js css composer.lock
+git commit -m "Describe el cambio en una frase."
+git push -u origin nombre-de-la-rama
+```
+
+Crear el pull request hacia `main` con GitHub CLI:
+
+```powershell
+gh pr create --base main --head nombre-de-la-rama --title "Título del cambio" --body "Qué cambia y cómo probarlo."
+```
+
+Sin GitHub CLI, después del `git push` abre:
+
+`https://github.com/OskarMantilla21/CRM-ConNexus/pull/new/nombre-de-la-rama`
+
+El pull request de la migración ya está en la rama `migracion/suitecrm`:
+
+`https://github.com/OskarMantilla21/CRM-ConNexus/pull/2`
+
 ---
 
 <a href="https://suitecrm.com">
