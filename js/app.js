@@ -697,7 +697,7 @@
     try {
       content.innerHTML = viewHtml(current);
     } catch (error) {
-      content.innerHTML = `<section class="page"><h1>No se pudo abrir esta pantalla</h1><pre>${esc(error && error.stack ? error.stack : error)}</pre></section>`;
+      content.innerHTML = `<section class="page"><h1>No se pudo abrir esta pantalla</h1><p>Vuelve al inicio e inténtalo de nuevo.</p></section>`;
     }
     document.title = `${titleFor(current)} · ConNexus`;
   }
@@ -745,14 +745,17 @@
   }
 
   function doLogin(form) {
-    const username = form.username.value.trim().toLowerCase();
-    const password = form.password.value;
-    const user = CONNEXUS.users[username];
-    if (!user || user.password !== password) {
-      showLoginError("Usuario o contraseña incorrectos.");
+    const username = form.username.value.trim();
+    if (!username) {
+      showLoginError("Escribe un nombre para continuar.");
       return;
     }
-    state.user = { name: user.name, role: user.role, email: user.email };
+    const known = CONNEXUS.users[username.toLowerCase()];
+    state.user = known || {
+      name: username,
+      role: "Demostración",
+      email: "",
+    };
     persistSession();
     showLoginError("");
     if (!location.hash || location.hash === "#") location.hash = "#/home";

@@ -3,7 +3,7 @@
 Este repositorio reúne la instalación de SuiteCRM 7.15.2 que estaba en el repositorio anterior y la interfaz nueva.
 
 - El CRM se abre en `http://localhost:8080/CRM-ConNexus/`. Apache entra por `index.php`.
-- La interfaz nueva está en `http://localhost:8080/CRM-ConNexus/index.html`. Cuenta de demostración: usuario `ana`, contraseña `conexus`. Esos registros no salen de SuiteCRM.
+- La interfaz nueva está en `http://localhost:8080/CRM-ConNexus/index.html`. Es una demostración en el navegador: no pide contraseña y no entra a SuiteCRM.
 
 La personalización de esta instancia queda en `custom/`: el menú y los campos de geocodificación de mapas. `config.php` no se versiona, porque tiene la conexión a la base de datos.
 

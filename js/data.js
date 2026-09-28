@@ -562,7 +562,7 @@
     modules: modules,
     seed: seed,
     users: {
-      ana: { password: "conexus", name: "Ana Ríos", role: "Comercial", email: "ana.rios@connexus.example" },
+      ana: { name: "Ana Ríos", role: "Comercial", email: "ana.rios@connexus.example" },
     },
     alerts: [
       { id: "a1", title: "Caso en prioridad alta", body: "Clínica Aurora sigue sin acceso al portal.", href: "#/cases/cas-2", time: "Hace 25 min" },
