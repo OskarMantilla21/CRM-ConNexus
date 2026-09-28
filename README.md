@@ -96,18 +96,6 @@ To stay up to date on our latest releases, including security patches and fixes 
 
 You can also [Subscribe to our Newsletter](https://suitecrm.com/about/about-us/sign-up-for-marketing/) or follow us on Social Media.
 
-### Code Contributors
-
-This project exists thanks to all the people who [contribute](https://github.com/SuiteCRM/SuiteCRM/graphs/contributors) and more.
-<a href="https://github.com/SuiteCRM/SuiteCRM/graphs/contributors"><img src="https://opencollective.com/SuiteCRM/contributors.svg?avatarHeight=36&width=890&button=false" /></a>
-
-As an open source project, we welcome sponsorships from our individuals and organisations in our community. Your contribution to the project will help drive the SuiteCRM project forward at a greater rate.
-
-If you use SuiteCRM in your organisation, please consider [sponsoring the SuiteCRM Project](https://suitecrm.com/join-the-project/suitecrm-community-sponsorship/)
-
-Or if You want to buy the **core team** a coffee :coffee: or beer :beer:?
-Then consider a small [donation](https://opencollective.com/SuiteCRM/contribute) to help fuel our activities :heart:
-
 
 ### Roadmap ###
 
