@@ -45,6 +45,10 @@ export async function load({ cookies, locals }) {
     // Django's MeView returns user with organizations array
     let orgs = [];
 
+    if (response.data.is_platform_admin) {
+      throw redirect(303, '/plataforma');
+    }
+
     if (response.data.organizations && Array.isArray(response.data.organizations)) {
       orgs = response.data.organizations.map((org) => ({
         id: org.id,

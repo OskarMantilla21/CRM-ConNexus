@@ -79,6 +79,8 @@ class OrgAwareRefreshToken(RefreshToken):
             # Build display name from email (User model doesn't have first/last name)
             token["user_name"] = user.email.split("@")[0] if user.email else ""
             token["user_profile_pic"] = user.profile_pic or ""
+            # Display hint for the web app. The API re-reads the column.
+            token["is_platform_admin"] = bool(user.is_platform_admin)
 
         # Add org context to the token payload
         if org:
@@ -1176,7 +1178,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "profile_pic", "is_active", "organizations"]
+        fields = [
+            "id",
+            "email",
+            "profile_pic",
+            "is_active",
+            "is_platform_admin",
+            "organizations",
+        ]
 
     @extend_schema_field(list)
     def get_organizations(self, obj):

@@ -344,12 +344,19 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
   const PUBLIC_ROUTES = ['/login', '/logout', '/bounce', '/portal', '/csat', '/help-center'];
 
   // Define semi-protected routes (auth required, but no org)
-  const AUTH_ONLY_ROUTES = ['/org'];
+  const AUTH_ONLY_ROUTES = ['/org', '/plataforma'];
 
   // Check if public route
   const isPublicRoute = PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(route + '/')
   );
+
+  // A platform admin lists users and nothing else. The API enforces that on
+  // its own; this only keeps the browser on the directory page.
+  const isPlatformRoute = pathname === '/plataforma' || pathname.startsWith('/plataforma/');
+  if (jwtPayload?.is_platform_admin === true && !isPublicRoute && !isPlatformRoute) {
+    throw redirect(303, '/plataforma');
+  }
 
   // Check if auth-only route
   const isAuthOnlyRoute = AUTH_ONLY_ROUTES.some(

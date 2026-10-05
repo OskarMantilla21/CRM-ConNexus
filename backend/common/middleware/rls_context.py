@@ -217,6 +217,10 @@ class RequireOrgContext:
         "/healthz/",
         "/api/packs/",
         "/api/auth/logout/",
+        # Platform directory. The caller has no organization claim: the role
+        # is a property of the user, and the view refuses everyone else.
+        # Exact match so a later route under /api/platform/ has to opt in.
+        "/api/platform/users/",
     ]
 
     # Routes exempt by their resolved, namespaced URL name, for an anonymous
