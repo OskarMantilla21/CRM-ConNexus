@@ -46,6 +46,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     key_expires = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(_("staff status"), default=False)
+    # Platform oversight, not an organization admin. This flag may list every
+    # login. It must not open a company's customers, invoices or payments.
+    # `is_superuser` is a different switch and is what `is_org_admin` treats
+    # as an admin inside an org, so the two must not be collapsed.
+    is_platform_admin = models.BooleanField(
+        _("platform admin"),
+        default=False,
+        help_text="May list every user. Cannot open customer or payment records.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

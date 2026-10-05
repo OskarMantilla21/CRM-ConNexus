@@ -2,6 +2,7 @@ from django.urls import path
 
 from common.views.attachment_views import AttachmentDownloadView
 from common.views.audit_log_views import SecurityAuditLogListView
+from common.views.platform_views import PlatformUserListView
 from common.views.auth_views import (
     GoogleIdTokenView,
     GoogleOAuthCallbackView,
@@ -81,6 +82,7 @@ urlpatterns = [
         name="token_refresh",
     ),
     path("auth/me/", MeView.as_view(), name="me"),
+    path("platform/users/", PlatformUserListView.as_view(), name="platform_users"),
     path("auth/profile/", ProfileDetailView.as_view(), name="profile_detail"),
     path("auth/switch-org/", OrgSwitchView.as_view(), name="switch_org"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
