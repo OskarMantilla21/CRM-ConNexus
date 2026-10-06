@@ -13,6 +13,28 @@ export const messages = {
     pt: 'Entrando · BottleCRM'
   },
   'Signing you in…': { es: 'Entrando…', pt: 'Entrando…' },
+  'Sign in with your username and password.': {
+    es: 'Entra con tu usuario y tu contraseña.',
+    pt: 'Entre com seu usuário e sua senha.'
+  },
+  Username: { es: 'Usuario', pt: 'Usuário' },
+  Password: { es: 'Contraseña', pt: 'Senha' },
+  'Username and password are required': {
+    es: 'El usuario y la contraseña son obligatorios.',
+    pt: 'O usuário e a senha são obrigatórios.'
+  },
+  'Invalid username or password': {
+    es: 'Usuario o contraseña incorrectos.',
+    pt: 'Usuário ou senha incorretos.'
+  },
+  'Too many sign-in attempts. Wait a few minutes and try again.': {
+    es: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+    pt: 'Muitas tentativas. Espere alguns minutos e tente de novo.'
+  },
+  'User account is disabled': {
+    es: 'Esta cuenta está desactivada.',
+    pt: 'Esta conta está desativada.'
+  },
   'Choose organisation · BottleCRM': {
     es: 'Elegir organización · BottleCRM',
     pt: 'Escolher organização · BottleCRM'

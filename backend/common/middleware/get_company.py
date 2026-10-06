@@ -67,6 +67,9 @@ class GetProfileAndOrg:
             "/api/auth/logout/",
             "/api/auth/magic-link/request/",
             "/api/auth/magic-link/verify/",
+            # Username and password. There is no token yet; this request is
+            # what issues one.
+            "/api/auth/password/",
         ]
         if request.path in auth_skip_paths:
             return

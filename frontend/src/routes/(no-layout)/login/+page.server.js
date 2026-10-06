@@ -1,26 +1,19 @@
 /**
- * Login Page - Secure OAuth Implementation
+ * Sign-in page.
  *
- * Security features:
- * - PKCE (Proof Key for Code Exchange) for authorization code protection
- * - Cryptographic state parameter for CSRF protection
- * - Server-side token exchange via Django backend (no client secret in frontend)
- * - Secure httpOnly cookies for sensitive data
- *
- * Django endpoint: POST /api/auth/google/callback/
+ * The form posts a username and a password to Django `POST /api/auth/password/`
+ * and stores the JWT in httpOnly cookies. A Google redirect that is already
+ * in flight still finishes through `/api/auth/google/callback/`.
  */
 
 import axios from 'axios';
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { env as publicEnv } from '$env/dynamic/public';
-import { generateCodeVerifier, generateCodeChallenge, generateState } from '$lib/utils/pkce.js';
 import { describeError } from '$lib/server/log-safe.js';
 import { relayHeaders } from '$lib/server/relay.js';
 import { tx } from '$lib/i18n/translate.js';
-
-const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
-const GOOGLE_SCOPES = ['openid', 'email', 'profile'].join(' ');
+import '$lib/i18n/pages/public.js';
 
 // Cookie configuration
 const COOKIE_OPTIONS = {
@@ -69,8 +62,7 @@ export async function load({ url, cookies, getClientAddress, request }) {
     throw redirect(307, '/org');
   }
 
-  // Generate OAuth parameters and return login URL
-  return await generateOAuthUrl(cookies);
+  return {};
 }
 
 /**
@@ -157,62 +149,33 @@ async function handleOAuthCallback(code, returnedState, cookies, visitor) {
 }
 
 /**
- * Generate Google OAuth URL with PKCE parameters
- * @param {import('@sveltejs/kit').Cookies} cookies - SvelteKit cookies
- * @returns {Promise<object>} Object containing the Google OAuth URL
+ * Words the API uses for a refused sign-in. Anything else stays off the page:
+ * a token endpoint's body does not belong in the form.
+ * @param {unknown} message
  */
-async function generateOAuthUrl(cookies) {
-  // Generate PKCE parameters
-  const codeVerifier = generateCodeVerifier();
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-  // Generate cryptographically random state for CSRF protection
-  const state = generateState();
-
-  // Store PKCE verifier and state in secure httpOnly cookies
-  // These expire in 10 minutes - should be plenty for OAuth flow
-  const oauthCookieMaxAge = 60 * 10; // 10 minutes
-
-  cookies.set('oauth_code_verifier', codeVerifier, getCookieOptions(oauthCookieMaxAge));
-  cookies.set('oauth_state', state, getCookieOptions(oauthCookieMaxAge));
-
-  // Build Google OAuth URL with all required parameters
-  const redirect_uri = env.GOOGLE_LOGIN_DOMAIN + '/login';
-
-  const params = new URLSearchParams({
-    client_id: env.GOOGLE_CLIENT_ID,
-    redirect_uri,
-    response_type: 'code',
-    scope: GOOGLE_SCOPES,
-    state,
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256',
-    access_type: 'offline', // Request refresh token
-    prompt: 'consent' // Always show consent screen (required for refresh token)
-  });
-
-  const google_login_url = `${GOOGLE_AUTH_URL}?${params.toString()}`;
-
-  return { google_url: google_login_url };
+function refusedLogin(message) {
+  if (message === 'User account is disabled') return tx('User account is disabled');
+  return tx('Invalid username or password');
 }
 
 /** @type {import('@sveltejs/kit').Actions} */
 export const actions = {
-  default: async ({ request, getClientAddress }) => {
+  default: async ({ request, cookies, getClientAddress }) => {
     const formData = await request.formData();
-    const email = formData.get('email');
+    const username = String(formData.get('username') ?? '').trim();
+    const password = String(formData.get('password') ?? '');
 
-    if (!email) {
-      return { success: false, error: tx('Email is required') };
+    if (!username || !password) {
+      return fail(400, { error: tx('Username and password are required') });
     }
 
     try {
       const apiUrl = publicEnv.PUBLIC_DJANGO_API_URL;
-      await axios.post(
-        `${apiUrl}/api/auth/magic-link/request/`,
-        { email },
+      const response = await axios.post(
+        `${apiUrl}/api/auth/password/`,
+        { username, password },
         {
-          // The token records who asked for it; see `$lib/server/relay.js`.
+          // The sign-in audit row records who signed in; see `$lib/server/relay.js`.
           headers: {
             'Content-Type': 'application/json',
             ...relayHeaders({ getClientAddress, request })
@@ -220,10 +183,24 @@ export const actions = {
           timeout: 10000
         }
       );
-      return { success: true };
-    } catch {
-      // Always show success to user (backend also returns 200 always)
-      return { success: true };
+
+      const { access_token, refresh_token } = response.data;
+      cookies.set('jwt_access', access_token, getCookieOptions(60 * 60 * 24));
+      cookies.set('jwt_refresh', refresh_token, getCookieOptions(60 * 60 * 24 * 365));
+    } catch (/** @type {any} */ error) {
+      // Do not log `error`: axios keeps the posted password on `config.data`.
+      if (error.response?.status === 429) {
+        return fail(429, {
+          error: tx('Too many sign-in attempts. Wait a few minutes and try again.')
+        });
+      }
+      if (error.response) {
+        return fail(400, { error: refusedLogin(error.response?.data?.error) });
+      }
+      console.error('Password sign-in failed:', describeError(error));
+      return fail(400, { error: tx('Something went wrong. Please try again.') });
     }
+
+    throw redirect(303, '/org');
   }
 };

@@ -4,36 +4,25 @@
   import '$lib/v2/styles/v2.css';
   import { enhance } from '$app/forms';
 
-  import imgGoogle from '$lib/assets/images/google.svg';
   import imgLogo from '$lib/assets/images/logo.png';
-  import { Mail, Check } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
   import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
-  let { data = {} } = $props();
+  let { data = {}, form = null } = $props();
 
-  let isLoading = $state(false);
-  let email = $state('');
-  let magicLinkSent = $state(false);
-  let isSendingLink = $state(false);
-  let magicLinkError = $state('');
+  let isSending = $state(false);
+  let username = $state('');
+  let password = $state('');
 
-  function handleGoogleLogin() {
-    isLoading = true;
-  }
-
-  function handleMagicLink() {
-    isSendingLink = true;
-    magicLinkError = '';
-    return async ({ result }) => {
-      isSendingLink = false;
-      if (result?.type === 'success') {
-        magicLinkSent = true;
-      } else if (result?.type === 'failure') {
-        magicLinkError = result.data?.error || tx('Something went wrong. Please try again.');
-      } else if (!result) {
-        magicLinkError = tx('Something went wrong. Please try again.');
+  function handleSubmit() {
+    isSending = true;
+    return async ({ result, update }) => {
+      isSending = false;
+      if (result.type === 'redirect') {
+        await update();
+        return;
       }
+      await update({ reset: false });
     };
   }
 </script>
@@ -56,78 +45,51 @@
     <div class="v2-auth-card">
       <div class="v2-auth-head">
         <h1>{tx('Sign in')}</h1>
-        <p>{tx("Welcome back. Choose how you'd like to continue.")}</p>
+        <p>{tx('Sign in with your username and password.')}</p>
       </div>
 
-      <!-- Primary path. Google's mark keeps a white tile so it stays legible on
-           Ember; the whole button is the one Ember action on this screen. -->
-      <a
-        href={data['google_url']}
-        rel="external"
-        onclick={handleGoogleLogin}
-        class="v2-btn v2-btn-primary v2-btn-block"
-        style:pointer-events={isLoading ? 'none' : null}
-        style:opacity={isLoading ? '0.85' : null}
-      >
-        {#if isLoading}
-          <span class="v2-spin"></span>
-          <span>{tx('Redirecting…')}</span>
-        {:else}
-          <img src={imgGoogle} alt="" class="v2-auth-gicon" />
-          <span>{tx('Continue with Google')}</span>
-        {/if}
-      </a>
-
-      <div class="v2-auth-divider">{tx('or')}</div>
-
-      {#if magicLinkSent}
-        <div class="v2-auth-note v2-auth-note-ok">
-          <Check />
-          <div>
-            <b>{tx('Check your email.')}</b>
-            <div style="font-weight:400;margin-top:2px">
-              {tx('We sent a sign-in link. It expires in 10 minutes.')}
-            </div>
-          </div>
-        </div>
-      {:else}
-        <form
-          method="POST"
-          use:enhance={handleMagicLink}
-          style="display:flex;flex-direction:column;gap:9px"
-        >
-          <label for="email" class="v2-sr-only">{tx('Email address')}</label>
+      <form method="POST" use:enhance={handleSubmit} style="display:flex;flex-direction:column;gap:4px">
+        <div class="v2-field">
+          <label for="username">{tx('Username')}</label>
           <input
-            id="email"
-            type="email"
-            name="email"
+            id="username"
+            name="username"
+            type="text"
             class="v2-input"
-            placeholder="you@company.com"
+            autocomplete="username"
             required
-            bind:value={email}
-            disabled={isSendingLink}
+            bind:value={username}
+            disabled={isSending}
           />
-          <button type="submit" class="v2-btn v2-btn-block" disabled={isSendingLink}>
-            {#if isSendingLink}
-              <span class="v2-spin"></span>
-              <span>{tx('Sending…')}</span>
-            {:else}
-              <Mail size={15} />
-              <span>{tx('Continue with email')}</span>
-            {/if}
-          </button>
-        </form>
-        {#if magicLinkError}
-          <div class="v2-auth-note v2-auth-note-bad" style="margin-top:11px">
-            <span>{magicLinkError}</span>
-          </div>
-        {/if}
+        </div>
+        <div class="v2-field">
+          <label for="password">{tx('Password')}</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            class="v2-input"
+            autocomplete="current-password"
+            required
+            bind:value={password}
+            disabled={isSending}
+          />
+        </div>
+        <button type="submit" class="v2-btn v2-btn-primary v2-btn-block" disabled={isSending}>
+          {#if isSending}
+            <span class="v2-spin"></span>
+            <span>{tx('Signing you in…')}</span>
+          {:else}
+            <span>{tx('Sign in')}</span>
+          {/if}
+        </button>
+      </form>
+      {#if form?.error || data.error}
+        <div class="v2-auth-note v2-auth-note-bad" style="margin-top:11px">
+          <span>{form?.error || tx('Something went wrong. Please try again.')}</span>
+        </div>
       {/if}
     </div>
-
-    <p class="v2-sub" style="text-align:center;margin:14px 0 0">
-      {tx('New here? Enter your email above to get started.')}
-    </p>
 
     <LanguageSelect />
     <div class="v2-auth-foot">

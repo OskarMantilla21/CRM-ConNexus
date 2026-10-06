@@ -1098,7 +1098,7 @@ a.v2-setting:hover {
    The four screens that live outside the shell, no sidebar, so they carry the
    tokens through .v2-root directly and centre one card on paper. Same ink,
    slate and Ember as the app: the single Ember per screen is the primary
-   action (Continue with Google, Create organisation), never the chrome.
+   action (Sign in, Create organisation), never the chrome.
    Choosing an org is navigation, not an action, so those rows stay neutral. */
 .v2-auth {
   min-height: 100vh;
