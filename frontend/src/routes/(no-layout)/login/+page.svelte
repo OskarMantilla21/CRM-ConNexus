@@ -1,14 +1,11 @@
 <script>
-  import { resolve } from '$app/paths';
   import '../../../app.css';
   import '$lib/v2/styles/v2.css';
   import { enhance } from '$app/forms';
 
-  import imgGoogle from '$lib/assets/images/google.svg';
-  import imgLogo from '$lib/assets/images/logo.png';
-  import { Mail, Check } from '@lucide/svelte';
+  import { Check } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data = {} } = $props();
 
@@ -46,39 +43,11 @@
   />
 </svelte:head>
 
-<div class="v2-root v2-auth">
-  <div class="v2-auth-box">
-    <a href={resolve('/')} class="v2-auth-brand">
-      <img src={imgLogo} alt="" />
-      <b>BottleCRM</b>
-    </a>
-
-    <div class="v2-auth-card">
-      <div class="v2-auth-head">
-        <h1>{tx('Sign in')}</h1>
-        <p>{tx("Welcome back. Choose how you'd like to continue.")}</p>
-      </div>
-
-      <!-- Primary path. Google's mark keeps a white tile so it stays legible on
-           Ember; the whole button is the one Ember action on this screen. -->
-      <a
-        href={data['google_url']}
-        rel="external"
-        onclick={handleGoogleLogin}
-        class="v2-btn v2-btn-primary v2-btn-block"
-        style:pointer-events={isLoading ? 'none' : null}
-        style:opacity={isLoading ? '0.85' : null}
-      >
-        {#if isLoading}
-          <span class="v2-spin"></span>
-          <span>{tx('Redirecting…')}</span>
-        {:else}
-          <img src={imgGoogle} alt="" class="v2-auth-gicon" />
-          <span>{tx('Continue with Google')}</span>
-        {/if}
-      </a>
-
-      <div class="v2-auth-divider">{tx('or')}</div>
+<div class="v2-root v2-public">
+  <PublicBar />
+  <div class="v2-public-body">
+    <div class="v2-signin">
+      <h1>{tx('Sign in to your workspace')}</h1>
 
       {#if magicLinkSent}
         <div class="v2-auth-note v2-auth-note-ok">
@@ -91,12 +60,8 @@
           </div>
         </div>
       {:else}
-        <form
-          method="POST"
-          use:enhance={handleMagicLink}
-          style="display:flex;flex-direction:column;gap:9px"
-        >
-          <label for="email" class="v2-sr-only">{tx('Email address')}</label>
+        <form method="POST" use:enhance={handleMagicLink}>
+          <label class="v2-signin-label" for="email">{tx('Work email')}</label>
           <input
             id="email"
             type="email"
@@ -107,35 +72,40 @@
             bind:value={email}
             disabled={isSendingLink}
           />
-          <button type="submit" class="v2-btn v2-btn-block" disabled={isSendingLink}>
+          <div class="v2-google-pill">
+            {#if data['google_url']}
+              <a
+                href={data['google_url']}
+                rel="external"
+                onclick={handleGoogleLogin}
+                style:pointer-events={isLoading ? 'none' : null}
+              >
+                {#if isLoading}
+                  <span class="v2-spin"></span>
+                  <span>{tx('Redirecting…')}</span>
+                {:else}
+                  <span>{tx('Continue with Google')}</span>
+                {/if}
+              </a>
+            {:else}
+              <span>{tx('Google is unavailable')}</span>
+            {/if}
+          </div>
+          <button type="submit" class="v2-btn v2-btn-primary" disabled={isSendingLink}>
             {#if isSendingLink}
               <span class="v2-spin"></span>
               <span>{tx('Sending…')}</span>
             {:else}
-              <Mail size={15} />
-              <span>{tx('Continue with email')}</span>
+              <span>{tx('Send link')}</span>
             {/if}
           </button>
         </form>
         {#if magicLinkError}
-          <div class="v2-auth-note v2-auth-note-bad" style="margin-top:11px">
+          <div class="v2-auth-note v2-auth-note-bad" style="margin-top:14px">
             <span>{magicLinkError}</span>
           </div>
         {/if}
       {/if}
-    </div>
-
-    <p class="v2-sub" style="text-align:center;margin:14px 0 0">
-      {tx('New here? Enter your email above to get started.')}
-    </p>
-
-    <LanguageSelect />
-    <div class="v2-auth-foot">
-      <a href="https://bottlecrm.io/privacy-policy">{tx('Privacy')}</a>
-      <span class="v2-auth-dot"></span>
-      <a href="https://bottlecrm.io/terms">{tx('Terms')}</a>
-      <span class="v2-auth-dot"></span>
-      <a href="https://github.com/django-crm/Django-CRM" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
 </div>

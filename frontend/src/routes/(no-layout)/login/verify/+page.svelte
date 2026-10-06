@@ -2,9 +2,8 @@
   import { resolve } from '$app/paths';
   import '../../../../app.css';
   import '$lib/v2/styles/v2.css';
-  import imgLogo from '$lib/assets/images/logo.png';
   import { tx } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data, form } = $props();
 
@@ -21,13 +20,10 @@
   <meta name="referrer" content="same-origin" />
 </svelte:head>
 
-<div class="v2-root v2-auth">
+<div class="v2-root v2-public">
+  <PublicBar />
+  <div class="v2-public-body">
   <div class="v2-auth-box">
-    <a href={resolve('/')} class="v2-auth-brand">
-      <img src={imgLogo} alt="" />
-      <b>BottleCRM</b>
-    </a>
-
     <div class="v2-auth-card" style="text-align:center">
       {#if error}
         <div class="v2-auth-head" style="margin-bottom:16px">
@@ -54,6 +50,6 @@
         </form>
       {/if}
     </div>
-    <LanguageSelect />
+  </div>
   </div>
 </div>

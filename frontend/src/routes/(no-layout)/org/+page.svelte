@@ -2,11 +2,10 @@
   import { resolve } from '$app/paths';
   import '../../../app.css';
   import '$lib/v2/styles/v2.css';
-  import imgLogo from '$lib/assets/images/logo.png';
   import { Building2, LogOut, Plus, ChevronRight } from '@lucide/svelte';
   import { enhance } from '$app/forms';
   import { tx, choiceLabel } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data = { orgs: [] } } = $props();
   let orgs = $derived(data?.orgs ?? []);
@@ -19,13 +18,10 @@
   <title>{tx('Choose organisation · BottleCRM')}</title>
 </svelte:head>
 
-<div class="v2-root v2-auth">
+<div class="v2-root v2-public">
+  <PublicBar />
+  <div class="v2-public-body">
   <div class="v2-auth-box">
-    <a href={resolve('/')} class="v2-auth-brand">
-      <img src={imgLogo} alt="" />
-      <b>BottleCRM</b>
-    </a>
-
     <div class="v2-auth-card">
       <div class="v2-auth-head">
         <h1>{tx('Choose an organisation')}</h1>
@@ -89,11 +85,11 @@
       {/if}
     </div>
 
-    <LanguageSelect />
     <div class="v2-auth-foot">
       <a href={resolve('/logout')} style="display:inline-flex;align-items:center;gap:5px">
         <LogOut size={13} /> {tx('Sign out')}
       </a>
     </div>
+  </div>
   </div>
 </div>

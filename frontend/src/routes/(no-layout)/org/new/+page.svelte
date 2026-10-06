@@ -4,10 +4,9 @@
   import '$lib/v2/styles/v2.css';
   import { enhance } from '$app/forms';
   import { goto } from '$app/navigation';
-  import imgLogo from '$lib/assets/images/logo.png';
   import { ArrowLeft, Check, AlertCircle } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data, form } = $props();
 
@@ -46,13 +45,10 @@
   <title>{tx('Create organisation · BottleCRM')}</title>
 </svelte:head>
 
-<div class="v2-root v2-auth">
+<div class="v2-root v2-public">
+  <PublicBar />
+  <div class="v2-public-body">
   <div class="v2-auth-box">
-    <a href={resolve('/')} class="v2-auth-brand">
-      <img src={imgLogo} alt="" />
-      <b>BottleCRM</b>
-    </a>
-
     <div class="v2-auth-card">
       <div class="v2-auth-head">
         <h1>{tx('Create organisation')}</h1>
@@ -191,7 +187,7 @@
         <ArrowLeft size={13} /> {tx('Back to organisations')}
       </a>
     </div>
-    <LanguageSelect />
+  </div>
   </div>
 </div>
 

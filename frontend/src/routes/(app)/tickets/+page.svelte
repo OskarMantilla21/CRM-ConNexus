@@ -119,7 +119,7 @@
   };
 </script>
 
-<PageHeader title={tx('Tickets')}>
+<PageHeader title={tx('Tickets')} count={totals.count}>
   {#snippet sub()}
     <span class="v2-num">{count(totals.open)}</span> {tx('open')} ·
     <span class="v2-num" style="color:var(--v2-rust)">{totals.urgent}</span> {tx('urgent')} ·

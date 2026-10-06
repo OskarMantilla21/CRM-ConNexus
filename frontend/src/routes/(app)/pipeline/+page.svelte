@@ -185,7 +185,7 @@
   });
 </script>
 
-<PageHeader title={tx('Pipeline')}>
+<PageHeader title={tx('Pipeline')} count={totals.count}>
   {#snippet sub()}
     <!-- Totals come from the API aggregate, never from the rows on screen.
          Not "open deals": the default view is now the pipeline's own "All

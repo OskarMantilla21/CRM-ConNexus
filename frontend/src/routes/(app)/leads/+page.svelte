@@ -40,7 +40,7 @@
   const stale = (lead) => (daysSince(lead.last_contacted ?? lead.created_at) ?? 0) > 7;
 </script>
 
-<PageHeader title={plural}>
+<PageHeader title={plural} count={totals.count}>
   {#snippet sub()}
     <span class="v2-num">{count(totals.count)}</span> {tx('open ·')}
     <span class="v2-num">{totals.unworked_over_a_week}</span> {tx('unworked for more than a week')}

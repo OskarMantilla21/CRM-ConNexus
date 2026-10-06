@@ -31,7 +31,7 @@
   );
 </script>
 
-<PageHeader title={tx('Accounts')}>
+<PageHeader title={tx('Accounts')} count={totals.count}>
   {#snippet sub()}
     <!-- The count is the size of the whole result set, not of this page. -->
     <span class="v2-num">{count(totals.count)}</span> {tx('accounts')}

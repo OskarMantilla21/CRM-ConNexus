@@ -32,7 +32,7 @@
    *   saved?: any
    * }}
    */
-  import { X, Plus, ChevronDown } from '@lucide/svelte';
+  import { X, Plus } from '@lucide/svelte';
   import { FILTERS, activeChips, activePresetKey, withParams } from '$lib/v2/filters.js';
   import { invoiceStatusLabel } from '$lib/v2/enums.js';
   import { tx } from '$lib/i18n/translate.js';
@@ -82,9 +82,6 @@
   // meId is passed so a "@me" preset matches only the viewer's own id. Without
   // it, filtering by a colleague would light up "Mine".
   let activeKey = $derived(activePresetKey(page, url, meId));
-  let activeLabel = $derived(
-    tx(descriptor.presets.find((/** @type {any} */ p) => p.key === activeKey)?.label ?? 'All')
-  );
 
   /**
    * A preset's href. Every param the preset does not set is cleared, so
@@ -129,23 +126,19 @@
 </script>
 
 <div class="v2-filters">
-  <details class="v2-view-menu">
-    <summary class="v2-view">
-      {activeLabel}
-      <ChevronDown size={13} style="color:var(--v2-slate)" />
-    </summary>
-    <div class="v2-menu">
+  {#if visiblePresets.filter(usable).length}
+    <div class="v2-presets">
       {#each visiblePresets.filter(usable) as preset (preset.key)}
         <a
-          class="v2-menu-item"
-          class:v2-menu-item-on={preset.key === activeKey}
+          class="v2-preset"
+          class:is-on={preset.key === activeKey}
           href={resolve(asInternalPath(presetHref(preset)))}
         >
           {tx(preset.label)}
         </a>
       {/each}
     </div>
-  </details>
+  {/if}
 
   {#if saved}
     <SavedViews {saved} {url} />

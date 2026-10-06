@@ -157,7 +157,11 @@ export async function load(event) {
     // control. The non-admin view when the claim is absent.
     is_organization_admin: isOrgAdmin(event.locals.profile),
     permissions,
-    role: event.locals.profile?.role || 'USER'
+    role: event.locals.profile?.role || 'USER',
+    user: {
+      name: event.locals.user?.name || '',
+      email: event.locals.user?.email || ''
+    }
   };
 
   // countKeys' fetches and the terminology fetch are pushed into ONE

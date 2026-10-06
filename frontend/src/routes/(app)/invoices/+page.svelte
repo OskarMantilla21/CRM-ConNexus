@@ -61,7 +61,7 @@
     !SETTLED.includes(inv.status) && inv.due_date && daysSince(inv.due_date) > 0;
 </script>
 
-<PageHeader title={tx('Invoices')}>
+<PageHeader title={tx('Invoices')} count={totals.count}>
   {#snippet sub()}
     <!--
       These aggregates come from the API over the whole result set. v1 summed
