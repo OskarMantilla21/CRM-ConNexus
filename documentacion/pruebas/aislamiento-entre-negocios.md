@@ -38,3 +38,13 @@ Pedir el lead de otro negocio responde `404`. La lista no lo incluye.
 Los usuarios y las contraseñas están en [cuentas-de-acceso.md](cuentas-de-acceso.md). Ana entra como `ana.luna`, Carlos como `carlos.andes` y Lucia como `lucia.rio`.
 
 Ana debe ver el pedido de panes y no el camión ni el catálogo. Carlos y Lucia, al revés. Para comparar hay que cerrar sesión y entrar con el otro usuario. Un mismo usuario no puede cambiar a un negocio donde no tiene perfil.
+
+## Revisión de los 20 perfiles
+
+Fecha: 6 de octubre de 2026.
+
+Se dejó un dato marcado en las seis organizaciones: una cuenta, un contacto, un lead, un ticket y una factura. El nombre empieza por `PRIVADO-` y el resto identifica a la empresa (`PRIVADO-LUNA`, `PRIVADO-ANDES`, `PRIVADO-RIO`, `PRIVADO-MICRO`, `PRIVADO-OSKARUX`, `PRIVADO-CASA`).
+
+Con el token de cada perfil se pidieron las listas, la búsqueda, la exportación de cuentas y la ficha de cada dato de las otras empresas. También se probó mandar en la petición el identificador de otra empresa, entrar sin haber elegido empresa, y cambiar a una empresa donde la persona no tiene perfil.
+
+Ningún perfil vio el dato de una empresa que no era la de esa sesión. La ficha ajena responde 404 o 403. Ana no puede pasar a Taller Andes. Una sesión sin empresa no recibe listas. `todas` ve el dato de una empresa solo después de elegirla, y en esa sesión no aparecen las otras cinco.
