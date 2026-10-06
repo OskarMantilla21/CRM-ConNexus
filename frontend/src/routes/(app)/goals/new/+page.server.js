@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import {
   getGoalFormOptions,
@@ -42,11 +44,11 @@ export const actions = {
       await createGoal(event, values);
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { values, error: 'Only an admin can create goals.' });
+        return fail(403, { values, error: tx('Only an admin can create goals.') });
       }
       return fail(400, {
         values,
-        error: readableError(err, 'Could not create this goal.')
+        error: readableError(err, tx('Could not create this goal.'))
       });
     }
 

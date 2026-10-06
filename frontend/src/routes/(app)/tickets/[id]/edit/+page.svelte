@@ -16,6 +16,8 @@
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form: result } = $props();
@@ -38,9 +40,9 @@
     /** @type {Record<string, string>} */
     const e = {};
     const name = (form.name ?? '').trim();
-    if (!name) e.name = 'A ticket needs a subject.';
+    if (!name) e.name = tx('A ticket needs a subject.');
     else if (name.length > 64)
-      e.name = `Subjects are capped at 64 characters (this is ${name.length}).`;
+      e.name = tx('Subjects are capped at 64 characters (this is {n}).', { n: name.length });
 
     return e;
   });
@@ -61,9 +63,9 @@
   };
 </script>
 
-<PageHeader title="Edit ticket" center>
+<PageHeader title={tx('Edit ticket')} center>
   {#snippet crumb()}
-    <a href={resolve('/tickets')}>Tickets</a>
+    <a href={resolve('/tickets')}>{tx('Tickets')}</a>
     <ChevronRight size={12} />
     <a href={resolve(`/tickets/${ticket.id}`)}>{ticket.name}</a>
   {/snippet}
@@ -79,14 +81,14 @@
       >
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">The server refused this change</div>
+          <div style="font-weight:600">{tx('The server refused this change')}</div>
           <div class="v2-sub" style="margin-top:2px">{result.error}</div>
         </div>
       </div>
     {/if}
 
     <div class="v2-field">
-      <label for="f-name">Subject</label>
+      <label for="f-name">{tx('Subject')}</label>
       <input
         id="f-name"
         name="name"
@@ -100,27 +102,27 @@
 
     <div class="triple">
       <div class="v2-field">
-        <label for="f-status">Status</label>
+        <label for="f-status">{tx('Status')}</label>
         <select id="f-status" name="status" class="v2-input" bind:value={form.status}>
           {#each data.statuses as s (s.value)}
-            <option value={s.value}>{s.label}</option>
+            <option value={s.value}>{tx(s.label)}</option>
           {/each}
         </select>
       </div>
       <div class="v2-field">
-        <label for="f-priority">Priority</label>
+        <label for="f-priority">{tx('Priority')}</label>
         <select id="f-priority" name="priority" class="v2-input" bind:value={form.priority}>
           {#each data.priorities as p (p.value)}
-            <option value={p.value}>{p.label}</option>
+            <option value={p.value}>{tx(p.label)}</option>
           {/each}
         </select>
       </div>
       <div class="v2-field">
-        <label for="f-type">Type</label>
+        <label for="f-type">{tx('Type')}</label>
         <select id="f-type" name="case_type" class="v2-input" bind:value={form.case_type}>
-          <option value="">Not set</option>
+          <option value="">{tx('Not set')}</option>
           {#each data.caseTypes as t (t.value)}
-            <option value={t.value}>{t.label}</option>
+            <option value={t.value}>{tx(t.label)}</option>
           {/each}
         </select>
       </div>
@@ -128,7 +130,7 @@
 
     <div class="pair">
       <div class="v2-field">
-        <label for="f-closed">Closed on</label>
+        <label for="f-closed">{tx('Closed on')}</label>
         <input
           id="f-closed"
           name="closed_on"
@@ -141,16 +143,16 @@
              close itself, and a date already saved is left alone. -->
         <p class="v2-hint" id="f-closed-hint">
           {#if data.form.closed_on}
-            Left empty, the saved date is kept.
+            {tx('Left empty, the saved date is kept.')}
           {:else}
-            Optional. Left empty, a close is dated today in your organization's timezone.
+            {tx("Optional. Left empty, a close is dated today in your organization's timezone.")}
           {/if}
         </p>
       </div>
       <div class="v2-field">
-        <label for="f-owner">Assignee</label>
+        <label for="f-owner">{tx('Assignee')}</label>
         <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-          <option value="">Nobody</option>
+          <option value="">{tx('Nobody')}</option>
           {#each data.owners as o (o.id)}
             <option value={o.id}>{o.name}</option>
           {/each}
@@ -163,15 +165,15 @@
         <input type="hidden" name="assigned_to_original" value={data.form.assigned_to} />
         {#if data.server.assignee_count > 1}
           <p class="v2-hint">
-            <span class="v2-num">{data.server.assignee_count}</span> people are on this ticket. Changing
-            this replaces all of them.
+            <span class="v2-num">{data.server.assignee_count}</span>
+            {tx('people are on this ticket. Changing this replaces all of them.')}
           </p>
         {/if}
       </div>
     </div>
 
     <div class="v2-field">
-      <label for="f-contacts">People affected</label>
+      <label for="f-contacts">{tx('People affected')}</label>
       <select
         id="f-contacts"
         name="contacts"
@@ -190,11 +192,11 @@
         what makes "remove the last person" expressible.
       -->
       <input type="hidden" name="contacts_present" value="1" />
-      <p class="v2-hint">Hold ctrl or cmd to pick more than one.</p>
+      <p class="v2-hint">{tx('Hold ctrl or cmd to pick more than one.')}</p>
     </div>
 
     <div class="v2-field">
-      <label for="f-desc">What happened</label>
+      <label for="f-desc">{tx('What happened')}</label>
       <textarea
         id="f-desc"
         name="description"
@@ -205,25 +207,25 @@
 
     <p class="v2-sub" style="font-size:12px;margin:6px 0 0">
       {#if data.server.account}
-        Linked to <a href={resolve(`/accounts/${data.server.account.id}`)}
-          >{data.server.account.name}</a
-        >, which cannot be changed after the ticket is raised.
+        {tx('Linked to')}
+        <a href={resolve(`/accounts/${data.server.account.id}`)}>{data.server.account.name}</a
+        >{tx(', which cannot be changed after the ticket is raised.')}
       {:else}
-        Not linked to an account, and that cannot be changed after the ticket is raised.
+        {tx('Not linked to an account, and that cannot be changed after the ticket is raised.')}
       {/if}
       {#if data.server.team_count || data.server.tag_count}
-        <span class="v2-num">{data.server.team_count}</span> team{data.server.team_count === 1
-          ? ''
-          : 's'} and <span class="v2-num">{data.server.tag_count}</span> tag{data.server
-          .tag_count === 1
-          ? ''
-          : 's'} are kept as they are.
+        <span class="v2-num">{data.server.team_count}</span>
+        {data.server.team_count === 1 ? tx('team') : tx('teams')}
+        {tx('and')}
+        <span class="v2-num">{data.server.tag_count}</span>
+        {data.server.tag_count === 1 ? tx('tag') : tx('tags')}
+        {tx('are kept as they are.')}
       {/if}
     </p>
 
     <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit">Save ticket</button>
-      <a class="v2-btn" href={resolve(`/tickets/${ticket.id}`)}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Save ticket')}</button>
+      <a class="v2-btn" href={resolve(`/tickets/${ticket.id}`)}>{tx('Cancel')}</a>
     </div>
   </form>
 </div>

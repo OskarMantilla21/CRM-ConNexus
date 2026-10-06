@@ -3,6 +3,8 @@
   import { page } from '$app/state';
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import { FileQuestion, Lock, TriangleAlert } from '@lucide/svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
 
   /**
    * Every failed load in /v2 lands here. Three cases, three different things
@@ -19,23 +21,27 @@
     status === 404
       ? {
           icon: FileQuestion,
-          title: 'That record is not here',
-          body:
-            page.error?.message ||
-            'It may have been deleted, or it belongs to a team you are not part of.'
+          title: tx('That record is not here'),
+          body: page.error?.message
+            ? tx(page.error.message)
+            : tx('It may have been deleted, or it belongs to a team you are not part of.')
         }
       : status === 403
         ? {
             icon: Lock,
-            title: 'You do not have access to this',
-            body: 'Ask an admin in your organisation to give you access, or head back to Today.'
+            title: tx('You do not have access to this'),
+            body: tx(
+              'Ask an admin in your organisation to give you access, or head back to Today.'
+            )
           }
         : {
             icon: TriangleAlert,
-            title: 'That did not load',
-            body:
-              page.error?.message ||
-              'The server did not answer. Nothing you did caused this, and nothing was saved or lost.'
+            title: tx('That did not load'),
+            body: page.error?.message
+              ? tx(page.error.message)
+              : tx(
+                  'The server did not answer. Nothing you did caused this, and nothing was saved or lost.'
+                )
           }
   );
 </script>
@@ -47,9 +53,9 @@
     {/snippet}
     {#snippet actions()}
       {#if status >= 500}
-        <button class="v2-btn v2-btn-primary" onclick={() => location.reload()}>Try again</button>
+        <button class="v2-btn v2-btn-primary" onclick={() => location.reload()}>{tx('Try again')}</button>
       {/if}
-      <a class="v2-btn" href={resolve('/')}>Back to Today</a>
+      <a class="v2-btn" href={resolve('/')}>{tx('Back to Today')}</a>
     {/snippet}
   </EmptyState>
 

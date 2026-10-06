@@ -22,6 +22,7 @@
   import { ROLE_LABEL, ROLE_TONE } from '$lib/v2/enums.js';
   import { KeyRound, Lock, ArrowLeftRight, CalendarDays } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -179,20 +180,19 @@
           <p class="v2-error" style="margin-top:9px">{switchError}</p>
         {/if}
         <p class="v2-sub" style="font-size:11.5px;margin-top:11px">
-          Switching organisation signs you in again with a new token. Which org you are in decides
-          which records exist for you at all, so it is not a filter you can toggle.
+          {tx('Switching organisation signs you in again with a new token. Which org you are in decides which records exist for you at all, so it is not a filter you can toggle.')}
         </p>
       </div>
 
       <div>
-        <div class="v2-label" style="margin-bottom:10px">Access</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Access')}</div>
         <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Role</b>
+              <b>{tx('Role')}</b>
               <!-- Displayed, never editable from here. -->
               <span class="v2-sub" style="font-size:11.5px">
-                Set by an admin. You cannot change your own role.
+                {tx('Set by an admin. You cannot change your own role.')}
               </span>
             </div>
             <Lock size={14} style="color:var(--v2-slate);flex:none" />
@@ -203,9 +203,9 @@
                to lead most of the people who clicked it to "Admins only". -->
           <a class="v2-setting" href={resolve('/profile/tokens')}>
             <div class="v2-setting-body">
-              <b>API tokens</b>
+              <b>{tx('API tokens')}</b>
               <span class="v2-sub" style="font-size:11.5px">
-                Each one signs in as you, with your role.
+                {tx('Each one signs in as you, with your role.')}
               </span>
             </div>
             <KeyRound size={14} style="color:var(--v2-slate);flex:none" />
@@ -215,46 +215,47 @@
           </a>
           <a class="v2-setting" href={resolve('/profile/calendar-feed')}>
             <div class="v2-setting-body">
-              <b>Calendar feed</b>
+              <b>{tx('Calendar feed')}</b>
               <span class="v2-sub" style="font-size:11.5px">
-                Your open tasks in Google Calendar, Outlook or Apple Calendar.
+                {tx('Your open tasks in Google Calendar, Outlook or Apple Calendar.')}
               </span>
             </div>
             <CalendarDays size={14} style="color:var(--v2-slate);flex:none" />
           </a>
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Sign-in method</b>
+              <b>{tx('Sign-in method')}</b>
               <!-- It used to say "Google, on <email>", which is false for
                    anyone who signed in with an emailed code. Nothing in the
                    payload says which was used, so this states what holds for
                    both rather than guessing. -->
               <span class="v2-sub" style="font-size:11.5px">
-                {p.user_details.email}, by Google or an emailed code. There is no password to
-                change.
+                {tx('{email}, by Google or an emailed code. There is no password to change.', {
+                  email: p.user_details.email
+                })}
               </span>
             </div>
           </div>
         </div>
 
-        <div class="v2-label" style="margin-bottom:10px">Where your work shows up</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Where your work shows up')}</div>
         <div class="v2-card" style="overflow:hidden">
           <a class="v2-setting" href={resolve('/goals')}>
             <div class="v2-setting-body">
-              <b>Goals</b>
-              <span class="v2-sub" style="font-size:11.5px">Your quota and how it is pacing</span>
+              <b>{tx('Goals')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('Your quota and how it is pacing')}</span>
             </div>
           </a>
           <a class="v2-setting" href={resolve('/timesheet')}>
             <div class="v2-setting-body">
-              <b>Timesheet</b>
-              <span class="v2-sub" style="font-size:11.5px">Hours you have logged this week</span>
+              <b>{tx('Timesheet')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('Hours you have logged this week')}</span>
             </div>
           </a>
           <a class="v2-setting" href={resolve('/tasks')}>
             <div class="v2-setting-body">
-              <b>Tasks</b>
-              <span class="v2-sub" style="font-size:11.5px">What is assigned to you</span>
+              <b>{tx('Tasks')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('What is assigned to you')}</span>
             </div>
           </a>
         </div>

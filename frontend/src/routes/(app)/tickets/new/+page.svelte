@@ -14,6 +14,8 @@
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form: result } = $props();
@@ -39,11 +41,11 @@
     /** @type {Record<string, string>} */
     const e = {};
     const name = form.name.trim();
-    if (!name) e.name = 'A ticket needs a subject.';
+    if (!name) e.name = tx('A ticket needs a subject.');
     // `Case.name` is max_length=64, short for a subject line, but it is the
     // column, and a 65th character is a 400 from the serializer.
     else if (name.length > 64)
-      e.name = `Subjects are capped at 64 characters (this is ${name.length}).`;
+      e.name = tx('Subjects are capped at 64 characters (this is {n}).', { n: name.length });
     return e;
   });
 
@@ -63,14 +65,14 @@
   };
 </script>
 
-<PageHeader title="New ticket" center>
+<PageHeader title={tx('New ticket')} center>
   {#snippet crumb()}
-    <a href={resolve('/tickets')}>Tickets</a>
+    <a href={resolve('/tickets')}>{tx('Tickets')}</a>
     <ChevronRight size={12} />
-    <span>New</span>
+    <span>{tx('New')}</span>
   {/snippet}
   {#snippet sub()}
-    What happened, how urgent it is, and who it is for.
+    {tx('What happened, how urgent it is, and who it is for.')}
   {/snippet}
 </PageHeader>
 
@@ -84,14 +86,14 @@
       >
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">The server refused this ticket</div>
+          <div style="font-weight:600">{tx('The server refused this ticket')}</div>
           <div class="v2-sub" style="margin-top:2px">{result.error}</div>
         </div>
       </div>
     {/if}
 
     <div class="v2-field">
-      <label for="f-name">Subject</label>
+      <label for="f-name">{tx('Subject')}</label>
       <input
         id="f-name"
         name="name"
@@ -106,34 +108,34 @@
         <!-- Worth saying up front, because it is an unusual rule for a
              helpdesk and the refusal is otherwise baffling: two tickets in one
              organisation cannot share a subject, ignoring capitals. -->
-        <p class="v2-hint">Has to be unique in this organisation, ignoring capitals.</p>
+        <p class="v2-hint">{tx('Has to be unique in this organisation, ignoring capitals.')}</p>
       {/if}
     </div>
 
     <div class="triple">
       <div class="v2-field">
-        <label for="f-priority">Priority</label>
+        <label for="f-priority">{tx('Priority')}</label>
         <select id="f-priority" name="priority" class="v2-input" bind:value={form.priority}>
           {#each data.priorities as p (p.value)}
-            <option value={p.value}>{p.label}</option>
+            <option value={p.value}>{tx(p.label)}</option>
           {/each}
         </select>
-        <p class="v2-hint">Sets the first-reply target.</p>
+        <p class="v2-hint">{tx('Sets the first-reply target.')}</p>
       </div>
       <div class="v2-field">
-        <label for="f-type">Type</label>
+        <label for="f-type">{tx('Type')}</label>
         <select id="f-type" name="case_type" class="v2-input" bind:value={form.case_type}>
-          <option value="">Not set</option>
+          <option value="">{tx('Not set')}</option>
           {#each data.caseTypes as t (t.value)}
-            <option value={t.value}>{t.label}</option>
+            <option value={t.value}>{tx(t.label)}</option>
           {/each}
         </select>
       </div>
       <div class="v2-field">
-        <label for="f-status">Status</label>
+        <label for="f-status">{tx('Status')}</label>
         <select id="f-status" name="status" class="v2-input" bind:value={form.status}>
           {#each data.statuses as s (s.value)}
-            <option value={s.value}>{s.label}</option>
+            <option value={s.value}>{tx(s.label)}</option>
           {/each}
         </select>
       </div>
@@ -141,39 +143,39 @@
 
     <div class="pair">
       <div class="v2-field">
-        <label for="f-account">Account</label>
+        <label for="f-account">{tx('Account')}</label>
         <select id="f-account" name="account" class="v2-input" bind:value={form.account}>
-          <option value="">Not linked</option>
+          <option value="">{tx('Not linked')}</option>
           {#each data.accounts as a (a.id)}
             <option value={a.id}>{a.name}</option>
           {/each}
         </select>
-        <p class="v2-hint">Cannot be changed later. The API makes it read-only after creation.</p>
+        <p class="v2-hint">{tx('Cannot be changed later. The API makes it read-only after creation.')}</p>
       </div>
       <div class="v2-field">
-        <label for="f-owner">Assignee</label>
+        <label for="f-owner">{tx('Assignee')}</label>
         <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-          <option value="">Nobody</option>
+          <option value="">{tx('Nobody')}</option>
           {#each data.owners as o (o.id)}
             <option value={o.id}>{o.name}</option>
           {/each}
         </select>
-        <p class="v2-hint">Unassigned tickets still count against the clock.</p>
+        <p class="v2-hint">{tx('Unassigned tickets still count against the clock.')}</p>
       </div>
     </div>
 
     <div class="v2-field">
-      <label for="f-contacts">People affected</label>
+      <label for="f-contacts">{tx('People affected')}</label>
       <select id="f-contacts" name="contacts" class="v2-input" multiple size="4">
         {#each data.contacts as c (c.id)}
           <option value={c.id}>{c.name}</option>
         {/each}
       </select>
-      <p class="v2-hint">Optional. Hold ctrl or cmd to pick more than one.</p>
+      <p class="v2-hint">{tx('Optional. Hold ctrl or cmd to pick more than one.')}</p>
     </div>
 
     <div class="v2-field">
-      <label for="f-desc">What happened</label>
+      <label for="f-desc">{tx('What happened')}</label>
       <textarea
         id="f-desc"
         name="description"
@@ -183,8 +185,8 @@
     </div>
 
     <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit">Raise ticket</button>
-      <a class="v2-btn" href={resolve('/tickets')}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Raise ticket')}</button>
+      <a class="v2-btn" href={resolve('/tickets')}>{tx('Cancel')}</a>
     </div>
   </form>
 </div>

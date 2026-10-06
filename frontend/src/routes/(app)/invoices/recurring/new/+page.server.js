@@ -4,6 +4,8 @@ import { listContacts } from '$lib/server/v2/contacts.js';
 import { listProducts } from '$lib/server/v2/products.js';
 import { createRecurringInvoice } from '$lib/server/v2/recurring.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * Same three pickers as the one-off invoice builder: account and contact are
@@ -22,10 +24,10 @@ export async function load({ cookies }) {
   ]);
 
   return {
-    accounts: accounts.results.map((a) => ({ id: a.id, name: a.name || 'Unnamed account' })),
+    accounts: accounts.results.map((a) => ({ id: a.id, name: a.name || tx('Unnamed account') })),
     contacts: contacts.results.map((c) => ({
       id: c.id,
-      name: c.name || c.email || 'Unnamed contact',
+      name: c.name || c.email || tx('Unnamed contact'),
       account_id: c.account?.id ?? null,
       account_name: c.account?.name ?? ''
     })),
@@ -50,14 +52,14 @@ export const actions = {
     try {
       values = JSON.parse(form.get('payload')?.toString() || '{}');
     } catch {
-      return fail(400, { error: 'The schedule form could not be read. Please try again.' });
+      return fail(400, { error: tx('The schedule form could not be read. Please try again.') });
     }
 
     try {
       await createRecurringInvoice({ cookies }, values);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: readableError(err, 'Could not create the schedule.')
+        error: readableError(err, tx('Could not create the schedule.'))
       });
     }
 

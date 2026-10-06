@@ -5,6 +5,8 @@
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { TriangleAlert, Upload, Users, Lock } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form: result } = $props();
@@ -43,8 +45,8 @@
   let errors = $derived.by(() => {
     /** @type {Record<string, string>} */
     const e = {};
-    if (!title.trim()) e.title = 'Give the document a title you would recognise in a list.';
-    if (!fileName) e.file = 'Choose a file to upload.';
+    if (!title.trim()) e.title = tx('Give the document a title you would recognise in a list.');
+    if (!fileName) e.file = tx('Choose a file to upload.');
     return e;
   });
 
@@ -77,10 +79,10 @@
   };
 </script>
 
-<PageHeader title="Upload a document" center>
-  {#snippet crumb()}<a href={resolve('/documents')}>Documents</a> ›{/snippet}
+<PageHeader title={tx('Upload a document')} center>
+  {#snippet crumb()}<a href={resolve('/documents')}>{tx('Documents')}</a> ›{/snippet}
   {#snippet sub()}
-    Add a file, then choose who can open it. Nobody sees it until you share it.
+    {tx('Add a file, then choose who can open it. Nobody sees it until you share it.')}
   {/snippet}
 </PageHeader>
 
@@ -101,14 +103,14 @@
       >
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">The server refused this upload</div>
+          <div style="font-weight:600">{tx('The server refused this upload')}</div>
           <div class="v2-sub" style="margin-top:2px">{result.error}</div>
         </div>
       </div>
     {/if}
 
     <div class="v2-field">
-      <label for="f-title">Title</label>
+      <label for="f-title">{tx('Title')}</label>
       <input
         id="f-title"
         name="title"
@@ -117,19 +119,19 @@
         onblur={() => (touched.title = true)}
         aria-invalid={show('title') ? 'true' : undefined}
         aria-describedby={show('title') ? 'e-title' : 'h-title'}
-        placeholder="Master services agreement (2026 template)"
+        placeholder={tx('Master services agreement (2026 template)')}
       />
       {#if show('title')}
         <p class="v2-error" id="e-title">{errors.title}</p>
       {:else}
         <p class="v2-hint" id="h-title">
-          What you would call it out loud. It has to be unique here.
+          {tx('What you would call it out loud. It has to be unique here.')}
         </p>
       {/if}
     </div>
 
     <div class="v2-field">
-      <label for="f-file">File</label>
+      <label for="f-file">{tx('File')}</label>
       <input
         id="f-file"
         name="document_file"
@@ -144,25 +146,25 @@
       {:else}
         <p class="v2-hint" id="h-file">
           {fileName
-            ? `Selected: ${fileName}`
-            : 'PDFs, sheets, docs. Whatever you send people often.'}
+            ? tx('Selected: {name}', { name: fileName })
+            : tx('PDFs, sheets, docs. Whatever you send people often.')}
         </p>
       {/if}
     </div>
 
     <fieldset class="v2-field share">
-      <legend>Who can open it</legend>
+      <legend>{tx('Who can open it')}</legend>
       <p class="v2-hint" style="margin-top:0">
         {#if reach === 0}
-          <span class="unshared"><Lock size={11} /> Only you and admins, until you share it.</span>
+          <span class="unshared"><Lock size={11} /> {tx('Only you and admins, until you share it.')}</span>
         {:else}
-          Reaches <span class="v2-num">{reach}</span>
-          {reach === 1 ? 'person or team' : 'people and teams'}, plus admins.
+          {tx('Reaches')} <span class="v2-num">{reach}</span>
+          {reach === 1 ? tx('person or team') : tx('people and teams')}, {tx('plus admins.')}
         {/if}
       </p>
 
       {#if data.people?.length}
-        <div class="share-label">People</div>
+        <div class="share-label">{tx('People')}</div>
         <div class="share-grid">
           {#each data.people as p (p.id)}
             <label class="share-opt">
@@ -180,7 +182,7 @@
       {/if}
 
       {#if data.teams?.length}
-        <div class="share-label"><Users size={12} /> Teams</div>
+        <div class="share-label"><Users size={12} /> {tx('Teams')}</div>
         <div class="share-grid">
           {#each data.teams as t (t.id)}
             <label class="share-opt">
@@ -199,17 +201,19 @@
 
       {#if !data.people?.length && !data.teams?.length}
         <p class="v2-sub" style="font-size:12px">
-          No teammates or teams to share with yet. The document will be visible to you and admins.
+          {tx(
+            'No teammates or teams to share with yet. The document will be visible to you and admins.'
+          )}
         </p>
       {/if}
     </fieldset>
 
     <div style="display:flex;gap:8px;align-items:center;margin-top:22px">
-      <button class="v2-btn v2-btn-primary" type="submit"><Upload size={15} /> Upload</button>
-      <a class="v2-btn" href={resolve('/documents')}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit"><Upload size={15} /> {tx('Upload')}</button>
+      <a class="v2-btn" href={resolve('/documents')}>{tx('Cancel')}</a>
       <span class="v2-sub" style="margin-left:auto;font-size:12px">
         <span class="v2-num">{REQUIRED.filter((f) => !errors[f]).length}</span>
-        of <span class="v2-num">{REQUIRED.length}</span> required fields done
+        {tx('of')} <span class="v2-num">{REQUIRED.length}</span> {tx('required fields done')}
       </span>
     </div>
   </form>

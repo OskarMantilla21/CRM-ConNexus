@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   /**
    * Adding a lead.
@@ -73,24 +75,24 @@
     // floor, not the boundary; an empty lead would otherwise save silently
     // and be unfindable in the list a moment later.
     if (!form.first_name.trim() && !form.last_name.trim())
-      e.last_name = 'A lead needs a name to be findable. First or last will do.';
+      e.last_name = tx('A lead needs a name to be findable. First or last will do.');
 
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      e.email = 'That does not look like an email address.';
+      e.email = tx('That does not look like an email address.');
 
     // The exact regex from `flexible_phone_validator`. Extensions like "x123"
     // are rejected by the model, so they are caught here rather than as an
     // opaque whole-form refusal after the save.
     if (form.phone && !/^[\d\s\-()+.]{7,25}$/.test(form.phone))
-      e.phone = '7 to 25 characters: digits, spaces, brackets, dots, dashes. No extensions.';
+      e.phone = tx('7 to 25 characters: digits, spaces, brackets, dots, dashes. No extensions.');
 
     // `createLead` runs `Number(amount)` and the body is JSON-encoded, and
     // `JSON.stringify` turns `NaN` into `null`. Without this check, typing
     // "abc" would not error, it would silently save as no value at all.
     if (form.opportunity_amount !== '') {
       const n = Number(form.opportunity_amount);
-      if (!Number.isFinite(n)) e.opportunity_amount = 'Estimated value has to be a number.';
-      else if (n < 0) e.opportunity_amount = 'Estimated value cannot be negative.';
+      if (!Number.isFinite(n)) e.opportunity_amount = tx('Estimated value has to be a number.');
+      else if (n < 0) e.opportunity_amount = tx('Estimated value cannot be negative.');
     }
 
     return e;
@@ -127,12 +129,12 @@
   };
 </script>
 
-<PageHeader title="New lead" center>
+<PageHeader title={tx('New lead')} center>
   {#snippet crumb()}
-    <a href={resolve('/leads')}>Leads</a> ›
+    <a href={resolve('/leads')}>{tx('Leads')}</a> ›
   {/snippet}
   {#snippet sub()}
-    A name and a company is enough to start. The rest can wait.
+    {tx('A name and a company is enough to start. The rest can wait.')}
   {/snippet}
 </PageHeader>
 
@@ -146,7 +148,7 @@
       >
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">The server refused this lead</div>
+          <div style="font-weight:600">{tx('The server refused this lead')}</div>
           <div class="v2-sub" style="margin-top:2px">{result.error}</div>
         </div>
       </div>
@@ -161,19 +163,17 @@
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
           <div style="font-weight:600">
-            {Object.keys(errors).length} field{Object.keys(errors).length === 1 ? '' : 's'} still need{Object.keys(
-              errors
-            ).length === 1
-              ? 's'
-              : ''} you
+            {Object.keys(errors).length === 1
+              ? tx('1 field still needs you')
+              : tx('{n} fields still need you', { n: Object.keys(errors).length })}
           </div>
-          <div class="v2-sub" style="margin-top:2px">Nothing has been saved.</div>
+          <div class="v2-sub" style="margin-top:2px">{tx('Nothing has been saved.')}</div>
         </div>
       </div>
     {/if}
 
     <div class="v2-field">
-      <label for="f-first">First name</label>
+      <label for="f-first">{tx('First name')}</label>
       <input
         id="f-first"
         name="first_name"
@@ -183,7 +183,7 @@
       />
     </div>
     <div class="v2-field">
-      <label for="f-last">Last name</label>
+      <label for="f-last">{tx('Last name')}</label>
       <input
         id="f-last"
         name="last_name"
@@ -196,11 +196,11 @@
       {#if show('last_name')}<p class="v2-error" id="e-last">{errors.last_name}</p>{/if}
     </div>
     <div class="v2-field">
-      <label for="f-company">Company</label>
+      <label for="f-company">{tx('Company')}</label>
       <input id="f-company" name="company_name" class="v2-input" bind:value={form.company_name} />
     </div>
     <div class="v2-field">
-      <label for="f-email">Email</label>
+      <label for="f-email">{tx('Email')}</label>
       <input
         id="f-email"
         name="email"
@@ -214,20 +214,20 @@
       {#if show('email')}<p class="v2-error" id="e-email">{errors.email}</p>{/if}
     </div>
     <div class="v2-field">
-      <label for="f-owner">Owner</label>
+      <label for="f-owner">{tx('Owner')}</label>
       <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-        <option value="">Unassigned</option>
+        <option value="">{tx('Unassigned')}</option>
         {#each data.owners as o (o.id)}
           <option value={o.id}>{o.name}</option>
         {/each}
       </select>
     </div>
     <div class="v2-field">
-      <label for="f-jobtitle">Job title</label>
+      <label for="f-jobtitle">{tx('Job title')}</label>
       <input id="f-jobtitle" name="job_title" class="v2-input" bind:value={form.job_title} />
     </div>
     <div class="v2-field">
-      <label for="f-phone">Phone</label>
+      <label for="f-phone">{tx('Phone')}</label>
       <input
         id="f-phone"
         name="phone"
@@ -240,43 +240,40 @@
       {#if show('phone')}<p class="v2-error" id="e-phone">{errors.phone}</p>{/if}
     </div>
     <div class="v2-field">
-      <label for="f-website">Website</label>
+      <label for="f-website">{tx('Website')}</label>
       <input id="f-website" name="website" class="v2-input" bind:value={form.website} />
     </div>
     <div class="v2-field">
-      <label for="f-status">Status</label>
+      <label for="f-status">{tx('Status')}</label>
       <select id="f-status" name="status" class="v2-input" bind:value={form.status}>
         {#each LEAD_STATUSES.filter((s) => s !== 'converted') as s (s)}
           <option value={s}>{LEAD_STATUS_LABEL[s]}</option>
         {/each}
       </select>
       <p class="v2-hint">
-        Converting is a significant, largely irreversible step: it creates an Account, a Contact and
-        an Opportunity that nothing undoes if the status changes back, and it requires an email
-        address that nothing else here does. Set the status here to something else, and convert once
-        the lead is real.
+        {tx('Converting is a significant, largely irreversible step: it creates an Account, a Contact and an Opportunity that nothing undoes if the status changes back, and it requires an email address that nothing else here does. Set the status here to something else, and convert once the lead is real.')}
       </p>
     </div>
     <div class="v2-field">
-      <label for="f-source">Source</label>
+      <label for="f-source">{tx('Source')}</label>
       <select id="f-source" name="source" class="v2-input" bind:value={form.source}>
-        <option value="">Not specified</option>
+        <option value="">{tx('Not specified')}</option>
         {#each LEAD_SOURCES as s (s)}
           <option value={s}>{LEAD_SOURCE_LABEL[s]}</option>
         {/each}
       </select>
     </div>
     <div class="v2-field">
-      <label for="f-industry">Industry</label>
+      <label for="f-industry">{tx('Industry')}</label>
       <select id="f-industry" name="industry" class="v2-input" bind:value={form.industry}>
-        <option value="">Not specified</option>
+        <option value="">{tx('Not specified')}</option>
         {#each INDUSTRIES as ind (ind)}
           <option value={ind}>{industryLabel(ind)}</option>
         {/each}
       </select>
     </div>
     <div class="v2-field">
-      <label for="f-amount">Estimated value</label>
+      <label for="f-amount">{tx('Estimated value')}</label>
       <input
         id="f-amount"
         name="opportunity_amount"
@@ -294,12 +291,12 @@
         <p class="v2-hint" id="h-amount">
           {Number(form.opportunity_amount) > 0
             ? money(Number(form.opportunity_amount), data.org.currency)
-            : 'What the deal would be worth if it lands.'}
+            : tx('What the deal would be worth if it lands.')}
         </p>
       {/if}
     </div>
     <div class="v2-field">
-      <label for="f-notes">Notes</label>
+      <label for="f-notes">{tx('Notes')}</label>
       <textarea
         id="f-notes"
         name="description"
@@ -320,8 +317,8 @@
     />
 
     <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>Create lead</button>
-      <a class="v2-btn" href={resolve('/leads')}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>{tx('Create lead')}</button>
+      <a class="v2-btn" href={resolve('/leads')}>{tx('Cancel')}</a>
     </div>
   </form>
 </div>

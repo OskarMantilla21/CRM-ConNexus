@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import { untrack, tick } from 'svelte';
   import { enhance } from '$app/forms';
@@ -82,21 +84,21 @@
   let errors = $derived.by(() => {
     /** @type {Record<string, string>} */
     const e = {};
-    if (!form.name.trim()) e.name = 'Give the deal a name you would recognise in a list.';
-    if (!form.account) e.account = 'Pick the account this deal belongs to.';
+    if (!form.name.trim()) e.name = tx('Give the deal a name you would recognise in a list.');
+    if (!form.account) e.account = tx('Pick the account this deal belongs to.');
 
     const amount = Number(form.amount);
-    if (form.amount === '') e.amount = 'How much is it worth?';
+    if (form.amount === 'tx(') e.amount = tx(')How much is it worth?');
     else if (!Number.isFinite(amount) || amount <= 0)
-      e.amount = 'Amount has to be a number greater than zero.';
+      e.amount = tx('Amount has to be a number greater than zero.');
 
-    if (!form.closed_on) e.closed_on = 'When do you expect this to close?';
+    if (!form.closed_on) e.closed_on = tx('When do you expect this to close?');
     else if (new Date(form.closed_on).getTime() < Date.now() - 86400000)
-      e.closed_on = 'That date has passed. Pick the date you now expect.';
+      e.closed_on = tx('That date has passed. Pick the date you now expect.');
 
     const p = Number(form.probability);
     if (form.probability !== '' && (!Number.isFinite(p) || p < 0 || p > 100))
-      e.probability = 'Probability is a percentage between 0 and 100.';
+      e.probability = tx('Probability is a percentage between 0 and 100.');
 
     return e;
   });
@@ -127,9 +129,9 @@
   };
 </script>
 
-<PageHeader title="New deal" center>
+<PageHeader title={tx('New deal')} center>
   {#snippet crumb()}
-    <a href={resolve('/pipeline')}>Pipeline</a> ›
+    <a href={resolve('/pipeline')}>{tx('Pipeline')}</a> ›
   {/snippet}
   {#snippet sub()}
     Five fields to start. Everything else can wait until you know it.
@@ -146,7 +148,7 @@
       >
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">The server refused this deal</div>
+          <div style="font-weight:600">{tx('The server refused this deal')}</div>
           <div class="v2-sub" style="margin-top:2px">{result.error}</div>
         </div>
       </div>
@@ -175,7 +177,7 @@
     {/if}
 
     <div class="v2-field">
-      <label for="f-name">Deal name</label>
+      <label for="f-name">{tx('Deal name')}</label>
       <input
         id="f-name"
         name="name"
@@ -184,7 +186,7 @@
         onblur={() => (touched.name = true)}
         aria-invalid={show('name') ? 'true' : undefined}
         aria-describedby={show('name') ? 'e-name' : 'h-name'}
-        placeholder="Platform renewal"
+        placeholder={tx('Platform renewal')}
       />
       {#if show('name')}
         <p class="v2-error" id="e-name">{errors.name}</p>
@@ -196,7 +198,7 @@
     </div>
 
     <div class="v2-field">
-      <label for="f-account">Account</label>
+      <label for="f-account">{tx('Account')}</label>
       <select
         id="f-account"
         name="account"
@@ -206,7 +208,7 @@
         aria-invalid={show('account') ? 'true' : undefined}
         aria-describedby={show('account') ? 'e-account' : undefined}
       >
-        <option value="">Choose an account…</option>
+        <option value="">{tx('Choose an account…')}</option>
         {#each data.accounts as a (a.id)}
           <option value={a.id}>{a.name}</option>
         {/each}
@@ -216,7 +218,7 @@
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="v2-field">
-        <label for="f-amount">Amount</label>
+        <label for="f-amount">{tx('Amount')}</label>
         <input
           id="f-amount"
           name="amount"
@@ -241,7 +243,7 @@
       </div>
 
       <div class="v2-field">
-        <label for="f-close">Expected close</label>
+        <label for="f-close">{tx('Expected close')}</label>
         <input
           id="f-close"
           name="closed_on"
@@ -258,7 +260,7 @@
 
     {#if pipelines.length > 1}
       <div class="v2-field">
-        <label for="f-pipeline">Pipeline</label>
+        <label for="f-pipeline">{tx('Pipeline')}</label>
         <select
           id="f-pipeline"
           name="pipeline"
@@ -274,7 +276,7 @@
     {/if}
 
     <div class="v2-field">
-      <label for="f-stage">Stage</label>
+      <label for="f-stage">{tx('Stage')}</label>
       <select id="f-stage" name="stage" class="v2-input" bind:value={form.stage}>
         {#each openStages as s (s.code)}
           <option value={s.code}>{s.label}</option>
@@ -311,14 +313,14 @@
       >
         {#if more}<ChevronDown />{:else}<ChevronRight />{/if}
         More fields
-        <span class="v2-sub" style="font-size:12px">. Type, probability, source, owner, notes</span>
+        <span class="v2-sub" style="font-size:12px">{tx('. Type, probability, source, owner, notes')}</span>
       </button>
 
       {#if more}
         <div id="more-fields" style="margin-top:14px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div class="v2-field">
-              <label for="f-type">Type</label>
+              <label for="f-type">{tx('Type')}</label>
               <select
                 id="f-type"
                 name="opportunity_type"
@@ -331,7 +333,7 @@
               </select>
             </div>
             <div class="v2-field">
-              <label for="f-prob">Probability</label>
+              <label for="f-prob">{tx('Probability')}</label>
               <input
                 id="f-prob"
                 name="probability"
@@ -348,7 +350,7 @@
           </div>
 
           <div class="v2-field">
-            <label for="f-owner">Owner</label>
+            <label for="f-owner">{tx('Owner')}</label>
             <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
               {#each data.owners as o (o.id)}
                 <option value={o.id}>{o.name}</option>
@@ -360,18 +362,18 @@
           </div>
 
           <div class="v2-field">
-            <label for="f-source">Source</label>
+            <label for="f-source">{tx('Source')}</label>
             <input
               id="f-source"
               name="lead_source"
               class="v2-input"
               bind:value={form.lead_source}
-              placeholder="Existing customer"
+              placeholder={tx('Existing customer')}
             />
           </div>
 
           <div class="v2-field">
-            <label for="f-notes">Notes</label>
+            <label for="f-notes">{tx('Notes')}</label>
             <textarea
               id="f-notes"
               name="description"
@@ -384,11 +386,11 @@
     </div>
 
     <div style="display:flex;gap:8px;align-items:center;margin-top:22px">
-      <button class="v2-btn v2-btn-primary" type="submit">Create deal</button>
-      <a class="v2-btn" href={resolve('/pipeline')}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create deal')}</button>
+      <a class="v2-btn" href={resolve('/pipeline')}>{tx('Cancel')}</a>
       <span class="v2-sub" style="margin-left:auto;font-size:12px">
         <span class="v2-num">{REQUIRED.filter((f) => !errors[f]).length}</span>
-        of <span class="v2-num">{REQUIRED.length}</span> required fields done
+        of <span class="v2-num">{REQUIRED.length}</span> {tx('required fields done')}
       </span>
     </div>
   </form>

@@ -8,6 +8,7 @@
    */
   import { enhance } from '$app/forms';
   import PortalShell from '$lib/v2/components/PortalShell.svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   let { form } = $props();
 
@@ -16,21 +17,24 @@
 </script>
 
 <svelte:head>
-  <title>Sign in to support</title>
+  <title>{tx('Sign in to support')}</title>
 </svelte:head>
 
 <PortalShell>
   <div class="card">
-    <h1>Your support requests</h1>
+    <h1>{tx('Your support requests')}</h1>
 
     {#if stage === 'code'}
       <p class="lede">
-        If <strong>{email}</strong> is on file, we have sent it a six digit code. It expires in 10 minutes.
+        {tx(
+          'If {email} is on file, we have sent it a six digit code. It expires in 10 minutes.',
+          { email }
+        )}
       </p>
 
       <form method="POST" action="?/verify" use:enhance>
         <input type="hidden" name="email" value={email} />
-        <label for="code">Code</label>
+        <label for="code">{tx('Code')}</label>
         <input
           id="code"
           name="code"
@@ -42,20 +46,22 @@
           required
         />
         {#if form?.error}<p class="err">{form.error}</p>{/if}
-        <button type="submit">Sign in</button>
+        <button type="submit">{tx('Sign in')}</button>
       </form>
 
       <form method="POST" action="?/request" use:enhance class="again">
         <input type="hidden" name="email" value={email} />
-        <button type="submit" class="link">Send a new code</button>
+        <button type="submit" class="link">{tx('Send a new code')}</button>
       </form>
     {:else}
       <p class="lede">
-        Enter the email address you use with this company and we will send you a sign-in code.
+        {tx(
+          'Enter the email address you use with this company and we will send you a sign-in code.'
+        )}
       </p>
 
       <form method="POST" action="?/request" use:enhance>
-        <label for="email">Email</label>
+        <label for="email">{tx('Email')}</label>
         <input
           id="email"
           name="email"
@@ -65,7 +71,7 @@
           required
         />
         {#if form?.error}<p class="err">{form.error}</p>{/if}
-        <button type="submit">Email me a code</button>
+        <button type="submit">{tx('Email me a code')}</button>
       </form>
     {/if}
   </div>

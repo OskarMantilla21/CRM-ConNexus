@@ -26,6 +26,8 @@
    */
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { count, shortDate } from '$lib/v2/format.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { isOrgAdmin } from '$lib/admin.js';
   import { ChevronRight, ShieldAlert } from '@lucide/svelte';
 
@@ -42,12 +44,12 @@
    */
   let hoursSummary = $derived.by(() => {
     const open = data.calendar.days.filter((d) => d.open);
-    if (!open.length) return 'No open hours set';
+    if (!open.length) return tx('No open hours set');
     const first = open[0];
     const uniform = open.every((d) => d.open === first.open && d.close === first.close);
     return uniform
-      ? `${open.length} days, ${first.open}-${first.close}`
-      : `${open.length} days, hours vary`;
+      ? tx('{n} days, {open}-{close}', { n: open.length, open: first.open, close: first.close })
+      : tx('{n} days, hours vary', { n: open.length });
   });
 
   /** An approval rule set to MANAGER with no named approvers matches nobody. */
@@ -69,7 +71,10 @@
           // totals (the endpoint 403s), so the row lists the destination with
           // no value rather than a misleading zero.
           value: data.peopleTotals
-            ? `${data.peopleTotals.count} people · ${data.peopleTotals.admins} admins`
+            ? tx('{n} people · {admins} admins', {
+                n: data.peopleTotals.count,
+                admins: data.peopleTotals.admins
+              })
             : null,
           warn: data.peopleTotals ? data.peopleTotals.tokens_on_deactivated > 0 : false
         },
@@ -77,7 +82,7 @@
           href: '/settings/api-tokens',
           title: 'API tokens',
           body: 'Personal access tokens for scripts, integrations and AI agents.',
-          value: data.tokenTotals ? `${data.tokenTotals.live} live` : null,
+          value: data.tokenTotals ? tx('{n} live', { n: data.tokenTotals.live }) : null,
           warn: data.tokenTotals
             ? data.tokenTotals.orphaned > 0 || data.tokenTotals.unused_90d > 0
             : false
@@ -113,7 +118,7 @@
           href: '/settings/web-forms',
           title: 'Web forms',
           body: 'Forms you embed on your own site. What people fill in becomes a lead.',
-          value: `${data.webFormTotals.published} published`,
+          value: tx('{n} published', { n: data.webFormTotals.published }),
           // Forms are live and nothing has arrived in a month. Usually the
           // snippet was taken off the site it was pasted onto, which nothing
           // else would ever tell you. The destination names the individual
@@ -130,7 +135,7 @@
           value:
             data.helpCenter.help_center_enabled && data.helpCenter.help_center_slug
               ? `/help-center/${data.helpCenter.help_center_slug}`
-              : 'Off',
+              : tx('Off'),
           warn: false
         },
         {
@@ -149,14 +154,17 @@
           href: '/settings/routing',
           title: 'Ticket routing',
           body: 'Who a new ticket lands on, in the order the rules are tried.',
-          value: `${data.routingTotals.active} rules`,
+          value: tx('{n} rules', { n: data.routingTotals.active }),
           warn: data.routingTotals.unrouted_last_30d > 0
         },
         {
           href: '/settings/escalation',
           title: 'Escalation',
           body: 'What happens when a ticket misses its response target.',
-          value: `${data.escalationTotals.active} of ${data.escalationTotals.count} priorities`,
+          value: tx('{active} of {count} priorities', {
+            active: data.escalationTotals.active,
+            count: data.escalationTotals.count
+          }),
           warn: data.escalationTotals.breaches_unhandled_30d > 0
         },
         {
@@ -170,7 +178,7 @@
           href: '/settings/ticket-approvals',
           title: 'Approval rules',
           body: 'What gates a ticket close, and who can clear it.',
-          value: `${data.approvalTotals.active} active`,
+          value: tx('{n} active', { n: data.approvalTotals.active }),
           warn: stuckApprovalRules > 0
         },
         {
@@ -183,8 +191,8 @@
           value: !data.reopen
             ? null
             : data.reopen.is_enabled
-              ? `Within ${data.reopen.reopen_window_days} days`
-              : 'Off. Closed stays closed',
+              ? tx('Within {n} days', { n: data.reopen.reopen_window_days })
+              : tx('Off. Closed stays closed'),
           // Replies arriving outside the window are normal for any window, so
           // that number belongs on the page, not on a warning here. Off is the
           // state worth flagging: it makes every reply to a closed ticket
@@ -195,7 +203,10 @@
           href: '/settings/inbound-email',
           title: 'Inbound email',
           body: 'The addresses that turn email into tickets.',
-          value: `${data.mailboxTotals.active} of ${data.mailboxTotals.count} active`,
+          value: tx('{active} of {count} active', {
+            active: data.mailboxTotals.active,
+            count: data.mailboxTotals.count
+          }),
           // Off AND still receiving, not merely off. An address switched off
           // and left alone is a decision; one still getting mail and creating
           // nothing is a customer being ignored.
@@ -210,14 +221,14 @@
           href: '/settings/macros',
           title: 'Macros',
           body: 'Canned replies, and the placeholders they substitute.',
-          value: `${data.macroTotals.org} shared`,
+          value: tx('{n} shared', { n: data.macroTotals.org }),
           warn: data.macroTotals.with_unknown_placeholders > 0
         },
         {
           href: '/settings/tags',
           title: 'Tags',
           body: 'Labels shared across accounts, leads, deals and tickets.',
-          value: `${data.tagTotals.active} in use`,
+          value: tx('{n} in use', { n: data.tagTotals.active }),
           // Unused tags are housekeeping, not a fault, the tags page lists
           // them without needing the hub to raise an alarm about tidiness.
           warn: false
@@ -240,14 +251,17 @@
           href: '/settings/custom-fields',
           title: 'Custom fields',
           body: 'Fields this organisation added to records.',
-          value: `${data.fieldTotals.active} across ${data.fieldTotals.models_extended} record types`,
+          value: tx('{n} across {types} record types', {
+            n: data.fieldTotals.active,
+            types: data.fieldTotals.models_extended
+          }),
           warn: data.fieldTotals.required_with_gaps > 0
         },
         {
           href: '/invoices/templates',
           title: 'Invoice templates',
           body: 'How an invoice looks when a customer receives it.',
-          value: 'Under Invoices',
+          value: tx('Under Invoices'),
           warn: false
         }
       ]
@@ -257,12 +271,12 @@
   let warnings = $derived(groups.flatMap((g) => g.items).filter((i) => i.warn).length);
 </script>
 
-<PageHeader title="Settings">
+<PageHeader title={tx('Settings')}>
   {#snippet sub()}
-    {org.name} · <span class="v2-num">{count(org.member_count)}</span> members · since
+    {org.name} · <span class="v2-num">{count(org.member_count)}</span> {tx('members')} · {tx('since')}
     {shortDate(org.created_at)}
     {#if warnings}
-      · <span class="v2-num">{count(warnings)}</span> need a look
+      · <span class="v2-num">{count(warnings)}</span> {tx('need a look')}
     {/if}
   {/snippet}
 </PageHeader>
@@ -270,13 +284,13 @@
 <div class="v2-scroll">
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     {#each groups as g (g.label)}
-      <div class="v2-label" style="margin-bottom:10px">{g.label}</div>
+      <div class="v2-label" style="margin-bottom:10px">{tx(g.label)}</div>
       <div class="v2-card" style="overflow:hidden;margin-bottom:22px">
         {#each g.items as s (s.href)}
           <a class="v2-setting" href={resolve(asInternalPath(s.href))}>
             <div class="v2-setting-body">
-              <b>{s.title}</b>
-              <span class="v2-sub" style="font-size:11.5px">{s.body}</span>
+              <b>{tx(s.title)}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx(s.body)}</span>
             </div>
             {#if s.warn}
               <ShieldAlert size={15} style="color:var(--v2-clay);flex:none" />
@@ -298,10 +312,9 @@
       index anyone with the URL can load.
     -->
     <p class="v2-sub" style="font-size:11.5px;margin-top:18px;max-width:64ch">
-      The organisation API key is not shown here. Credentials are never rendered on a page you can
-      arrive at by browsing. See
-      <a href={resolve('/settings/api-tokens')} style="color:inherit">API tokens</a> for how token values
-      are handled.
+      {tx('The organisation API key is not shown here. Credentials are never rendered on a page you can arrive at by browsing. See')}
+      <a href={resolve('/settings/api-tokens')} style="color:inherit">{tx('API tokens')}</a>
+      {tx('for how token values are handled.')}
     </p>
   </div>
 </div>

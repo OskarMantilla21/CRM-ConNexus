@@ -4,6 +4,8 @@
   import Pill from '$lib/v2/components/Pill.svelte';
   import { money, count } from '$lib/v2/format.js';
   import { Target } from '@lucide/svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -35,8 +37,13 @@
           ? 'var(--v2-clay)'
           : 'var(--v2-slate)';
 
-  const plural = (/** @type {number} */ n, /** @type {string} */ one, /** @type {string} */ many) =>
-    `${n} ${n === 1 ? one : many}`;
+  const wantsYou = (/** @type {number} */ n) =>
+    n === 1 ? tx('1 thing wants you today.') : tx('{n} things want you today.', { n });
+
+  const goneQuiet = (/** @type {number} */ n, /** @type {string} */ amount) =>
+    n === 1
+      ? tx('1 deal worth {amount} has gone quiet.', { amount })
+      : tx('{n} deals worth {amount} have gone quiet.', { n, amount });
 
   // Built as one string rather than conditional markup: the "quiet deals"
   // clause only makes sense when there are any, and the numbers are often zero
@@ -49,12 +56,10 @@
   // list the sentence had just promised to lead with.
   let subText = $derived(
     summary.count === 0
-      ? 'Nothing needs you right now: you’re all clear for today.'
+      ? tx('Nothing needs you right now: you’re all clear for today.')
       : summary.quiet_deals === 0
-        ? `${plural(summary.count, 'thing wants', 'things want')} you today.`
-        : `${plural(summary.count, 'thing wants', 'things want')} you today. ` +
-          `${plural(summary.quiet_deals, 'deal', 'deals')} worth ${money(summary.quiet_value, data.org.currency)} ` +
-          `${summary.quiet_deals === 1 ? 'has' : 'have'} gone quiet.`
+        ? wantsYou(summary.count)
+        : `${wantsYou(summary.count)} ${goneQuiet(summary.quiet_deals, money(summary.quiet_value, data.org.currency))}`
   );
 
   // The queue shows the most urgent 8. Everything past that is real work with
@@ -63,7 +68,7 @@
   let hidden = $derived(Math.max(0, summary.count - summary.shown));
 </script>
 
-<PageHeader title="Today">
+<PageHeader title={tx('Today')}>
   {#snippet sub()}{subText}{/snippet}
 </PageHeader>
 
@@ -87,9 +92,9 @@
           <!-- On a phone these drop to their own line rather than squeezing
                the title into three words per row. -->
           <div class="v2-queue-actions">
-            <Pill tone={item.tone}>{item.due}</Pill>
+            <Pill tone={item.tone}>{tx(item.due)}</Pill>
             <a class="v2-btn" class:v2-btn-primary={i === 0} href={resolve(item.href)}
-              >{item.action}</a
+              >{tx(item.action)}</a
             >
           </div>
         </div>
@@ -97,22 +102,22 @@
     {/each}
 
     {#if queue.length && hidden === 0}
-      <p class="v2-sub" style="margin:15px 0 21px;font-size:12.5px">That’s everything due today.</p>
+      <p class="v2-sub" style="margin:15px 0 21px;font-size:12.5px">{tx('That’s everything due today.')}</p>
     {:else if queue.length}
       <p class="v2-sub" style="margin:15px 0 21px;font-size:12.5px">
         <span class="v2-num">{hidden}</span>
-        {hidden === 1 ? 'more is' : 'more are'} waiting:
+        {hidden === 1 ? tx('more is waiting:') : tx('more are waiting:')}
         {#each summary.sources as source, i (source.href)}<a
             href={resolve(source.href)}
-            style="color:inherit">{source.count} {source.label}</a
+            style="color:inherit">{source.count} {tx(source.label)}</a
           >{i < summary.sources.length - 1 ? ', ' : '.'}{/each}
       </p>
     {:else}
       <div class="v2-card" style="margin-bottom:8px">
         <div class="v2-pad" style="padding:20px;text-align:center">
-          <div style="font-weight:640;letter-spacing:-0.012em">Inbox zero for today</div>
+          <div style="font-weight:640;letter-spacing:-0.012em">{tx('Inbox zero for today')}</div>
           <div class="v2-sub" style="margin-top:3px">
-            No overdue tickets, invoices, quiet deals or tasks. Anything coming up is below.
+            {tx('No overdue tickets, invoices, quiet deals or tasks. Anything coming up is below.')}
           </div>
         </div>
       </div>
@@ -130,7 +135,7 @@
     {#if goals.length}
       <div class="v2-label" style="margin:6px 0 9px">
         <Target size={12} style="vertical-align:-1px;margin-right:4px" />
-        Where you stand
+        {tx('Where you stand')}
       </div>
       <div class="goals">
         {#each goals as g (g.id)}
@@ -145,7 +150,10 @@
               <i style="width:{g.progress_percent}%;background:{goalColor(g)}"></i>
             </div>
             <div class="v2-sub" style="font-size:11.5px;margin-top:6px">
-              {goalValue(g, g.progress_value)} of {goalValue(g, g.target_value)}
+              {tx('{done} of {target}', {
+                done: goalValue(g, g.progress_value),
+                target: goalValue(g, g.target_value)
+              })}
             </div>
           </a>
         {/each}
@@ -153,7 +161,7 @@
     {/if}
 
     {#if later.length}
-      <div class="v2-label" style="margin:6px 0 9px">Later this week</div>
+      <div class="v2-label" style="margin:6px 0 9px">{tx('Later this week')}</div>
       {#each later as row (row.id)}
         <div
           style="display:flex;gap:13px;align-items:baseline;padding:9px 3px;border-bottom:1px solid var(--v2-line-soft)"
@@ -170,7 +178,7 @@
 
     {#if summary.cleared_yesterday > 0}
       <p class="v2-sub" style="margin-top:20px;font-size:12px">
-        Yesterday you cleared <span class="v2-num">{summary.cleared_yesterday}</span>.
+        {tx('Yesterday you cleared')} <span class="v2-num">{summary.cleared_yesterday}</span>.
       </p>
     {/if}
   </div>

@@ -23,6 +23,8 @@
    */
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { ChevronRight, Lock, FileCode } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -33,11 +35,11 @@
   let values = $derived(form?.values ?? data.template ?? {});
 </script>
 
-<PageHeader title={data.template?.name ?? 'Edit template'} record center width="72ch">
+<PageHeader title={data.template?.name ?? tx('Edit template')} record center width="72ch">
   {#snippet crumb()}
-    <a href={resolve('/invoices/templates')}>Templates</a>
+    <a href={resolve('/invoices/templates')}>{tx('Templates')}</a>
     <ChevronRight size={12} />
-    <span>Edit</span>
+    <span>{tx('Edit')}</span>
   {/snippet}
 </PageHeader>
 
@@ -47,15 +49,14 @@
       <div class="v2-next" role="note">
         <Lock size={17} style="flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">Admins only</div>
+          <div style="font-weight:600">{tx('Admins only')}</div>
           <div class="v2-sub" style="margin-top:2px">
-            A template decides how every invoice in the org prints, so only an administrator can
-            change one. You can still see the catalogue on the templates page.
+            {tx('A template decides how every invoice in the org prints, so only an administrator can change one. You can still see the catalogue on the templates page.')}
           </div>
         </div>
       </div>
       <a class="v2-btn" href={resolve('/invoices/templates')} style="margin-top:16px"
-        >Back to templates</a
+        >{tx('Back to templates')}</a
       >
     </div>
   {:else}
@@ -74,13 +75,13 @@
       {/if}
 
       <label class="v2-field">
-        <span class="v2-label">Name</span>
+        <span class="v2-label">{tx('Name')}</span>
         <input class="v2-input" name="name" required maxlength="100" value={values.name ?? ''} />
       </label>
 
       <div class="color-row">
         <label class="color-field">
-          <span class="v2-label">Primary colour</span>
+          <span class="v2-label">{tx('Primary colour')}</span>
           <input
             class="color-swatch"
             type="color"
@@ -89,7 +90,7 @@
           />
         </label>
         <label class="color-field">
-          <span class="v2-label">Secondary colour</span>
+          <span class="v2-label">{tx('Secondary colour')}</span>
           <input
             class="color-swatch"
             type="color"
@@ -101,53 +102,51 @@
 
       <label class="v2-field">
         <span class="v2-label">
-          Logo <span class="opt"
-            >{data.template?.has_logo ? '(replaces the current one)' : '(optional)'}</span
+          {tx('Logo')} <span class="opt"
+            >{data.template?.has_logo ? tx('(replaces the current one)') : tx('(optional)')}</span
           >
         </span>
         <input class="v2-input" type="file" name="logo" accept="image/*" />
       </label>
 
       <label class="v2-field">
-        <span class="v2-label">Default notes <span class="opt">(optional)</span></span>
+        <span class="v2-label">{tx('Default notes')} <span class="opt">{tx('(optional)')}</span></span>
         <textarea class="v2-input" name="default_notes" rows="3"
           >{values.default_notes ?? ''}</textarea
         >
       </label>
 
       <label class="v2-field">
-        <span class="v2-label">Default terms <span class="opt">(optional)</span></span>
+        <span class="v2-label">{tx('Default terms')} <span class="opt">{tx('(optional)')}</span></span>
         <textarea class="v2-input" name="default_terms" rows="3"
           >{values.default_terms ?? ''}</textarea
         >
       </label>
 
       <label class="v2-field">
-        <span class="v2-label">Footer text <span class="opt">(optional)</span></span>
+        <span class="v2-label">{tx('Footer text')} <span class="opt">{tx('(optional)')}</span></span>
         <textarea class="v2-input" name="footer_text" rows="2">{values.footer_text ?? ''}</textarea>
       </label>
 
       <div class="markup-note" role="note">
         <FileCode size={14} style="flex:none;margin-top:2px" />
         <div>
-          <strong>Custom layout</strong>
+          <strong>{tx('Custom layout')}</strong>
           <div class="v2-sub" style="margin-top:2px">
-            Filling these in replaces the whole printed document, the line-item table and the totals
-            included. Nothing checks that what you write still prints an amount due. Leave both
-            empty to use the built-in layout. Emptying a field that has markup in it now clears it.
+            {tx('Filling these in replaces the whole printed document, the line-item table and the totals included. Nothing checks that what you write still prints an amount due. Leave both empty to use the built-in layout. Emptying a field that has markup in it now clears it.')}
           </div>
         </div>
       </div>
 
       <label class="v2-field">
-        <span class="v2-label">Template HTML <span class="opt">(optional)</span></span>
+        <span class="v2-label">{tx('Template HTML')} <span class="opt">{tx('(optional)')}</span></span>
         <textarea class="v2-input mono" name="template_html" rows="10" spellcheck="false"
           >{values.template_html ?? ''}</textarea
         >
       </label>
 
       <label class="v2-field">
-        <span class="v2-label">Template CSS <span class="opt">(optional)</span></span>
+        <span class="v2-label">{tx('Template CSS')} <span class="opt">{tx('(optional)')}</span></span>
         <textarea class="v2-input mono" name="template_css" rows="6" spellcheck="false"
           >{values.template_css ?? ''}</textarea
         >
@@ -155,14 +154,13 @@
 
       {#if data.template?.is_default}
         <p class="v2-sub" style="font-size:11.5px;margin:0 0 16px">
-          This is the org default, so these changes apply to every new invoice. Which template is
-          the default is changed from the templates page, not here.
+          {tx('This is the org default, so these changes apply to every new invoice. Which template is the default is changed from the templates page, not here.')}
         </p>
       {/if}
 
       <div style="display:flex;gap:9px;margin-top:6px">
-        <button class="v2-btn v2-btn-primary" type="submit">Save changes</button>
-        <a class="v2-btn" href={resolve('/invoices/templates')}>Cancel</a>
+        <button class="v2-btn v2-btn-primary" type="submit">{tx('Save changes')}</button>
+        <a class="v2-btn" href={resolve('/invoices/templates')}>{tx('Cancel')}</a>
       </div>
     </form>
   {/if}

@@ -5,6 +5,8 @@ import {
   disableCalendarFeed
 } from '$lib/server/v2/calendar-feed.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * Your own task calendar feed. No role check: every member may subscribe to
@@ -23,7 +25,7 @@ export const actions = {
     try {
       return { url: await issueCalendarFeed({ cookies }) };
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not create the calendar feed.') });
+      return fail(400, { error: readableError(err, tx('Could not create the calendar feed.')) });
     }
   },
 
@@ -32,7 +34,7 @@ export const actions = {
     try {
       await disableCalendarFeed({ cookies });
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not turn the calendar feed off.') });
+      return fail(400, { error: readableError(err, tx('Could not turn the calendar feed off.')) });
     }
     return { disabled: true };
   }

@@ -5,6 +5,8 @@ import { listAccountsPicker } from '$lib/server/v2/accounts.js';
 import { getOrgPeopleAndTeams, resolveMe } from '$lib/server/v2/org-people.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { loadSavedViews, savedViewActions } from '$lib/server/v2/saved-views.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * The invoice list.
@@ -59,13 +61,13 @@ export const actions = {
   send: async ({ cookies, request }) => {
     const form = await request.formData();
     const id = form.get('id')?.toString();
-    if (!id) return fail(400, { error: 'Which invoice?' });
+    if (!id) return fail(400, { error: tx('Which invoice?') });
 
     try {
       await sendInvoice({ cookies }, id);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 404 ? 404 : 400, {
-        error: readableError(err, 'Could not send that invoice.')
+        error: readableError(err, tx('Could not send that invoice.'))
       });
     }
     return { sent: id };

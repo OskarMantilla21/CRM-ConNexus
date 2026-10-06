@@ -32,6 +32,8 @@
   import Pill from '$lib/v2/components/Pill.svelte';
   import { relativeTime } from '$lib/v2/format.js';
   import { BookOpen, LifeBuoy, Plus, Bug, Mail, ArrowUpRight, ClipboardList } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -103,18 +105,18 @@
     if (data.available) return;
     const ua = navigator.userAgent;
     const m = ua.match(/(Firefox|Edg|Chrome|Safari)\/([\d.]+)/);
-    browser = m ? `${m[1] === 'Edg' ? 'Edge' : m[1]} ${m[2].split('.')[0]}` : 'Unknown browser';
+    browser = m ? `${m[1] === 'Edg' ? 'Edge' : m[1]} ${m[2].split('.')[0]}` : tx('Unknown browser');
     windowSize = `${window.innerWidth}×${window.innerHeight}`;
   });
 </script>
 
-<PageHeader title="Help" center width="920px">
+<PageHeader title={tx('Help')} center width="920px">
   {#snippet sub()}
-    Fix it yourself, or reach someone who can
+    {tx('Fix it yourself, or reach someone who can')}
   {/snippet}
   {#snippet actions()}
     {#if data.available}
-      <a class="v2-btn v2-btn-primary" href={resolve('/help/new')}><Plus />New ticket</a>
+      <a class="v2-btn v2-btn-primary" href={resolve('/help/new')}><Plus />{tx('New ticket')}</a>
     {/if}
   {/snippet}
 </PageHeader>
@@ -124,29 +126,31 @@
     class="v2-pad"
     style="padding-top:18px;padding-bottom:32px;max-width:920px;margin-inline:auto"
   >
-    <div class="v2-label" style="margin-bottom:10px">Start here</div>
+    <div class="v2-label" style="margin-bottom:10px">{tx('Start here')}</div>
     <div class="cards">
       {#each SELF_SERVE as card (card.href)}
         <a class="v2-card card" href={resolve(asInternalPath(card.href))}>
           <card.icon size={17} />
           <div>
-            <b>{card.title}</b>
-            <p>{card.body}</p>
+            <b>{tx(card.title)}</b>
+            <p>{tx(card.body)}</p>
           </div>
         </a>
       {/each}
     </div>
 
     {#if data.available}
-      <div class="v2-label" style="margin:26px 0 10px">Your support tickets</div>
+      <div class="v2-label" style="margin:26px 0 10px">{tx('Your support tickets')}</div>
       {#if data.tickets.length === 0}
         <EmptyState
-          title="No support tickets"
-          body="When you need help with BottleCRM, open a ticket here. Replies and status changes stay attached to it."
+          title={tx('No support tickets')}
+          body={tx(
+            'When you need help with BottleCRM, open a ticket here. Replies and status changes stay attached to it.'
+          )}
         >
           {#snippet icon()}<LifeBuoy size={21} />{/snippet}
           {#snippet actions()}
-            <a class="v2-btn v2-btn-primary" href={resolve('/help/new')}>Open a ticket</a>
+            <a class="v2-btn v2-btn-primary" href={resolve('/help/new')}>{tx('Open a ticket')}</a>
           {/snippet}
         </EmptyState>
       {:else}
@@ -154,11 +158,11 @@
           <table class="v2-table">
             <thead>
               <tr>
-                <th>Ticket</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Messages</th>
-                <th class="v2-r">Updated</th>
+                <th>{tx('Ticket')}</th>
+                <th>{tx('Category')}</th>
+                <th>{tx('Status')}</th>
+                <th>{tx('Messages')}</th>
+                <th class="v2-r">{tx('Updated')}</th>
               </tr>
             </thead>
             <tbody>
@@ -172,9 +176,9 @@
                       >
                     </a>
                   </td>
-                  <td class="v2-muted">{ticket.categoryLabel}</td>
+                  <td class="v2-muted">{tx(ticket.categoryLabel)}</td>
                   <td data-m="tag"
-                    ><Pill tone={STATUS_TONE[ticket.status]}>{ticket.statusLabel}</Pill></td
+                    ><Pill tone={STATUS_TONE[ticket.status]}>{tx(ticket.statusLabel)}</Pill></td
                   >
                   <td class="v2-num v2-muted" data-m="hide">{ticket.messageCount}</td>
                   <td class="v2-r v2-muted" data-m="meta">{relativeTime(ticket.lastActivityAt)}</td>
@@ -185,7 +189,7 @@
         </div>
       {/if}
     {:else}
-      <div class="v2-label" style="margin:26px 0 10px">If that did not do it</div>
+      <div class="v2-label" style="margin:26px 0 10px">{tx('If that did not do it')}</div>
       <div class="cards">
         {#each CONTACT as card (card.href)}
           <a
@@ -205,27 +209,31 @@
         {/each}
       </div>
 
-      <div class="v2-label" style="margin:26px 0 10px">What to include when you write</div>
+      <div class="v2-label" style="margin:26px 0 10px">{tx('What to include when you write')}</div>
       <div class="v2-card" style="padding:16px 18px">
         <p class="lead">
-          Four things turn a two-day exchange into one message. The first two are already known.
+          {tx(
+            'Four things turn a two-day exchange into one message. The first two are already known.'
+          )}
         </p>
         <dl class="facts">
-          <dt>Browser</dt>
+          <dt>{tx('Browser')}</dt>
           <dd class="v2-num">{browser}</dd>
-          <dt>Window size</dt>
+          <dt>{tx('Window size')}</dt>
           <dd class="v2-num">{windowSize}</dd>
-          <dt>What you expected</dt>
-          <dd>The thing you were trying to do, in one sentence.</dd>
-          <dt>What happened instead</dt>
+          <dt>{tx('What you expected')}</dt>
+          <dd>{tx('The thing you were trying to do, in one sentence.')}</dd>
+          <dt>{tx('What happened instead')}</dt>
           <dd>
-            The exact wording of any error. "It didn't work" and "Something went wrong" are the same
-            message to us.
+            {tx(
+              'The exact wording of any error. "It didn\'t work" and "Something went wrong" are the same message to us.'
+            )}
           </dd>
         </dl>
         <p class="fine">
-          Please do not paste screenshots containing an invoice link, an API token or a survey URL.
-          Each of those is a working credential for whoever ends up holding it.
+          {tx(
+            'Please do not paste screenshots containing an invoice link, an API token or a survey URL. Each of those is a working credential for whoever ends up holding it.'
+          )}
         </p>
       </div>
     {/if}

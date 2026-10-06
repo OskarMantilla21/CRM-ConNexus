@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail } from '@sveltejs/kit';
 import { getLeadBoard, moveLead } from '$lib/server/v2/lead-board.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -26,15 +28,15 @@ export const actions = {
     const stageId = String(form.get('stage_id') || '');
     const aboveId = String(form.get('above_id') || '');
     const belowId = String(form.get('below_id') || '');
-    if (!id || !stageId) return fail(400, { error: 'Missing lead or stage.' });
+    if (!id || !stageId) return fail(400, { error: tx('Missing lead or stage.') });
     try {
       await moveLead({ cookies }, id, { stageId, aboveId, belowId });
       return { success: true };
     } catch (err) {
       if (/** @type {any} */ (err)?.status === 404) {
-        return fail(404, { error: 'That lead is not one you can move.' });
+        return fail(404, { error: tx('That lead is not one you can move.') });
       }
-      return fail(400, { error: readableError(err, 'Could not move the lead.') });
+      return fail(400, { error: readableError(err, tx('Could not move the lead.')) });
     }
   }
 };

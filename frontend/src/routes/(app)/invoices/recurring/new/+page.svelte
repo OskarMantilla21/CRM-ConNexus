@@ -41,6 +41,8 @@
   import PortalLineItems from '$lib/v2/components/PortalLineItems.svelte';
   import LineItemsEditor from '$lib/v2/components/LineItemsEditor.svelte';
   import { RECURRING_FREQUENCY_LABEL, PAYMENT_TERMS_LABEL } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import {
     blankLine,
     documentDiscountError,
@@ -170,19 +172,19 @@
   });
 </script>
 
-<PageHeader title="New schedule">
+<PageHeader title={tx('New schedule')}>
   {#snippet sub()}
-    Nothing generates until the first run date arrives. Saving creates the schedule
+    {tx('Nothing generates until the first run date arrives. Saving creates the schedule')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve('/invoices/recurring')}>Cancel</a>
+    <a class="v2-btn" href={resolve('/invoices/recurring')}>{tx('Cancel')}</a>
     <button
       type="submit"
       form="recurring-form"
       class="v2-btn v2-btn-primary"
       disabled={!ready || saving}
     >
-      {saving ? 'Saving…' : 'Save schedule'}
+      {saving ? tx('Saving…') : tx('Save schedule')}
     </button>
   {/snippet}
 </PageHeader>
@@ -219,13 +221,13 @@
       <!-- the form -->
       <div>
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:12px">Who and what</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Who and what')}</div>
 
           <div class="grid2">
             <label class="f">
-              <span>Account</span>
+              <span>{tx('Account')}</span>
               <select bind:value={accountId} onchange={() => (contactId = '')}>
-                <option value="">Choose an account</option>
+                <option value="">{tx('Choose an account')}</option>
                 {#each data.accounts as a (a.id)}
                   <option value={a.id}>{a.name}</option>
                 {/each}
@@ -233,9 +235,9 @@
             </label>
 
             <label class="f">
-              <span>Contact</span>
+              <span>{tx('Contact')}</span>
               <select bind:value={contactId} disabled={!accountId}>
-                <option value="">{accountId ? 'Choose a contact' : 'Pick an account first'}</option>
+                <option value="">{accountId ? tx('Choose a contact') : tx('Pick an account first')}</option>
                 {#each contactOptions as c (c.id)}
                   <option value={c.id}
                     >{c.name}{c.account_name ? ` · ${c.account_name}` : ''}</option
@@ -245,18 +247,18 @@
             </label>
 
             <label class="f" style="grid-column:1/-1">
-              <span>Title</span>
-              <input bind:value={title} placeholder="What this schedule is for" required />
+              <span>{tx('Title')}</span>
+              <input bind:value={title} placeholder={tx('What this schedule is for')} required />
             </label>
           </div>
         </div>
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:12px">Cadence</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Cadence')}</div>
 
           <div class="grid2">
             <label class="f">
-              <span>Frequency</span>
+              <span>{tx('Frequency')}</span>
               <select bind:value={frequency}>
                 {#each Object.entries(RECURRING_FREQUENCY_LABEL) as [value, label] (value)}
                   <option {value}>{label}</option>
@@ -266,13 +268,13 @@
 
             {#if frequency === 'CUSTOM'}
               <label class="f">
-                <span>Every N days</span>
+                <span>{tx('Every N days')}</span>
                 <input type="number" min="1" step="1" bind:value={customDays} required />
               </label>
             {/if}
 
             <label class="f">
-              <span>Start date</span>
+              <span>{tx('Start date')}</span>
               <input
                 type="date"
                 bind:value={startDate}
@@ -283,7 +285,7 @@
             </label>
 
             <label class="f">
-              <span>Next generation date</span>
+              <span>{tx('Next generation date')}</span>
               <input
                 type="date"
                 min={startDate}
@@ -293,12 +295,12 @@
             </label>
 
             <label class="f">
-              <span>End date <span class="opt">(optional)</span></span>
+              <span>{tx('End date')} <span class="opt">{tx('(optional)')}</span></span>
               <input type="date" bind:value={endDate} />
             </label>
 
             <label class="f">
-              <span>Payment terms</span>
+              <span>{tx('Payment terms')}</span>
               <select bind:value={paymentTerms}>
                 {#each Object.entries(PAYMENT_TERMS_LABEL) as [value, label] (value)}
                   <option {value}>{label}</option>
@@ -307,7 +309,7 @@
             </label>
 
             <label class="f">
-              <span>Currency</span>
+              <span>{tx('Currency')}</span>
               <select bind:value={currency}>
                 {#each CURRENCIES as c (c)}
                   <option value={c}>{c}</option>
@@ -319,12 +321,12 @@
           <label class="check">
             <input type="checkbox" bind:checked={autoSend} />
             <span>
-              Send automatically when generated
-              <span class="hint-inline">off leaves a draft for you to review and send</span>
+              {tx('Send automatically when generated')}
+              <span class="hint-inline">{tx('off leaves a draft for you to review and send')}</span>
             </span>
           </label>
           {#if needsLine}
-            <p class="field-err" role="alert">Add at least one line before turning on auto-send.</p>
+            <p class="field-err" role="alert">{tx('Add at least one line before turning on auto-send.')}</p>
           {/if}
         </div>
 
@@ -332,19 +334,19 @@
         <LineItemsEditor bind:items products={data.products} {currency} />
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:12px">Adjustments</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Adjustments')}</div>
           <div class="grid2">
             <label class="f">
-              <span>Discount</span>
+              <span>{tx('Discount')}</span>
               <select bind:value={discountType}>
-                <option value="">None</option>
-                <option value="PERCENTAGE">Percentage</option>
-                <option value="FIXED">Fixed amount</option>
+                <option value="">{tx('None')}</option>
+                <option value="PERCENTAGE">{tx('Percentage')}</option>
+                <option value="FIXED">{tx('Fixed amount')}</option>
               </select>
             </label>
             {#if discountType}
               <label class="f">
-                <span>{discountType === 'PERCENTAGE' ? 'Percent off' : 'Amount off'}</span>
+                <span>{discountType === 'PERCENTAGE' ? tx('Percent off') : tx('Amount off')}</span>
                 <input
                   type="number"
                   min="0"
@@ -354,12 +356,12 @@
                   aria-invalid={Boolean(discountError)}
                 />
                 {#if discountError}
-                  <small class="field-err" role="alert">{discountError}</small>
+                  <small class="field-err" role="alert">{tx(discountError)}</small>
                 {/if}
               </label>
             {/if}
             <label class="f">
-              <span>Tax rate %</span>
+              <span>{tx('Tax rate %')}</span>
               <input
                 type="number"
                 min="0"
@@ -369,21 +371,21 @@
                 aria-invalid={Boolean(taxError)}
               />
               {#if taxError}
-                <small class="field-err" role="alert">{taxError}</small>
+                <small class="field-err" role="alert">{tx(taxError)}</small>
               {/if}
             </label>
           </div>
           <p class="hint">
-            Tax applies to the subtotal after the discount, on every invoice raised.
+            {tx('Tax applies to the subtotal after the discount, on every invoice raised.')}
           </p>
         </div>
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:8px">Notes to the customer</div>
-          <textarea rows="3" bind:value={notes} placeholder="Appears on every invoice raised"
+          <div class="v2-label" style="margin-bottom:8px">{tx('Notes to the customer')}</div>
+          <textarea rows="3" bind:value={notes} placeholder={tx('Appears on every invoice raised')}
           ></textarea>
-          <div class="v2-label" style="margin:14px 0 8px">Terms</div>
-          <textarea rows="3" bind:value={terms} placeholder="Payment terms and conditions"
+          <div class="v2-label" style="margin:14px 0 8px">{tx('Terms')}</div>
+          <textarea rows="3" bind:value={terms} placeholder={tx('Payment terms and conditions')}
           ></textarea>
         </div>
       </div>
@@ -392,7 +394,7 @@
       <div>
         <div class="v2-card preview">
           <div class="v2-card-head">
-            <span class="v2-label">Each invoice this schedule raises</span>
+            <span class="v2-label">{tx('Each invoice this schedule raises')}</span>
           </div>
           <div style="padding:14px 16px 16px">
             {#if usableLines.length}
@@ -409,24 +411,20 @@
               />
             {:else}
               <p class="empty">
-                Lines are optional here unless each invoice is sent automatically. Add one to
-                preview what each generated invoice will total, or save the schedule without pricing
-                it yet.
+                {tx('Lines are optional here unless each invoice is sent automatically. Add one to preview what each generated invoice will total, or save the schedule without pricing it yet.')}
               </p>
             {/if}
           </div>
         </div>
 
         <div class="v2-card" style="padding:15px 16px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:9px">On save</div>
+          <div class="v2-label" style="margin-bottom:9px">{tx('On save')}</div>
           <dl class="derived">
-            <dt>Subtotal, total</dt>
-            <dd>Recalculated by the server on every save and every generated invoice</dd>
-            <dt>Visibility</dt>
+            <dt>{tx('Subtotal, total')}</dt>
+            <dd>{tx('Recalculated by the server on every save and every generated invoice')}</dd>
+            <dt>{tx('Visibility')}</dt>
             <dd>
-              Any signed-in teammate may create one. After that only the creator, an assignee, or an
-              admin can see or change it, and this form has no way to add an assignee, so only you
-              and an admin will see this schedule
+              {tx('Any signed-in teammate may create one. After that only the creator, an assignee, or an admin can see or change it, and this form has no way to add an assignee, so only you and an admin will see this schedule')}
             </dd>
           </dl>
         </div>

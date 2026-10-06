@@ -2,14 +2,16 @@
   import { enhance } from '$app/forms';
   import { resolve } from '$app/paths';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
   let submitting = $state(false);
 </script>
 
-<PageHeader title="New support ticket" center width="720px">
-  {#snippet sub()}Tell us what happened and what you expected instead{/snippet}
+<PageHeader title={tx('New support ticket')} center width="720px">
+  {#snippet sub()}{tx('Tell us what happened and what you expected instead')}{/snippet}
 </PageHeader>
 
 <div class="v2-scroll">
@@ -34,7 +36,7 @@
       }}
     >
       <div class="v2-field">
-        <label for="subject">Subject</label>
+        <label for="subject">{tx('Subject')}</label>
         <input
           id="subject"
           class="v2-input"
@@ -42,24 +44,24 @@
           maxlength="200"
           required
           value={form?.subject ?? ''}
-          placeholder="A short summary of the problem"
+          placeholder={tx('A short summary of the problem')}
         />
       </div>
 
       <div class="v2-field">
-        <label for="category">Category</label>
+        <label for="category">{tx('Category')}</label>
         <select id="category" class="v2-input" name="category" required>
-          <option value="">Choose a category</option>
+          <option value="">{tx('Choose a category')}</option>
           {#each data.categories as category (category.value)}
             <option value={category.value} selected={form?.category === category.value}
-              >{category.label}</option
+              >{tx(category.label)}</option
             >
           {/each}
         </select>
       </div>
 
       <div class="v2-field">
-        <label for="body">What do you need help with?</label>
+        <label for="body">{tx('What do you need help with?')}</label>
         <textarea
           id="body"
           class="v2-input"
@@ -67,24 +69,24 @@
           rows="8"
           maxlength="10000"
           required
-          placeholder="Include what you tried, what you expected, and the exact error you saw."
+          placeholder={tx('Include what you tried, what you expected, and the exact error you saw.')}
           >{form?.body ?? ''}</textarea
         >
       </div>
 
       <div class="v2-field">
-        <label for="attachment">Attachment (optional)</label>
+        <label for="attachment">{tx('Attachment (optional)')}</label>
         <input id="attachment" class="v2-input" type="file" name="attachment" />
         <span class="v2-sub" style="font-size:11.5px"
-          >Up to 25 MB. Remove secrets and personal data before uploading.</span
+          >{tx('Up to 25 MB. Remove secrets and personal data before uploading.')}</span
         >
       </div>
 
       <div class="actions">
         <button class="v2-btn v2-btn-primary" type="submit" disabled={submitting}
-          >{submitting ? 'Opening…' : 'Open ticket'}</button
+          >{submitting ? tx('Opening…') : tx('Open ticket')}</button
         >
-        <a class="v2-btn" href={resolve('/help')}>Cancel</a>
+        <a class="v2-btn" href={resolve('/help')}>{tx('Cancel')}</a>
       </div>
     </form>
   </div>

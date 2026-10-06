@@ -9,6 +9,8 @@ import {
   eventsFromForm
 } from '$lib/server/v2/webhooks.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * One webhook: its settings, its actions and a page of its delivery log.
@@ -23,7 +25,7 @@ export async function load(event) {
   try {
     return { forbidden: false, ...(await getWebhook(event, event.params.id, offset)) };
   } catch (/** @type {any} */ err) {
-    if (err?.status === 404) error(404, 'That webhook does not exist.');
+    if (err?.status === 404) error(404, tx('That webhook does not exist.'));
     if (err?.status === 403) return { forbidden: true };
     throw err;
   }
@@ -35,9 +37,9 @@ export async function load(event) {
  */
 function refused(key, err, fallback) {
   if (err?.status === 403) {
-    return fail(403, { [key]: { error: 'Only an admin can change webhooks.' } });
+    return fail(403, { [key]: { error: tx('Only an admin can change webhooks.') } });
   }
-  return fail(400, { [key]: { error: readableError(err, fallback) } });
+  return fail(400, { [key]: { error: readableError(err, tx(fallback)) } });
 }
 
 /** @type {import('./$types').Actions} */
@@ -51,7 +53,7 @@ export const actions = {
       events: eventsFromForm(form)
     };
     if (!values.events.length) {
-      return fail(400, { update: { error: 'Choose at least one event.' } });
+      return fail(400, { update: { error: tx('Choose at least one event.') } });
     }
     try {
       await updateWebhook(event, event.params.id, values);

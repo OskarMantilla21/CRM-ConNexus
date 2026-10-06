@@ -26,6 +26,8 @@
   import SectionTabs from '$lib/v2/components/SectionTabs.svelte';
   import Pill from '$lib/v2/components/Pill.svelte';
   import { count, relativeDays } from '$lib/v2/format.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { Plus, FileCode, ShieldAlert } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -42,15 +44,17 @@
   let current = $derived(templates.find((t) => t.is_default));
 </script>
 
-<PageHeader title="Invoices">
+<PageHeader title={tx('Invoices')}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.count)}</span> templates ·
-    {current ? `${current.name} is used for new invoices` : 'no default set'}
+    <span class="v2-num">{count(totals.count)}</span> {tx('templates')} ·
+    {current
+      ? tx('{name} is used for new invoices', { name: current.name })
+      : tx('no default set')}
   {/snippet}
   {#snippet actions()}
     {#if canManage}
       <a class="v2-btn v2-btn-primary" href={resolve('/invoices/templates/new')}
-        ><Plus />New template</a
+        ><Plus />{tx('New template')}</a
       >
     {/if}
   {/snippet}
@@ -68,7 +72,7 @@
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     {#if !current}
       <p class="v2-sub" style="font-size:12.5px;margin:0 0 16px">
-        No template is the default, so new invoices print with the built-in layout.
+        {tx('No template is the default, so new invoices print with the built-in layout.')}
       </p>
     {/if}
 
@@ -86,25 +90,28 @@
           <div style="padding:14px 16px 15px">
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <b style="font-size:13.5px">{t.name}</b>
-              {#if t.is_default}<Pill tone="moss" dot>Default</Pill>{/if}
-              {#if t.has_custom_html}<Pill tone="clay">Custom layout</Pill>{/if}
+              {#if t.is_default}<Pill tone="moss" dot>{tx('Default')}</Pill>{/if}
+              {#if t.has_custom_html}<Pill tone="clay">{tx('Custom layout')}</Pill>{/if}
             </div>
 
             <div class="v2-sub" style="font-size:11.5px;margin-top:5px">
               {#if t.used_on_invoices}
-                on <span class="v2-num">{count(t.used_on_invoices)}</span> invoices
+                {tx('on')} <span class="v2-num">{count(t.used_on_invoices)}</span> {tx('invoices')}
               {:else}
-                never used
+                {tx('never used')}
               {/if}
-              · {t.has_logo ? 'logo set' : 'no logo'} · edited {relativeDays(t.updated_at)} by {t.updated_by}
+              · {t.has_logo ? tx('logo set') : tx('no logo')} · {tx('edited {when} by {who}', {
+                when: relativeDays(t.updated_at),
+                who: t.updated_by
+              })}
             </div>
 
             <dl class="v2-kv" style="margin-top:12px">
-              <dt>Terms</dt>
+              <dt>{tx('Terms')}</dt>
               <dd>{t.default_terms || '—'}</dd>
-              <dt>Notes</dt>
+              <dt>{tx('Notes')}</dt>
               <dd>{t.default_notes || '—'}</dd>
-              <dt>Footer</dt>
+              <dt>{tx('Footer')}</dt>
               <dd>{t.footer_text || '—'}</dd>
             </dl>
 
@@ -114,10 +121,9 @@
               <div class="v2-tpl-flag">
                 <FileCode size={13} style="flex:none;margin-top:1px" />
                 <span>
-                  Replaces the whole document with
-                  <span class="v2-num">{(t.custom_html_bytes / 1024).toFixed(1)}</span> kB of custom markup,
-                  including the line-item table and the totals. Nothing checks that it still prints an
-                  amount due.
+                  {tx('Replaces the whole document with {size} kB of custom markup, including the line-item table and the totals. Nothing checks that it still prints an amount due.', {
+                    size: (t.custom_html_bytes / 1024).toFixed(1)
+                  })}
                 </span>
               </div>
             {/if}
@@ -133,7 +139,7 @@
                      blanked it. The editor route serves those two fields on an
                      admin-only path, leaving this page's own fetch unchanged. -->
                 <a class="v2-btn v2-btn-sm" href={resolve(`/invoices/templates/${t.id}/edit`)}
-                  >Edit</a
+                  >{tx('Edit')}</a
                 >
                 {#if !t.is_default}
                   <!-- Named as the swap it is: one default exists at a time.
@@ -142,7 +148,7 @@
                   <form method="POST" action="?/setDefault" use:enhance>
                     <input type="hidden" name="id" value={t.id} />
                     <button type="submit" class="v2-btn v2-btn-sm">
-                      Use instead of {current?.name ?? 'the built-in'}
+                      {tx('Use instead of {name}', { name: current?.name ?? tx('the built-in') })}
                     </button>
                   </form>
                 {/if}
@@ -155,10 +161,15 @@
 
     {#if totals.unused > 0}
       <p class="v2-sub" style="font-size:11.5px;margin-top:16px">
-        <span class="v2-num">{count(totals.unused)}</span>
-        {totals.unused === 1 ? 'template has' : 'templates have'} never been used and
-        {totals.unused === 1 ? 'is' : 'are'} not the default, deleting
-        {totals.unused === 1 ? 'it' : 'them'} changes no existing invoice.
+        {#if totals.unused === 1}
+          {tx('{n} template has never been used and is not the default, deleting it changes no existing invoice.', {
+            n: count(totals.unused)
+          })}
+        {:else}
+          {tx('{n} templates have never been used and are not the default, deleting them changes no existing invoice.', {
+            n: count(totals.unused)
+          })}
+        {/if}
       </p>
     {/if}
 
@@ -166,11 +177,9 @@
       <div style="display:flex;gap:10px;align-items:flex-start">
         <ShieldAlert size={16} style="color:var(--v2-slate);flex:none;margin-top:2px" />
         <div>
-          <div style="font-weight:600;font-size:13px">Custom markup is not previewed here</div>
+          <div style="font-weight:600;font-size:13px">{tx('Custom markup is not previewed here')}</div>
           <p class="v2-sub" style="font-size:12.5px;margin:5px 0 0;line-height:1.5">
-            A template's HTML and CSS are rendered into a PDF on the server, never into this page.
-            The only way to see a custom layout is to generate a document from it, which is also the
-            only way to see what a customer will actually receive.
+            {tx('A template\'s HTML and CSS are rendered into a PDF on the server, never into this page. The only way to see a custom layout is to generate a document from it, which is also the only way to see what a customer will actually receive.')}
           </p>
         </div>
       </div>

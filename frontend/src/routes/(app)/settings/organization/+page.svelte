@@ -51,6 +51,8 @@
   import { count, shortDate } from '$lib/v2/format.js';
   import { FileText, ShieldAlert, Pencil, Trash2 } from '@lucide/svelte';
   import { enhance } from '$app/forms';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -95,25 +97,33 @@
   function reportSummary(report) {
     const created = report?.created?.length ?? 0;
     const skipped = report?.skipped?.length ?? 0;
-    if (!created && !skipped) return 'Nothing to add. This org already has all of it.';
-    if (!skipped) return `Created ${created} item${created === 1 ? '' : 's'}.`;
-    if (!created) {
-      return `Already had everything from this pack, skipped ${skipped} item${skipped === 1 ? '' : 's'} you already had.`;
+    if (!created && !skipped) return tx('Nothing to add. This org already has all of it.');
+    if (!skipped) {
+      return created === 1
+        ? tx('Created {n} item.', { n: created })
+        : tx('Created {n} items.', { n: created });
     }
-    return `Created ${created} item${created === 1 ? '' : 's'}, skipped ${skipped} you already had.`;
+    if (!created) {
+      return skipped === 1
+        ? tx('Already had everything from this pack, skipped {n} item you already had.', { n: skipped })
+        : tx('Already had everything from this pack, skipped {n} items you already had.', { n: skipped });
+    }
+    return created === 1
+      ? tx('Created {n} item, skipped {skipped} you already had.', { n: created, skipped })
+      : tx('Created {n} items, skipped {skipped} you already had.', { n: created, skipped });
   }
 </script>
 
-<PageHeader title="Organization">
+<PageHeader title={tx('Organization')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    <span class="v2-num">{count(org.member_count)}</span> members · created
+    <span class="v2-num">{count(org.member_count)}</span> {tx('members')} · {tx('created')}
     {shortDate(org.created_at)}
   {/snippet}
   {#snippet actions()}
     {#if data.can_edit}
       <a class="v2-btn v2-btn-primary" href={resolve('/settings/organization/edit')}>
-        <Pencil size={13} />Edit details
+        <Pencil size={13} />{tx('Edit details')}
       </a>
     {/if}
   {/snippet}
@@ -123,25 +133,25 @@
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     <div class="v2-split">
       <div>
-        <div class="v2-label" style="margin-bottom:10px">What customers see</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('What customers see')}</div>
         <div class="v2-card" style="padding:16px 18px;margin-bottom:12px">
           <dl class="v2-kv">
-            <dt>Legal name</dt>
+            <dt>{tx('Legal name')}</dt>
             <dd>{org.company_name || '—'}</dd>
-            <dt>Trading as</dt>
+            <dt>{tx('Trading as')}</dt>
             <dd>{org.name}</dd>
-            <dt>Address</dt>
+            <dt>{tx('Address')}</dt>
             <dd>{address || '—'}</dd>
-            <dt>Tax ID</dt>
+            <dt>{tx('Tax ID')}</dt>
             <dd class="v2-num" style="font-size:12px">{org.tax_id || '—'}</dd>
-            <dt>Email</dt>
+            <dt>{tx('Email')}</dt>
             <dd>{org.email || '—'}</dd>
-            <dt>Phone</dt>
+            <dt>{tx('Phone')}</dt>
             <dd class="v2-num" style="font-size:12px">{org.phone || '—'}</dd>
-            <dt>Website</dt>
+            <dt>{tx('Website')}</dt>
             <dd>{org.website || '—'}</dd>
-            <dt>Logo</dt>
-            <dd>{org.logo_url ? 'Set' : 'Not set'}</dd>
+            <dt>{tx('Logo')}</dt>
+            <dd>{org.logo_url ? tx('Set') : tx('Not set')}</dd>
           </dl>
         </div>
 
@@ -149,64 +159,63 @@
           <div style="display:flex;gap:10px;align-items:flex-start">
             <FileText size={16} style="color:var(--v2-slate);flex:none;margin-top:2px" />
             <p class="v2-sub" style="font-size:12.5px;margin:0;line-height:1.5">
-              These fields are printed on every invoice and estimate. Changing one changes documents
-              from that moment on; PDFs already sent keep what they were sent with. How they are
-              laid out is set in
-              <a href={resolve('/invoices/templates')} style="color:inherit">invoice templates</a>.
+              {tx(
+                'These fields are printed on every invoice and estimate. Changing one changes documents from that moment on; PDFs already sent keep what they were sent with. How they are laid out is set in'
+              )}
+              <a href={resolve('/invoices/templates')} style="color:inherit">{tx('invoice templates')}</a>.
             </p>
           </div>
         </div>
       </div>
 
       <div>
-        <div class="v2-label" style="margin-bottom:10px">Defaults</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Defaults')}</div>
         <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Currency</b>
+              <b>{tx('Currency')}</b>
               <span class="v2-sub" style="font-size:11.5px">
-                Applied to new invoices and estimates. Existing ones keep theirs.
+                {tx('Applied to new invoices and estimates. Existing ones keep theirs.')}
               </span>
             </div>
             <span class="v2-num" style="font-size:13px">{org.default_currency || '—'}</span>
           </div>
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Country</b>
-              <span class="v2-sub" style="font-size:11.5px">Default for new addresses.</span>
+              <b>{tx('Country')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('Default for new addresses.')}</span>
             </div>
             <span style="font-size:13px">{org.default_country || '—'}</span>
           </div>
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Time zone</b>
+              <b>{tx('Time zone')}</b>
               <span class="v2-sub" style="font-size:11.5px">
-                When a day starts here, so "due today" and "overdue" mean what your team expects.
+                {tx('When a day starts here, so "due today" and "overdue" mean what your team expects.')}
               </span>
             </div>
             <span style="font-size:13px">{(org.timezone || 'UTC').replace(/_/g, ' ')}</span>
           </div>
         </div>
 
-        <div class="v2-label" style="margin-bottom:10px">Behaviour</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Behaviour')}</div>
         <div class="v2-card" style="overflow:hidden">
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Satisfaction surveys</b>
+              <b>{tx('Satisfaction surveys')}</b>
               <!-- Org-level kill switch: the post-close signal short-circuits
                    before any email is sent. Off is silent, everywhere. -->
               <span class="v2-sub" style="font-size:11.5px">
-                Off stops every survey org-wide, with no per-team exception and no notice on the
-                ticket.
+                {tx('Off stops every survey org-wide, with no per-team exception and no notice on the ticket.')}
               </span>
             </div>
             <Pill tone={org.csat_enabled ? 'moss' : 'slate'}>
-              {org.csat_enabled ? 'Sending' : 'Off'}
+              {org.csat_enabled ? tx('Sending') : tx('Off')}
             </Pill>
           </div>
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Close child tickets with the parent</b>
+              <b>{tx('Close child tickets with the parent')}</b>
               <!-- Only the DEFAULT state of the prompt; the person closing the
                    ticket still confirms. This used to claim the prompt without
                    saying where it is, and there is no such prompt on the web:
@@ -214,13 +223,13 @@
                    closing a parent here leaves its children open. The phone is
                    the client that asks, and the one this setting reaches. -->
               <span class="v2-sub" style="font-size:11.5px">
-                Sets how the close prompt starts on the mobile app, which offers to close a parent's
-                open children with it. On the web there is no such prompt yet: closing a parent
-                leaves its children open.
+                {tx(
+                  "Sets how the close prompt starts on the mobile app, which offers to close a parent's open children with it. On the web there is no such prompt yet: closing a parent leaves its children open."
+                )}
               </span>
             </div>
             <Pill tone={org.auto_close_children_on_parent_close ? 'clay' : 'slate'}>
-              {org.auto_close_children_on_parent_close ? 'Offered on' : 'Offered off'}
+              {org.auto_close_children_on_parent_close ? tx('Offered on') : tx('Offered off')}
             </Pill>
           </div>
         </div>
@@ -229,12 +238,14 @@
           <div style="display:flex;gap:10px;align-items:flex-start">
             <ShieldAlert size={16} style="color:var(--v2-slate);flex:none;margin-top:2px" />
             <div>
-              <div style="font-weight:600;font-size:13px">The organisation API key is not here</div>
+              <div style="font-weight:600;font-size:13px">{tx('The organisation API key is not here')}</div>
               <p class="v2-sub" style="font-size:12.5px;margin:5px 0 0;line-height:1.5">
-                It authenticates as the whole organisation, so it is never rendered on a page you
-                can reach by browsing. For per-person programmatic access, use
-                <a href={resolve('/settings/api-tokens')} style="color:inherit">API tokens</a>,
-                which can be revoked one at a time.
+                {tx(
+                  'It authenticates as the whole organisation, so it is never rendered on a page you can reach by browsing. For per-person programmatic access, use'
+                )}
+                <a href={resolve('/settings/api-tokens')} style="color:inherit">{tx('API tokens')}</a>{tx(
+                  ', which can be revoked one at a time.'
+                )}
               </p>
             </div>
           </div>
@@ -243,34 +254,33 @@
     </div>
 
     <div style="margin-top:24px">
-      <div class="v2-label" style="margin-bottom:10px">Vertical pack</div>
+      <div class="v2-label" style="margin-bottom:10px">{tx('Vertical pack')}</div>
       <div class="v2-card" style="padding:16px 18px">
         <p class="v2-sub" style="font-size:12.5px;margin:0 0 14px;line-height:1.5">
-          A pack adds starter pipelines, tags, custom fields, products and a set of sample records
-          (accounts, contacts, deals, tickets, tasks and leads) for one kind of business. Applying
-          one only fills in what this org is missing. Anything already set up is left exactly as it
-          is, and applying the same pack twice is safe.
+          {tx(
+            'A pack adds starter pipelines, tags, custom fields, products and a set of sample records (accounts, contacts, deals, tickets, tasks and leads) for one kind of business. Applying one only fills in what this org is missing. Anything already set up is left exactly as it is, and applying the same pack twice is safe.'
+          )}
         </p>
 
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-          <span class="v2-sub" style="font-size:11.5px">First pack applied</span>
+          <span class="v2-sub" style="font-size:11.5px">{tx('First pack applied')}</span>
           {#if appliedPack}
             <Pill tone="moss">{appliedPack.name}</Pill>
           {:else if org.vertical}
             <Pill tone="slate">{org.vertical}</Pill>
           {:else}
-            <span class="v2-sub" style="font-size:12.5px">None yet</span>
+            <span class="v2-sub" style="font-size:12.5px">{tx('None yet')}</span>
           {/if}
         </div>
 
         {#if !data.can_edit}
           <p class="v2-sub" style="font-size:12px;margin:0">
-            Applying a pack or clearing sample data is limited to administrators.
+            {tx('Applying a pack or clearing sample data is limited to administrators.')}
           </p>
         {:else}
           {#if form?.error}
             <div style="margin-bottom:14px">
-              <NextAction label="That did not work" text={form.error} tone="rust" />
+              <NextAction label={tx('That did not work')} text={form.error} tone="rust" />
             </div>
           {/if}
 
@@ -284,31 +294,31 @@
               class="v2-card"
               style="padding:14px 16px;margin-bottom:16px;border-color:color-mix(in srgb, var(--v2-moss) 40%, var(--v2-line))"
             >
-              <div style="font-weight:650;font-size:13px">Applied “{appliedName}”</div>
+              <div style="font-weight:650;font-size:13px">{tx('Applied “{name}”', { name: appliedName })}</div>
               <p class="v2-sub" style="font-size:12.5px;margin:4px 0 10px">
                 {reportSummary(form.report)}
               </p>
               {#if skipped.length}
-                <div class="v2-label" style="margin-bottom:4px">Skipped, already had these</div>
+                <div class="v2-label" style="margin-bottom:4px">{tx('Skipped, already had these')}</div>
                 <ul style="margin:0 0 10px;padding-left:18px;font-size:12.5px;line-height:1.7">
                   {#each skipped as item (item.type + ':' + item.name)}
                     <li>
                       {item.name}
                       <span class="v2-sub" style="font-size:11px">
-                        ({item.type.replaceAll('_', ' ')}, {item.reason})
+                        ({choiceLabel(item.type)}, {item.reason})
                       </span>
                     </li>
                   {/each}
                 </ul>
               {/if}
               {#if created.length}
-                <div class="v2-label" style="margin-bottom:4px">Created</div>
+                <div class="v2-label" style="margin-bottom:4px">{tx('Created')}</div>
                 <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.7">
                   {#each created as item (item.type + ':' + item.name)}
                     <li>
                       {item.name}
                       <span class="v2-sub" style="font-size:11px">
-                        ({item.type.replaceAll('_', ' ')})
+                        ({choiceLabel(item.type)})
                       </span>
                     </li>
                   {/each}
@@ -328,17 +338,17 @@
                   </span>
                 </div>
                 {#if pack.id === org.vertical}
-                  <Pill tone="moss">Applied</Pill>
+                  <Pill tone="moss">{tx('Applied')}</Pill>
                 {/if}
                 <form method="POST" action="?/apply" use:enhance={applySubmit}>
                   <input type="hidden" name="pack_id" value={pack.id} />
-                  <button class="v2-btn v2-btn-sm" disabled={busy}>Apply</button>
+                  <button class="v2-btn v2-btn-sm" disabled={busy}>{tx('Apply')}</button>
                 </form>
               </div>
             {/each}
             {#if !packs.length}
               <div class="v2-setting">
-                <span class="v2-sub" style="font-size:12.5px">No packs available right now.</span>
+                <span class="v2-sub" style="font-size:12.5px">{tx('No packs available right now.')}</span>
               </div>
             {/if}
           </div>
@@ -352,12 +362,12 @@
                 style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"
               >
                 <span class="v2-sub" style="font-size:12px">
-                  Permanently delete every sample record a pack created for this org? This cannot be
-                  undone. Your real records are never touched, and any sample record you have since
-                  attached real work to is kept.
+                  {tx(
+                    'Permanently delete every sample record a pack created for this org? This cannot be undone. Your real records are never touched, and any sample record you have since attached real work to is kept.'
+                  )}
                 </span>
                 <button class="v2-btn danger-btn" type="submit" disabled={busy}>
-                  <Trash2 size={14} /> Clear sample data
+                  <Trash2 size={14} /> {tx('Clear sample data')}
                 </button>
                 <button
                   class="v2-btn"
@@ -365,17 +375,20 @@
                   disabled={busy}
                   onclick={() => (confirmingClear = false)}
                 >
-                  Cancel
+                  {tx('Cancel')}
                 </button>
               </form>
             {:else if form?.cleared !== undefined}
               <span class="v2-sub" style="font-size:12.5px">
                 {form.cleared
-                  ? `Deleted ${form.cleared} sample ${form.cleared === 1 ? 'record' : 'records'}.`
-                  : 'No sample data to clear.'}
+                  ? form.cleared === 1
+                    ? tx('Deleted {n} sample record.', { n: form.cleared })
+                    : tx('Deleted {n} sample records.', { n: form.cleared })
+                  : tx('No sample data to clear.')}
                 {#if form.retained}
-                  Kept {form.retained}
-                  {form.retained === 1 ? 'record' : 'records'} you have since attached real work to.
+                  {form.retained === 1
+                    ? tx('Kept {n} record you have since attached real work to.', { n: form.retained })
+                    : tx('Kept {n} records you have since attached real work to.', { n: form.retained })}
                 {/if}
               </span>
             {:else}
@@ -384,11 +397,12 @@
                 type="button"
                 onclick={() => (confirmingClear = true)}
               >
-                <Trash2 size={14} /> Clear sample data
+                <Trash2 size={14} /> {tx('Clear sample data')}
               </button>
               <span class="v2-sub" style="font-size:11.5px">
-                Removes only the records a pack created as samples. Your real records are never
-                touched.
+                {tx(
+                  'Removes only the records a pack created as samples. Your real records are never touched.'
+                )}
               </span>
             {/if}
           </div>

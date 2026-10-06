@@ -19,6 +19,8 @@
   import { enhance } from '$app/forms';
   import { money, moneyEach, count, daysSince } from '$lib/v2/format.js';
   import { ESTIMATE_STATUS_TONE } from '$lib/v2/enums.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { Plus, FileText } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -33,9 +35,9 @@
     if (!e.valid_until) return null;
     if (!LIVE.includes(e.status)) return null;
     const n = daysSince(e.valid_until);
-    if (n > 0) return { text: `expired ${n}d ago`, urgent: true };
-    if (n === 0) return { text: 'expires today', urgent: true };
-    return { text: `${Math.abs(n)}d left`, urgent: Math.abs(n) <= 7 };
+    if (n > 0) return { text: tx('expired {n}d ago', { n }), urgent: true };
+    if (n === 0) return { text: tx('expires today'), urgent: true };
+    return { text: tx('{n}d left', { n: Math.abs(n) }), urgent: Math.abs(n) <= 7 };
   }
 
   const needsBilling = (e) => e.status === 'Accepted' && !e.converted_invoice;
@@ -47,21 +49,21 @@
   const perCurrency = (/** @type {any[]} */ list) => moneyEach(list) || money(0, data.org.currency);
 </script>
 
-<PageHeader title="Estimates">
+<PageHeader title={tx('Estimates')}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.count)}</span> estimates ·
-    <span class="v2-num">{perCurrency(totals.awaiting_reply)}</span> awaiting a reply
+    <span class="v2-num">{count(totals.count)}</span> {tx('estimates')} ·
+    <span class="v2-num">{perCurrency(totals.awaiting_reply)}</span> {tx('awaiting a reply')}
   {/snippet}
   {#snippet actions()}
     <a class="v2-btn v2-btn-primary" href={resolve('/invoices/estimates/new')}
-      ><Plus />New estimate</a
+      ><Plus />{tx('New estimate')}</a
     >
   {/snippet}
 </PageHeader>
 
 {#if page.url.search}
   <p class="v2-sub" style="font-size:11.5px;margin:8px 0 0">
-    These numbers describe the filtered list.
+    {tx('These numbers describe the filtered list.')}
   </p>
 {/if}
 
@@ -73,25 +75,25 @@
   </div>
 {:else if form?.sent}
   <div class="v2-pad" style="padding-top:12px;flex:none">
-    <p class="v2-sub" role="status" style="margin:0">Estimate sent.</p>
+    <p class="v2-sub" role="status" style="margin:0">{tx('Estimate sent.')}</p>
   </div>
 {/if}
 
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <div class="v2-stats">
     <StatCard
-      label="Accepted, not billed"
+      label={tx('Accepted, not billed')}
       value={perCurrency(totals.accepted_unconverted)}
       tone="clay"
-      detail="Agreed and waiting on an invoice"
+      detail={tx('Agreed and waiting on an invoice')}
     />
-    <StatCard label="Awaiting a reply" value={perCurrency(totals.awaiting_reply)} tone="ink" />
+    <StatCard label={tx('Awaiting a reply')} value={perCurrency(totals.awaiting_reply)} tone="ink" />
     <StatCard
-      label="Expiring within 7 days"
+      label={tx('Expiring within 7 days')}
       value={count(totals.expiring_within_7d)}
       tone={totals.expiring_within_7d ? 'clay' : 'slate'}
     />
-    <StatCard label="Estimates" value={count(totals.count)} tone="slate" />
+    <StatCard label={tx('Estimates')} value={count(totals.count)} tone="slate" />
   </div>
 </div>
 
@@ -99,19 +101,19 @@
   page="estimates"
   url={page.url}
   accounts={data.accounts}
-  meta="Accepted but unbilled first, then most recently sent"
+  meta={tx('Accepted but unbilled first, then most recently sent')}
 />
 
 <div class="v2-scroll">
   {#if data.estimates.length === 0}
     <EmptyState
-      title="No estimates yet"
-      body="An estimate is a priced proposal you can turn into an invoice once the customer accepts it. Most start from a deal that already has the amount and the account."
+      title={tx('No estimates yet')}
+      body={tx('An estimate is a priced proposal you can turn into an invoice once the customer accepts it. Most start from a deal that already has the amount and the account.')}
     >
       {#snippet icon()}<FileText size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/invoices/estimates/new')}>New estimate</a>
-        <a class="v2-btn" href={resolve('/pipeline')}>Start from a deal</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/invoices/estimates/new')}>{tx('New estimate')}</a>
+        <a class="v2-btn" href={resolve('/pipeline')}>{tx('Start from a deal')}</a>
       {/snippet}
     </EmptyState>
   {:else}
@@ -119,12 +121,12 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Estimate</th>
-            <th>Account</th>
-            <th>Status</th>
-            <th>Billed</th>
-            <th class="v2-r">Amount</th>
-            <th class="v2-r">Valid</th>
+            <th>{tx('Estimate')}</th>
+            <th>{tx('Account')}</th>
+            <th>{tx('Status')}</th>
+            <th>{tx('Billed')}</th>
+            <th class="v2-r">{tx('Amount')}</th>
+            <th class="v2-r">{tx('Valid')}</th>
           </tr>
         </thead>
         <tbody>
@@ -145,7 +147,7 @@
                   <span class="v2-table-secondary" style="display:block">{e.opportunity.name}</span>
                 {/if}
               </td>
-              <td><Pill tone={ESTIMATE_STATUS_TONE[e.status]}>{e.status}</Pill></td>
+              <td><Pill tone={ESTIMATE_STATUS_TONE[e.status]}>{choiceLabel(e.status)}</Pill></td>
               <td>
                 {#if e.converted_invoice}
                   <a
@@ -162,14 +164,14 @@
                   <form method="POST" action="?/convert" use:enhance>
                     <input type="hidden" name="id" value={e.id} />
                     <button class="v2-btn v2-btn-sm v2-btn-primary" type="submit">
-                      Raise invoice
+                      {tx('Raise invoice')}
                     </button>
                   </form>
                 {:else if canSend(e)}
                   <form method="POST" action="?/send" use:enhance>
                     <input type="hidden" name="id" value={e.id} />
                     <button class="v2-btn v2-btn-sm" type="submit">
-                      {e.status === 'Draft' ? 'Send' : 'Send again'}
+                      {e.status === 'Draft' ? tx('Send') : tx('Send again')}
                     </button>
                   </form>
                 {:else}
@@ -192,7 +194,7 @@
       </table>
     </div>
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
-      Showing <span class="v2-num">{data.estimates.length}</span> of
+      {tx('Showing')} <span class="v2-num">{data.estimates.length}</span> {tx('of')}
       <span class="v2-num">{count(totals.count)}</span>
     </p>
   {/if}

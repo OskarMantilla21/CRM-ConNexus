@@ -1,6 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { listWebhooks, createWebhook, eventsFromForm } from '$lib/server/v2/webhooks.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * Outbound webhooks: the list and the create panel.
@@ -30,17 +32,17 @@ export const actions = {
       events: eventsFromForm(form)
     };
     if (!values.events.length) {
-      return fail(400, { create: { error: 'Choose at least one event.', values } });
+      return fail(400, { create: { error: tx('Choose at least one event.'), values } });
     }
     try {
       const created = await createWebhook(event, values);
       return { created: { id: created.id, url: created.url, secret: created.secret } };
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { create: { error: 'Only an admin can add webhooks.', values } });
+        return fail(403, { create: { error: tx('Only an admin can add webhooks.'), values } });
       }
       return fail(400, {
-        create: { error: readableError(err, 'Could not add the webhook.'), values }
+        create: { error: readableError(err, tx('Could not add the webhook.')), values }
       });
     }
   }

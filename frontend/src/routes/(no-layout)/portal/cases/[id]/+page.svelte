@@ -7,6 +7,7 @@
   import { enhance } from '$app/forms';
   import { resolve } from '$app/paths';
   import PortalShell from '$lib/v2/components/PortalShell.svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   let { data, form } = $props();
 
@@ -28,11 +29,13 @@
 </svelte:head>
 
 <PortalShell>
-  <a class="back" href={resolve('/portal/cases')}>Back to your requests</a>
+  <a class="back" href={resolve('/portal/cases')}>{tx('Back to your requests')}</a>
 
   <header class="head">
     <h1>{data.case.name}</h1>
-    <span class="tag" class:open={OPEN_STATUSES.has(data.case.status)}>{data.case.status}</span>
+    <span class="tag" class:open={OPEN_STATUSES.has(data.case.status)}
+      >{choiceLabel(data.case.status)}</span
+    >
   </header>
 
   {#if data.case.description}
@@ -41,12 +44,12 @@
 
   <section class="thread">
     {#if data.comments.length === 0}
-      <p class="empty">No replies yet. We will email you when support responds.</p>
+      <p class="empty">{tx('No replies yet. We will email you when support responds.')}</p>
     {:else}
       {#each data.comments as entry (entry.id)}
         <article class="msg" class:mine={entry.is_mine}>
           <div class="who">
-            <strong>{entry.is_mine ? 'You' : entry.author}</strong>
+            <strong>{entry.is_mine ? tx('You') : entry.author}</strong>
             <span class="when">{formatWhen(entry.commented_on)}</span>
           </div>
           <p>{entry.comment}</p>
@@ -56,11 +59,11 @@
   </section>
 
   <form method="POST" action="?/reply" use:enhance class="reply">
-    <label for="comment">Add a reply</label>
-    <textarea id="comment" name="comment" rows="4" placeholder="Type your message" required
+    <label for="comment">{tx('Add a reply')}</label>
+    <textarea id="comment" name="comment" rows="4" placeholder={tx('Type your message')} required
     ></textarea>
     {#if form?.error}<p class="err">{form.error}</p>{/if}
-    <button type="submit">Send reply</button>
+    <button type="submit">{tx('Send reply')}</button>
   </form>
 </PortalShell>
 

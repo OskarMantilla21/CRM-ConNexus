@@ -12,6 +12,8 @@
   import { enhance } from '$app/forms';
   import { untrack } from 'svelte';
   import { ChevronRight } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -29,11 +31,11 @@
   let options = $derived(kind ? (data.parents[kind] ?? []) : []);
 </script>
 
-<PageHeader title="New task" record center width="62ch">
+<PageHeader title={tx('New task')} record center width="62ch">
   {#snippet crumb()}
-    <a href={resolve('/tasks')}>Tasks</a>
+    <a href={resolve('/tasks')}>{tx('Tasks')}</a>
     <ChevronRight size={12} />
-    <span>New</span>
+    <span>{tx('New')}</span>
   {/snippet}
 </PageHeader>
 
@@ -50,72 +52,73 @@
     {/if}
 
     <label class="v2-field">
-      <span class="v2-label">Task</span>
+      <span class="v2-label">{tx('Task')}</span>
       <input
         class="v2-input"
         name="title"
         required
         maxlength="200"
         value={values.title ?? ''}
-        placeholder="Send the security addendum to Northwind"
+        placeholder={tx('Send the security addendum to Northwind')}
       />
     </label>
 
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">Priority</span>
+        <span class="v2-label">{tx('Priority')}</span>
         <select class="v2-input" name="priority" value={values.priority ?? 'Medium'}>
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
+          <option value="Low">{choiceLabel('Low')}</option>
+          <option value="Medium">{choiceLabel('Medium')}</option>
+          <option value="High">{choiceLabel('High')}</option>
         </select>
       </label>
       <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">Status</span>
+        <span class="v2-label">{tx('Status')}</span>
         <select class="v2-input" name="status" value={values.status ?? 'New'}>
-          <option value="New">New</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Completed">Completed</option>
+          <option value="New">{choiceLabel('New')}</option>
+          <option value="In Progress">{choiceLabel('In Progress')}</option>
+          <option value="Completed">{choiceLabel('Completed')}</option>
         </select>
       </label>
       <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">Due</span>
+        <span class="v2-label">{tx('Due')}</span>
         <input class="v2-input" type="date" name="due_date" value={values.due_date ?? ''} />
       </label>
     </div>
     <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px">
-      A task with no due date never becomes overdue and never appears in "due this week". It is a
-      real choice, not a blank you forgot.
+      {tx(
+        'A task with no due date never becomes overdue and never appears in "due this week". It is a real choice, not a blank you forgot.'
+      )}
     </p>
 
     <label class="v2-field">
-      <span class="v2-label">Attached to</span>
+      <span class="v2-label">{tx('Attached to')}</span>
       <select class="v2-input" name="parent_kind" bind:value={kind}>
         {#each KINDS as k (k.key)}
-          <option value={k.key}>{k.label}</option>
+          <option value={k.key}>{tx(k.label)}</option>
         {/each}
       </select>
     </label>
 
     {#if kind}
       <label class="v2-field">
-        <span class="v2-label">Which one</span>
+        <span class="v2-label">{tx('Which one')}</span>
         <select class="v2-input" name="parent_{kind}" required>
-          <option value="">Choose…</option>
+          <option value="">{tx('Choose…')}</option>
           {#each options as option (option.id)}
             <option value={option.id} selected={values[kind] === option.id}>{option.name}</option>
           {/each}
         </select>
         {#if options.length === 0}
           <span class="v2-sub" style="font-size:11.5px"
-            >Nothing to pick. Either there are none, or that list did not load.</span
+            >{tx('Nothing to pick. Either there are none, or that list did not load.')}</span
           >
         {/if}
       </label>
     {/if}
 
     <label class="v2-field">
-      <span class="v2-label">Assign to</span>
+      <span class="v2-label">{tx('Assign to')}</span>
       <select
         class="v2-input"
         name="assigned_to"
@@ -127,24 +130,26 @@
         {/each}
       </select>
       <span class="v2-sub" style="font-size:11.5px">
-        Optional, and more than one is allowed. Leave it empty and the task is yours to pick up.
+        {tx(
+          'Optional, and more than one is allowed. Leave it empty and the task is yours to pick up.'
+        )}
       </span>
     </label>
 
     <label class="v2-field">
-      <span class="v2-label">Note</span>
+      <span class="v2-label">{tx('Note')}</span>
       <textarea
         class="v2-input"
         name="description"
         rows="4"
-        placeholder="Context anyone picking this up would need."
+        placeholder={tx('Context anyone picking this up would need.')}
         >{values.description ?? ''}</textarea
       >
     </label>
 
     <div style="display:flex;gap:9px;margin-top:6px">
-      <button class="v2-btn v2-btn-primary" type="submit">Create task</button>
-      <a class="v2-btn" href={resolve('/tasks')}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create task')}</button>
+      <a class="v2-btn" href={resolve('/tasks')}>{tx('Cancel')}</a>
     </div>
   </form>
 </div>

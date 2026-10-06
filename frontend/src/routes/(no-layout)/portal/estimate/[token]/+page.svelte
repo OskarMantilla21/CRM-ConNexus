@@ -26,6 +26,7 @@
   import PortalShell from '$lib/v2/components/PortalShell.svelte';
   import PortalLineItems from '$lib/v2/components/PortalLineItems.svelte';
   import { money, longDate } from '$lib/v2/format.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
   import { Download, CheckCircle2, XCircle, AlertTriangle } from '@lucide/svelte';
 
   /** @type {{ data: { estimate: any, token: string }, form: any }} */
@@ -72,7 +73,7 @@
 </script>
 
 <svelte:head>
-  <title>{est.estimate_number} from {est.org.name}</title>
+  <title>{tx('{number} from {name}', { number: est.estimate_number, name: est.org.name })}</title>
 </svelte:head>
 
 <PortalShell>
@@ -82,8 +83,10 @@
         <div class="from">{est.org.name}</div>
         <h1>{est.title}</h1>
         <div class="ref">
-          Estimate <span class="v2-num">{est.estimate_number}</span> · issued
-          {longDate(est.issue_date)}
+          {tx('Estimate {number} · issued {date}', {
+            number: est.estimate_number,
+            date: longDate(est.issue_date)
+          })}
         </div>
       </div>
       <!-- A backend download endpoint, not a SvelteKit route: rel="external"
@@ -93,7 +96,7 @@
         class="v2-btn v2-btn-sm"
         href="/api/public/estimate/{token}/pdf/"
         rel="external"
-        aria-label="Download this estimate as a PDF"
+        aria-label={tx('Download this estimate as a PDF')}
       >
         <Download size={13} />PDF
       </a>
@@ -101,18 +104,21 @@
 
     <section class="amount">
       <div>
-        <div class="amount-label">Total if accepted</div>
+        <div class="amount-label">{tx('Total if accepted')}</div>
         <div class="amount-value v2-num">{money(est.total_amount, est.currency)}</div>
         <div class="amount-sub">
           {#if expired}
-            Expired {longDate(est.expiry_date)}
+            {tx('Expired {date}', { date: longDate(est.expiry_date) })}
           {:else if daysToExpiry === 0}
-            Valid until end of today
+            {tx('Valid until end of today')}
           {:else if daysToExpiry !== null}
-            Valid until {longDate(est.expiry_date)} · {daysToExpiry}
-            {daysToExpiry === 1 ? 'day' : 'days'} left
+            {tx('Valid until {date} · {n} {unit} left', {
+              date: longDate(est.expiry_date),
+              n: daysToExpiry,
+              unit: daysToExpiry === 1 ? tx('day') : tx('days')
+            })}
           {:else}
-            No expiry date set
+            {tx('No expiry date set')}
           {/if}
         </div>
       </div>
@@ -130,16 +136,24 @@
       <section class="decided" class:no={est.status === 'Declined'}>
         {#if est.status === 'Accepted'}<CheckCircle2 size={18} />{:else}<XCircle size={18} />{/if}
         <div>
-          <b>{est.status}</b>
+          <b>{choiceLabel(est.status)}</b>
           {#if est.status === 'Accepted'}
             <p>
-              {est.org.name} has been notified and will raise an invoice for
-              {money(est.total_amount, est.currency)}. A copy has been sent to {est.client_email}.
+              {tx(
+                '{org} has been notified and will raise an invoice for {total}. A copy has been sent to {email}.',
+                {
+                  org: est.org.name,
+                  total: money(est.total_amount, est.currency),
+                  email: est.client_email
+                }
+              )}
             </p>
           {:else}
             <p>
-              {est.org.name} has been notified. If you declined by mistake, reply to the email this link
-              came from. This page cannot undo it.
+              {tx(
+                '{org} has been notified. If you declined by mistake, reply to the email this link came from. This page cannot undo it.',
+                { org: est.org.name }
+              )}
             </p>
           {/if}
         </div>
@@ -150,10 +164,12 @@
       <section class="expired">
         <AlertTriangle size={17} />
         <div>
-          <b>This estimate has expired</b>
+          <b>{tx('This estimate has expired')}</b>
           <p>
-            Prices were held until {longDate(est.expiry_date)}. Reply to the email this link came
-            from and {est.org.name} can send a current quote.
+            {tx(
+              'Prices were held until {date}. Reply to the email this link came from and {org} can send a current quote.',
+              { date: longDate(est.expiry_date), org: est.org.name }
+            )}
           </p>
         </div>
       </section>
@@ -161,37 +177,47 @@
       <section class="decide">
         {#if !confirming}
           <div class="decide-copy">
-            <b>Ready to go ahead?</b>
-            <p>Accepting authorises {est.org.name} to invoice you for the amounts above.</p>
+            <b>{tx('Ready to go ahead?')}</b>
+            <p>
+              {tx('Accepting authorises {org} to invoice you for the amounts above.', {
+                org: est.org.name
+              })}
+            </p>
           </div>
           <div class="decide-actions">
             <button class="v2-btn v2-btn-primary" onclick={() => (confirming = true)}>
-              Accept this estimate
+              {tx('Accept this estimate')}
             </button>
             <form method="POST" action="?/decline" use:enhance={respond}>
-              <button class="v2-btn" type="submit" disabled={submitting}>Decline</button>
+              <button class="v2-btn" type="submit" disabled={submitting}>{tx('Decline')}</button>
             </form>
           </div>
         {:else}
           <!-- Step two. The total is repeated here on purpose: it is the number
                being agreed to, and it should be under the thumb that agrees. -->
           <form class="confirm" method="POST" action="?/accept" use:enhance={respond}>
-            <b>Confirm acceptance of {money(est.total_amount, est.currency)}</b>
+            <b
+              >{tx('Confirm acceptance of {total}', {
+                total: money(est.total_amount, est.currency)
+              })}</b
+            >
             <p>
-              This tells {est.org.name} to raise an invoice. It cannot be undone from this page.
+              {tx('This tells {org} to raise an invoice. It cannot be undone from this page.', {
+                org: est.org.name
+              })}
             </p>
             <label class="field">
-              <span>Your name</span>
+              <span>{tx('Your name')}</span>
               <input
                 name="name"
                 bind:value={acceptedByName}
-                placeholder="Who is accepting"
+                placeholder={tx('Who is accepting')}
                 autocomplete="name"
                 required
               />
             </label>
             <label class="field">
-              <span>Your email</span>
+              <span>{tx('Your email')}</span>
               <input
                 name="email"
                 type="email"
@@ -202,15 +228,17 @@
               />
             </label>
             <p class="field-note">
-              Recorded with your acceptance: {est.org.name} keeps this as the record of who authorised
-              the invoice.
+              {tx(
+                'Recorded with your acceptance: {org} keeps this as the record of who authorised the invoice.',
+                { org: est.org.name }
+              )}
             </p>
             <div class="decide-actions">
               <button class="v2-btn v2-btn-primary" type="submit" disabled={submitting}>
-                {submitting ? 'Accepting…' : 'Yes, accept'}
+                {submitting ? tx('Accepting…') : tx('Yes, accept')}
               </button>
               <button class="v2-btn" type="button" onclick={() => (confirming = false)}>
-                Go back
+                {tx('Go back')}
               </button>
             </div>
           </form>
@@ -219,7 +247,7 @@
     {/if}
 
     <section class="block">
-      <div class="v2-label">Prepared for</div>
+      <div class="v2-label">{tx('Prepared for')}</div>
       <div class="addr">
         <div class="addr-name">{est.client_name}</div>
         {#each addressLines as line, i (i)}
@@ -229,7 +257,7 @@
     </section>
 
     <section class="block">
-      <div class="v2-label">What is included</div>
+      <div class="v2-label">{tx('What is included')}</div>
       <PortalLineItems
         items={est.line_items}
         currency={est.currency}
@@ -245,20 +273,20 @@
 
     {#if est.notes}
       <section class="block">
-        <div class="v2-label">Notes</div>
+        <div class="v2-label">{tx('Notes')}</div>
         <p class="note">{est.notes}</p>
       </section>
     {/if}
 
     {#if est.terms}
       <section class="block">
-        <div class="v2-label">Terms</div>
+        <div class="v2-label">{tx('Terms')}</div>
         <p class="note">{est.terms}</p>
       </section>
     {/if}
 
     <footer class="doc-foot">
-      <p>Questions? Reply to the email this estimate arrived with.</p>
+      <p>{tx('Questions? Reply to the email this estimate arrived with.')}</p>
       {#if est.template?.footer_text}
         <p class="foot-org">{est.template.footer_text}</p>
       {/if}

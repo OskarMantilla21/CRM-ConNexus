@@ -1,6 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { EDITABLE_FIELDS, createAccount, getAccountFormOptions } from '$lib/server/v2/accounts.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -26,7 +28,7 @@ export const actions = {
     try {
       created = await createAccount({ cookies }, values);
     } catch (/** @type {any} */ err) {
-      return fail(400, { values, error: readableError(err, 'Could not create this account.') });
+      return fail(400, { values, error: readableError(err, tx('Could not create this account.')) });
     }
 
     // The API returns the new id. Landing on the account is the point of

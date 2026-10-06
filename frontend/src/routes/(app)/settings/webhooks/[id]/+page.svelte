@@ -19,6 +19,8 @@
   import { enhance } from '$app/forms';
   import WebhookFields from '../WebhookFields.svelte';
   import SecretOnce from '../SecretOnce.svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -51,18 +53,18 @@
 </script>
 
 {#if data.forbidden}
-  <PageHeader title="Webhook">
+  <PageHeader title={tx('Webhook')}>
     {#snippet crumb()}<SettingsCrumb />{/snippet}
   </PageHeader>
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
-      text="Webhooks send copies of this organization's records to other services, so only admins can see or change them."
+      label={tx('Admins only')}
+      text={tx("Webhooks send copies of this organization's records to other services, so only admins can see or change them.")}
     />
   </div>
 {:else}
   {@const e = data.endpoint}
-  <PageHeader title={e.description || 'Webhook'}>
+  <PageHeader title={e.description || tx('Webhook')}>
     {#snippet crumb()}<SettingsCrumb />{/snippet}
     {#snippet sub()}
       <span style="word-break:break-all">{e.url}</span>
@@ -72,72 +74,71 @@
   <div class="v2-scroll">
     <div class="v2-pad" style="padding-top:16px;padding-bottom:32px">
       {#if form?.rotated?.secret}
-        <SecretOnce title="Secret rotated, copy the new one now" secret={form.rotated.secret} />
+        <SecretOnce title={tx('Secret rotated, copy the new one now')} secret={form.rotated.secret} />
       {/if}
       {#if actionError}
         <div style="margin-bottom:16px">
-          <NextAction label="That did not work" text={actionError} tone="rust" />
+          <NextAction label={tx('That did not work')} text={actionError} tone="rust" />
         </div>
       {/if}
       {#if form?.tested}
-        <p class="v2-sub wh-note">Test queued. Refresh the log below in a few seconds.</p>
+        <p class="v2-sub wh-note">{tx('Test queued. Refresh the log below in a few seconds.')}</p>
       {:else if form?.updated}
-        <p class="v2-sub wh-note">Saved.</p>
+        <p class="v2-sub wh-note">{tx('Saved.')}</p>
       {:else if form?.redelivered}
-        <p class="v2-sub wh-note">Queued to send again.</p>
+        <p class="v2-sub wh-note">{tx('Queued to send again.')}</p>
       {/if}
 
       <div class="v2-card" style="padding:14px 15px;margin-bottom:18px">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <Pill tone={e.is_active ? 'moss' : e.disabled_reason ? 'clay' : 'slate'}>
-            {e.is_active ? 'Sending' : e.disabled_reason ? 'Paused' : 'Off'}
+            {e.is_active ? tx('Sending') : e.disabled_reason ? tx('Paused') : tx('Off')}
           </Pill>
           <span class="v2-sub" style="font-size:12px">
-            {e.format === 'slack' ? 'Slack message' : 'Signed JSON'} · secret
+            {e.format === 'slack' ? tx('Slack message') : tx('Signed JSON')} · {tx('secret')}
             <span class="v2-num">{e.secret_hint}</span>
           </span>
         </div>
         <p class="v2-sub" style="font-size:12px;margin:8px 0 0;overflow-wrap:anywhere">
-          Answers for it:
+          {tx('Answers for it:')}
           {#if e.created_by}
             {e.created_by.name || e.created_by.email}
             {#if e.created_by.name}<span class="v2-muted">({e.created_by.email})</span>{/if}
           {:else}
-            a removed user
+            {tx('a removed user')}
           {/if}
         </p>
         {#if e.disabled_reason}
           <p class="v2-sub" style="font-size:12px;color:var(--v2-clay);margin:8px 0 0">
-            {e.disabled_reason}
+            {tx(e.disabled_reason)}
           </p>
         {/if}
         <p class="v2-sub" style="font-size:12px;margin:8px 0 0">
-          Turning it on, changing its URL, events or format, or rotating its secret makes you the
-          admin who answers for it.
+          {tx('Turning it on, changing its URL, events or format, or rotating its secret makes you the admin who answers for it.')}
         </p>
         <div class="wh-actions">
           {#if e.is_active}
             <form method="POST" action="?/test" use:enhance={working}>
-              <button class="v2-btn v2-btn-primary wh-tap" disabled={busy}>Send test</button>
+              <button class="v2-btn v2-btn-primary wh-tap" disabled={busy}>{tx('Send test')}</button>
             </form>
           {/if}
           <form method="POST" action="?/toggle" use:enhance={working}>
             <input type="hidden" name="is_active" value={e.is_active ? 'false' : 'true'} />
             <button class="v2-btn wh-tap" disabled={busy}>
-              {e.is_active ? 'Turn off' : e.disabled_reason ? 'Re-enable' : 'Turn on'}
+              {e.is_active ? tx('Turn off') : e.disabled_reason ? tx('Re-enable') : tx('Turn on')}
             </button>
           </form>
           <ConfirmAction
             action="?/rotate"
-            label="Rotate secret"
-            confirmLabel="Rotate now"
-            explain="The current secret stops verifying at once. Update your receiver straight after."
+            label={tx('Rotate secret')}
+            confirmLabel={tx('Rotate now')}
+            explain={tx('The current secret stops verifying at once. Update your receiver straight after.')}
           />
           <ConfirmAction
             action="?/remove"
-            label="Delete"
-            confirmLabel="Delete permanently"
-            explain="Removes the webhook and its delivery log."
+            label={tx('Delete')}
+            confirmLabel={tx('Delete permanently')}
+            explain={tx('Removes the webhook and its delivery log.')}
           />
         </div>
       </div>
@@ -149,39 +150,39 @@
         class="v2-card"
         style="padding:14px 15px;margin-bottom:22px"
       >
-        <div class="v2-label" style="margin-bottom:10px">Settings</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Settings')}</div>
         <WebhookFields catalogue={data.catalogue} values={e} idPrefix="edit" />
         <button class="v2-btn v2-btn-primary wh-tap" style="margin-top:14px" disabled={busy}>
-          Save
+          {tx('Save')}
         </button>
       </form>
 
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div class="v2-label">Deliveries</div>
+        <div class="v2-label">{tx('Deliveries')}</div>
         <span class="v2-sub v2-num" style="font-size:12px">{count(data.deliveryCount)}</span>
         <a
           class="v2-btn v2-btn-sm wh-tap"
           style="margin-left:auto"
           href={resolve(`/settings/webhooks/${e.id}?offset=${data.offset}`)}
         >
-          Refresh
+          {tx('Refresh')}
         </a>
       </div>
 
       {#if !data.deliveries.length}
         <p class="v2-sub" style="font-size:12.5px">
-          Nothing sent yet. Send a test, or change a record this webhook listens for.
+          {tx('Nothing sent yet. Send a test, or change a record this webhook listens for.')}
         </p>
       {:else}
         <div class="v2-table-wrap">
           <table class="v2-table">
             <thead>
               <tr>
-                <th>Event</th>
-                <th>Status</th>
-                <th class="v2-r" data-m="hide">Tries</th>
-                <th data-m="hide">When</th>
-                <th class="v2-r">Actions</th>
+                <th>{tx('Event')}</th>
+                <th>{tx('Status')}</th>
+                <th class="v2-r" data-m="hide">{tx('Tries')}</th>
+                <th data-m="hide">{tx('When')}</th>
+                <th class="v2-r">{tx('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -190,7 +191,7 @@
                   <td data-m="title">
                     <div class="v2-table-primary v2-num">{d.event}</div>
                     <div class="v2-table-secondary">
-                      {#if d.response_status}HTTP {d.response_status} ·
+                      {#if d.response_status}{tx('HTTP {status}', { status: d.response_status })} ·
                       {/if}{d.error || relativeTime(d.created_at)}
                     </div>
                   </td>
@@ -201,10 +202,10 @@
                       ] ?? 'slate'}
                     >
                       {d.status === 'succeeded'
-                        ? 'Delivered'
+                        ? tx('Delivered')
                         : d.status === 'failed'
-                          ? 'Failed'
-                          : 'Pending'}
+                          ? tx('Failed')
+                          : tx('Pending')}
                     </Pill>
                   </td>
                   <td class="v2-r v2-num" data-m="hide">{d.attempts}</td>
@@ -213,7 +214,7 @@
                     {#if d.status !== 'pending' && e.is_active}
                       <form method="POST" action="?/redeliver" use:enhance={working}>
                         <input type="hidden" name="delivery_id" value={d.id} />
-                        <button class="v2-btn v2-btn-sm wh-tap" disabled={busy}>Redeliver</button>
+                        <button class="v2-btn v2-btn-sm wh-tap" disabled={busy}>{tx('Redeliver')}</button>
                       </form>
                     {/if}
                   </td>
@@ -230,14 +231,14 @@
                 `/settings/webhooks/${e.id}?offset=${Math.max(0, data.offset - data.pageSize)}`
               )}
             >
-              Newer
+              {tx('Newer')}
             </a>
           {/if}
           {#if data.offset + data.pageSize < data.deliveryCount}
             <a
               class="v2-btn v2-btn-sm wh-tap"
               href={resolve(`/settings/webhooks/${e.id}?offset=${data.offset + data.pageSize}`)}
-              >Older</a
+              >{tx('Older')}</a
             >
           {/if}
         </div>

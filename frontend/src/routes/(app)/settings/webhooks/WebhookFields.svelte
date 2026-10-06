@@ -11,6 +11,9 @@
    *   idPrefix: string
    * }}
    */
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
+
   let { catalogue, values = {}, idPrefix } = $props();
 
   let chosen = $derived(new Set(values.events ?? []));
@@ -18,13 +21,13 @@
   /** "ticket.comment_added" reads as "Comment added". @param {string} name */
   const actionLabel = (name) => {
     const action = name.split('.')[1] ?? name;
-    return (action.charAt(0).toUpperCase() + action.slice(1)).replaceAll('_', ' ');
+    return tx((action.charAt(0).toUpperCase() + action.slice(1)).replaceAll('_', ' '));
   };
 </script>
 
 <div class="wh-fields">
   <div class="v2-field">
-    <label for="{idPrefix}-url">Endpoint URL</label>
+    <label for="{idPrefix}-url">{tx('Endpoint URL')}</label>
     <input
       id="{idPrefix}-url"
       name="url"
@@ -38,39 +41,39 @@
       value={values.url ?? ''}
     />
     <span class="v2-sub" style="font-size:11.5px">
-      HTTPS on the standard port, reachable from the public internet.
+      {tx('HTTPS on the standard port, reachable from the public internet.')}
     </span>
   </div>
 
   <div class="v2-field">
-    <label for="{idPrefix}-description">What is it for?</label>
+    <label for="{idPrefix}-description">{tx('What is it for?')}</label>
     <input
       id="{idPrefix}-description"
       name="description"
       maxlength="255"
       class="v2-input"
-      placeholder="e.g. Zapier: new leads to the sales sheet"
+      placeholder={tx('e.g. Zapier: new leads to the sales sheet')}
       value={values.description ?? ''}
     />
   </div>
 
   <div class="v2-field">
-    <label for="{idPrefix}-format">Send as</label>
+    <label for="{idPrefix}-format">{tx('Send as')}</label>
     <select id="{idPrefix}-format" name="format" class="v2-input">
       <option value="json" selected={(values.format ?? 'json') === 'json'}>
-        Signed JSON (Zapier, n8n, your own code)
+        {tx('Signed JSON (Zapier, n8n, your own code)')}
       </option>
       <option value="slack" selected={values.format === 'slack'}>
-        Slack message (incoming webhook URL)
+        {tx('Slack message (incoming webhook URL)')}
       </option>
     </select>
   </div>
 
   <fieldset class="wh-events">
-    <legend class="v2-label">Events</legend>
+    <legend class="v2-label">{tx('Events')}</legend>
     {#each catalogue as group (group.module)}
       <div class="wh-group">
-        <div class="wh-group-label">{group.label}</div>
+        <div class="wh-group-label">{tx(group.label)}</div>
         <div class="wh-boxes">
           {#each group.events as name (name)}
             <label class="wh-box">

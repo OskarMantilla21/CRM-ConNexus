@@ -9,31 +9,34 @@
    */
   import { resolve } from '$app/paths';
   import PortalShell from '$lib/v2/components/PortalShell.svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   let { data } = $props();
 </script>
 
 <svelte:head>
-  <title>Help articles</title>
+  <title>{tx('Help articles')}</title>
 </svelte:head>
 
 <PortalShell>
   <header class="head">
-    <h1>Help articles</h1>
-    <a class="btn" href={resolve('/portal/cases')}>Your requests</a>
+    <h1>{tx('Help articles')}</h1>
+    <a class="btn" href={resolve('/portal/cases')}>{tx('Your requests')}</a>
   </header>
 
   <form method="GET" class="find">
-    <label class="sr-only" for="search">Search help articles</label>
-    <input id="search" name="search" value={data.search} placeholder="Search for an answer" />
-    <button type="submit">Search</button>
+    <label class="sr-only" for="search">{tx('Search help articles')}</label>
+    <input id="search" name="search" value={data.search} placeholder={tx('Search for an answer')} />
+    <button type="submit">{tx('Search')}</button>
   </form>
 
   {#if data.articles.length === 0}
     <p class="empty">
       {data.search
-        ? `Nothing matches "${data.search}". Try a different word, or send us a request.`
-        : 'There are no help articles yet.'}
+        ? tx('Nothing matches "{query}". Try a different word, or send us a request.', {
+            query: data.search
+          })
+        : tx('There are no help articles yet.')}
     </p>
   {:else}
     <ul class="list">

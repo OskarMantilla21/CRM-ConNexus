@@ -1,5 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * Stream an invoice PDF from the API.
@@ -15,7 +17,7 @@ import { env } from '$env/dynamic/public';
  */
 export async function GET({ params, cookies }) {
   const token = cookies.get('jwt_access');
-  if (!token) error(401, 'Not signed in.');
+  if (!token) error(401, tx('Not signed in.'));
 
   const upstream = await fetch(`${env.PUBLIC_DJANGO_API_URL}/api/invoices/${params.id}/pdf/`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -25,9 +27,9 @@ export async function GET({ params, cookies }) {
     // 403/404 collapse to 404: do not confirm an invoice exists to someone who
     // may not read it. 503 means WeasyPrint is missing on the server.
     if (upstream.status === 403 || upstream.status === 404) {
-      error(404, 'That invoice does not exist, or you do not have access to it.');
+      error(404, tx('That invoice does not exist, or you do not have access to it.'));
     }
-    error(502, 'Could not generate the PDF.');
+    error(502, tx('Could not generate the PDF.'));
   }
 
   const body = await upstream.arrayBuffer();

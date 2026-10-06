@@ -10,6 +10,8 @@ import { describeError } from '$lib/server/log-safe.js';
 import { relayHeaders } from '$lib/server/relay.js';
 import { listPacks, applyPack } from '$lib/server/packs.js';
 import { listTimezones } from '$lib/server/v2/organization.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -45,7 +47,7 @@ export const actions = {
     if (!user) {
       return {
         error: {
-          name: 'You must be logged in to create an organization'
+          name: tx('You must be logged in to create an organization')
         }
       };
     }
@@ -60,7 +62,7 @@ export const actions = {
     if (!orgName || orgName.trim().length === 0) {
       return {
         error: {
-          name: 'Organization name is required'
+          name: tx('Organization name is required')
         }
       };
     }
@@ -70,7 +72,7 @@ export const actions = {
       if (!jwtAccess) {
         return {
           error: {
-            name: 'Authentication required'
+            name: tx('Authentication required')
           }
         };
       }
@@ -198,17 +200,18 @@ export const actions = {
         const errors = err.response.data?.errors;
         return {
           error: {
-            name:
+            name: tx(
               errors?.name?.[0] ||
-              errors?.timezone?.[0] ||
-              'Organization with this name may already exist'
+                errors?.timezone?.[0] ||
+                'Organization with this name may already exist'
+            )
           }
         };
       }
 
       return {
         error: {
-          name: 'An unexpected error occurred while creating the organization.'
+          name: tx('An unexpected error occurred while creating the organization.')
         }
       };
     }

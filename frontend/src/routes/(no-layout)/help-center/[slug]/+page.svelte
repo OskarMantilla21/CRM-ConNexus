@@ -13,13 +13,16 @@
    */
   import { resolve } from '$app/paths';
   import HelpCenterShell from '$lib/v2/components/HelpCenterShell.svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   let { data } = $props();
 
   let title = $derived(
-    data.q ? `Search: ${data.q} | ${data.name} help center` : `${data.name} help center`
+    data.q
+      ? tx('Search: {query} | {name} help center', { query: data.q, name: data.name })
+      : tx('{name} help center', { name: data.name })
   );
-  let description = $derived(`Answers and guides from ${data.name}.`);
+  let description = $derived(tx('Answers and guides from {name}.', { name: data.name }));
 
   /** The query string for page `n`, keeping the search. @param {number} n */
   function pageQuery(n) {
@@ -43,33 +46,35 @@
 </svelte:head>
 
 <HelpCenterShell name={data.name} slug={data.slug}>
-  <h1>How can we help?</h1>
+  <h1>{tx('How can we help?')}</h1>
 
   <form method="GET" class="find" role="search">
-    <label class="sr-only" for="q">Search help articles</label>
+    <label class="sr-only" for="q">{tx('Search help articles')}</label>
     <input
       id="q"
       name="q"
       type="search"
       value={data.q}
       maxlength="200"
-      placeholder="Search for an answer"
+      placeholder={tx('Search for an answer')}
     />
-    <button type="submit">Search</button>
+    <button type="submit">{tx('Search')}</button>
   </form>
 
   {#if data.q}
     <p class="meta">
-      {data.count === 1 ? '1 article matches' : `${data.count} articles match`} "{data.q}".
-      <a href={resolve(`/help-center/${data.slug}`)}>Show all</a>
+      {data.count === 1
+        ? tx('1 article matches "{query}".', { query: data.q })
+        : tx('{n} articles match "{query}".', { n: data.count, query: data.q })}
+      <a href={resolve(`/help-center/${data.slug}`)}>{tx('Show all')}</a>
     </p>
   {/if}
 
   {#if data.articles.length === 0}
     <p class="empty">
       {data.q
-        ? 'Nothing matches that. Try a different word.'
-        : 'There are no help articles here yet.'}
+        ? tx('Nothing matches that. Try a different word.')
+        : tx('There are no help articles here yet.')}
     </p>
   {:else}
     <ul class="list">
@@ -87,18 +92,18 @@
   {/if}
 
   {#if data.pages > 1}
-    <nav class="pager" aria-label="Pages">
+    <nav class="pager" aria-label={tx('Pages')}>
       {#if data.page > 1}
         <a href="{resolve(`/help-center/${data.slug}`)}{pageQuery(data.page - 1)}" rel="prev"
-          >Previous</a
+          >{tx('Previous')}</a
         >
       {:else}
         <span></span>
       {/if}
-      <span class="where">Page {data.page} of {data.pages}</span>
+      <span class="where">{tx('Page {page} of {pages}', { page: data.page, pages: data.pages })}</span>
       {#if data.page < data.pages}
         <a href="{resolve(`/help-center/${data.slug}`)}{pageQuery(data.page + 1)}" rel="next"
-          >Next</a
+          >{tx('Next')}</a
         >
       {:else}
         <span></span>

@@ -9,6 +9,8 @@
    * through this page. The view is the trust boundary (see CLAUDE.md).
    */
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { enhance } from '$app/forms';
   import { ChevronRight, Lock } from '@lucide/svelte';
 
@@ -22,11 +24,11 @@
   let saving = $state(false);
 </script>
 
-<PageHeader title="New product" record center width="62ch">
+<PageHeader title={tx('New product')} record center width="62ch">
   {#snippet crumb()}
-    <a href={resolve('/invoices/products')}>Products</a>
+    <a href={resolve('/invoices/products')}>{tx('Products')}</a>
     <ChevronRight size={12} />
-    <span>New</span>
+    <span>{tx('New')}</span>
   {/snippet}
 </PageHeader>
 
@@ -36,15 +38,14 @@
       <div class="v2-next" role="note">
         <Lock size={17} style="flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">Admins only</div>
+          <div style="font-weight:600">{tx('Admins only')}</div>
           <div class="v2-sub" style="margin-top:2px">
-            The product catalogue is shared across the org, so only an administrator can add to it.
-            You can still use any product on your invoices and estimates.
+            {tx('The product catalogue is shared across the org, so only an administrator can add to it. You can still use any product on your invoices and estimates.')}
           </div>
         </div>
       </div>
       <a class="v2-btn" href={resolve('/invoices/products')} style="margin-top:16px"
-        >Back to products</a
+        >{tx('Back to products')}</a
       >
     </div>
   {:else}
@@ -69,20 +70,20 @@
       {/if}
 
       <label class="v2-field">
-        <span class="v2-label">Name</span>
+        <span class="v2-label">{tx('Name')}</span>
         <input
           class="v2-input"
           name="name"
           required
           maxlength="255"
           value={values.name ?? ''}
-          placeholder="Platform licence, per seat"
+          placeholder={tx('Platform licence, per seat')}
         />
       </label>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <label class="v2-field" style="flex:2;min-width:180px">
-          <span class="v2-label">List price</span>
+          <span class="v2-label">{tx('List price')}</span>
           <input
             class="v2-input"
             name="price"
@@ -95,7 +96,7 @@
           />
         </label>
         <label class="v2-field" style="flex:1;min-width:130px">
-          <span class="v2-label">Currency</span>
+          <span class="v2-label">{tx('Currency')}</span>
           <select class="v2-input" name="currency" value={values.currency ?? 'USD'}>
             {#each data.currencies as c (c.code)}
               <option value={c.code}>{c.label}</option>
@@ -106,17 +107,17 @@
 
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <label class="v2-field" style="flex:1;min-width:160px">
-          <span class="v2-label">Category</span>
+          <span class="v2-label">{tx('Category')}</span>
           <input
             class="v2-input"
             name="category"
             maxlength="100"
             value={values.category ?? ''}
-            placeholder="Licence, Module, Service…"
+            placeholder={tx('Licence, Module, Service…')}
           />
         </label>
         <label class="v2-field" style="flex:1;min-width:160px">
-          <span class="v2-label">SKU</span>
+          <span class="v2-label">{tx('SKU')}</span>
           <input
             class="v2-input"
             name="sku"
@@ -127,38 +128,37 @@
         </label>
       </div>
       <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px">
-        Category groups the catalogue; leave it blank and the product sits under "Uncategorised". A
-        SKU is optional but must be unique here if you set one.
+        {tx('Category groups the catalogue; leave it blank and the product sits under "Uncategorised". A SKU is optional but must be unique here if you set one.')}
       </p>
 
       <label class="v2-field">
-        <span class="v2-label">Availability</span>
+        <span class="v2-label">{tx('Availability')}</span>
         <select
           class="v2-input"
           name="is_active"
           value={values.is_active === false ? 'false' : 'true'}
         >
-          <option value="true">Sellable, appears in the line-item picker</option>
-          <option value="false">Retired, kept for history, hidden from the picker</option>
+          <option value="true">{tx('Sellable, appears in the line-item picker')}</option>
+          <option value="false">{tx('Retired, kept for history, hidden from the picker')}</option>
         </select>
       </label>
 
       <label class="v2-field">
-        <span class="v2-label">Description</span>
+        <span class="v2-label">{tx('Description')}</span>
         <textarea
           class="v2-input"
           name="description"
           rows="3"
-          placeholder="What it is, in the words a client would see on an invoice."
+          placeholder={tx('What it is, in the words a client would see on an invoice.')}
           >{values.description ?? ''}</textarea
         >
       </label>
 
       <div style="display:flex;gap:9px;margin-top:6px">
         <button class="v2-btn v2-btn-primary" type="submit" disabled={saving}>
-          {saving ? 'Adding…' : 'Add product'}
+          {saving ? tx('Adding…') : tx('Add product')}
         </button>
-        <a class="v2-btn" href={resolve('/invoices/products')}>Cancel</a>
+        <a class="v2-btn" href={resolve('/invoices/products')}>{tx('Cancel')}</a>
       </div>
     </form>
   {/if}

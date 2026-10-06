@@ -2,6 +2,7 @@
   import { browser } from '$app/environment';
   import { setClientLocale } from '$lib/i18n/locale.js';
   import { DEFAULT_LOCALE } from '$lib/i18n/locale.js';
+  import '$lib/i18n/pages/public.js';
 
   /** @type {{ data: { locale?: string }, children: import('svelte').Snippet }} */
   let { data, children } = $props();

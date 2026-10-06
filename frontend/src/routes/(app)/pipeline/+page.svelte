@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { SvelteURLSearchParams } from 'svelte/reactivity';
   import { resolve } from '$app/paths';
   import { asInternalPath } from '$lib/utils/paths.js';
@@ -136,7 +138,7 @@
         (result.type === 'failure' && /** @type {any} */ (result.data)?.error) ||
         'Could not move the deal; reverted.';
     } catch {
-      moveError = 'Could not move the deal, reverted.';
+      moveError = tx('Could not move the deal, reverted.');
     }
     await invalidateAll();
   }
@@ -183,25 +185,25 @@
   });
 </script>
 
-<PageHeader title="Pipeline">
+<PageHeader title={tx('Pipeline')}>
   {#snippet sub()}
     <!-- Totals come from the API aggregate, never from the rows on screen.
          Not "open deals": the default view is now the pipeline's own "All
          deals" preset (empty params), which includes closed stages, so a word
          that was only ever true under the old hardcoded ?open=true would lie
          here as soon as somebody switched presets. -->
-    <span class="v2-num">{count(totals.count)}</span> deals ·
+    <span class="v2-num">{count(totals.count)}</span> {tx('deals ·')}
     <span class="v2-num">{perCurrency(totals.amount_by_currency)}</span> ·
-    <span class="v2-num">{perCurrency(totals.weighted_by_currency)}</span> weighted ·
-    <span class="v2-num" style="color:var(--v2-rust)">{totals.stalled_count}</span> stalled
+    <span class="v2-num">{perCurrency(totals.weighted_by_currency)}</span> {tx('weighted ·')}
+    <span class="v2-num" style="color:var(--v2-rust)">{totals.stalled_count}</span> {tx('stalled')}
   {/snippet}
   {#snippet actions()}
     {#if view === 'board'}
-      <a class="v2-btn v2-btn-quiet" href={resolve(asInternalPath(listHref))}><List />List</a>
-      <span class="v2-btn" aria-current="true"><Columns3 />Board</span>
+      <a class="v2-btn v2-btn-quiet" href={resolve(asInternalPath(listHref))}><List />{tx('List')}</a>
+      <span class="v2-btn" aria-current="true"><Columns3 />{tx('Board')}</span>
     {:else}
-      <span class="v2-btn" aria-current="true"><List />List</span>
-      <a class="v2-btn v2-btn-quiet" href={resolve(asInternalPath(boardHref))}><Columns3 />Board</a>
+      <span class="v2-btn" aria-current="true"><List />{tx('List')}</span>
+      <a class="v2-btn v2-btn-quiet" href={resolve(asInternalPath(boardHref))}><Columns3 />{tx('Board')}</a>
     {/if}
     <!-- The page's own query string: the export rebuilds the same API query
          from it, so the file holds every row this list would page through. -->
@@ -210,9 +212,9 @@
       href="{resolve('/api/deals/export')}?{page.url.searchParams}"
       data-sveltekit-reload
     >
-      <Download />Export
+      <Download />{tx('Export')}
     </a>
-    <a class="v2-btn v2-btn-primary" href={resolve('/pipeline/new')}><Plus />New deal</a>
+    <a class="v2-btn v2-btn-primary" href={resolve('/pipeline/new')}><Plus />{tx('New deal')}</a>
   {/snippet}
 </PageHeader>
 
@@ -227,7 +229,7 @@
     url={page.url}
     pipelines={data.pipelines}
     current={data.pipelineId}
-    allLabel={view === 'board' ? null : 'All pipelines'}
+    allLabel={view === 'board' ? null : tx('All pipelines')}
   />
 </div>
 
@@ -241,7 +243,7 @@
   saved={data.savedViews}
   onlyFields={data.onlyFields}
   onlyPresets={data.onlyPresets}
-  meta={view === 'board' ? 'Open stages only. Drag a card to change its stage' : 'Sorted by value'}
+  meta={view === 'board' ? tx('Open stages only. Drag a card to change its stage') : tx('Sorted by value')}
 />
 
 {#if moveError}
@@ -321,7 +323,7 @@
               </div>
             </div>
           {:else}
-            <p class="v2-sub" style="padding:10px 2px;font-size:12px">Nothing in this stage.</p>
+            <p class="v2-sub" style="padding:10px 2px;font-size:12px">{tx('Nothing in this stage.')}</p>
           {/each}
         </div>
       </section>
@@ -330,13 +332,13 @@
 {:else if deals.length === 0}
   <div class="v2-scroll">
     <EmptyState
-      title="No deals here"
-      body="Nothing matches this view. Start a deal from an account you are already talking to, convert a lead that is ready, or clear a filter to see more."
+      title={tx('No deals here')}
+      body={tx('Nothing matches this view. Start a deal from an account you are already talking to, convert a lead that is ready, or clear a filter to see more.')}
     >
       {#snippet icon()}<Columns3 size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/pipeline/new')}>New deal</a>
-        <a class="v2-btn" href={resolve('/leads')}>Go to leads</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/pipeline/new')}>{tx('New deal')}</a>
+        <a class="v2-btn" href={resolve('/leads')}>{tx('Go to leads')}</a>
       {/snippet}
     </EmptyState>
   </div>
@@ -346,14 +348,14 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Deal</th>
-            <th>Stage</th>
-            <th>Health</th>
-            <th>Next step</th>
-            <th class="v2-r">Value</th>
-            <th>Closing</th>
-            <th class="v2-r">In stage</th>
-            <th>Owner</th>
+            <th>{tx('Deal')}</th>
+            <th>{tx('Stage')}</th>
+            <th>{tx('Health')}</th>
+            <th>{tx('Next step')}</th>
+            <th class="v2-r">{tx('Value')}</th>
+            <th>{tx('Closing')}</th>
+            <th class="v2-r">{tx('In stage')}</th>
+            <th>{tx('Owner')}</th>
           </tr>
         </thead>
         <tbody>

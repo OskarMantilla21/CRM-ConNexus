@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   /**
    * Quota, read against the calendar.
@@ -95,18 +97,18 @@
   const moneyTotal = (list) => moneyEach(list) || '—';
 </script>
 
-<PageHeader title="Goals">
+<PageHeader title={tx('Goals')}>
   {#snippet sub()}
     {#if totals.revenue}
       <span class="v2-num">{moneyTotal(totals.achieved)}</span> of
       <span class="v2-num">{moneyTotal(totals.target)}</span> booked,
     {/if}
-    <span class="v2-num">{count(totals.active)}</span> active goals
+    <span class="v2-num">{count(totals.active)}</span> {tx('active goals')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve('/goals/history')}><History />History</a>
+    <a class="v2-btn" href={resolve('/goals/history')}><History />{tx('History')}</a>
     {#if data.can_edit}
-      <a class="v2-btn v2-btn-primary" href={resolve('/goals/new')}><Plus />New goal</a>
+      <a class="v2-btn v2-btn-primary" href={resolve('/goals/new')}><Plus />{tx('New goal')}</a>
     {/if}
   {/snippet}
 </PageHeader>
@@ -116,24 +118,24 @@
     <!-- Money only, so revenue goals only, one figure per currency: a deals
          target is not an amount, and there are no exchange rates. -->
     <StatCard
-      label="Committed"
+      label={tx('Committed')}
       value={moneyTotal(totals.target)}
       tone="ink"
-      detail="Active revenue goals"
+      detail={tx('Active revenue goals')}
     />
     <StatCard
-      label="Booked"
+      label={tx('Booked')}
       value={moneyTotal(totals.achieved)}
       tone="moss"
-      detail="Closed-won in period"
+      detail={tx('Closed-won in period')}
     />
     <StatCard
-      label="Behind pace"
+      label={tx('Behind pace')}
       value={count(totals.behind)}
       tone={totals.behind ? 'rust' : 'slate'}
-      detail={totals.behind ? 'Slower than the calendar' : 'Everyone is on pace'}
+      detail={totals.behind ? tx('Slower than the calendar') : tx('Everyone is on pace')}
     />
-    <StatCard label="Active goals" value={count(totals.active)} tone="slate" />
+    <StatCard label={tx('Active goals')} value={count(totals.active)} tone="slate" />
   </div>
 
   <form class="filters" method="GET" data-sveltekit-keepfocus data-sveltekit-replacestate>
@@ -142,23 +144,23 @@
       type="search"
       name="q"
       value={filters.q}
-      placeholder="Search goals by name"
-      aria-label="Search goals by name"
+      placeholder={tx('Search goals by name')}
+      aria-label={tx('Search goals by name')}
     />
-    <select class="v2-input" name="period_type" aria-label="Filter by period">
-      <option value="">Any period</option>
+    <select class="v2-input" name="period_type" aria-label={tx('Filter by period')}>
+      <option value="">{tx('Any period')}</option>
       {#each Object.entries(PERIOD_TYPE_LABEL) as [key, label] (key)}
         <option value={key} selected={filters.period_type === key}>{label}</option>
       {/each}
     </select>
-    <select class="v2-input" name="window" aria-label="Filter by window">
-      <option value="">All goals</option>
-      <option value="current" selected={filters.window === 'current'}>Running today</option>
-      <option value="active" selected={filters.window === 'active'}>Not paused</option>
+    <select class="v2-input" name="window" aria-label={tx('Filter by window')}>
+      <option value="">{tx('All goals')}</option>
+      <option value="current" selected={filters.window === 'current'}>{tx('Running today')}</option>
+      <option value="active" selected={filters.window === 'active'}>{tx('Not paused')}</option>
     </select>
-    <button class="v2-btn" type="submit">Filter</button>
+    <button class="v2-btn" type="submit">{tx('Filter')}</button>
     {#if filtered}
-      <a class="v2-btn" href={resolve('/goals')}>Clear</a>
+      <a class="v2-btn" href={resolve('/goals')}>{tx('Clear')}</a>
     {/if}
   </form>
 </div>
@@ -175,25 +177,25 @@
            of one they already have. -->
       {#if filtered}
         <EmptyState
-          title="No goals match this filter"
-          body="Nothing here matches the search and period you picked. Clearing the filter shows everything you can see."
+          title={tx('No goals match this filter')}
+          body={tx('Nothing here matches the search and period you picked. Clearing the filter shows everything you can see.')}
         >
           {#snippet icon()}<Target size={21} />{/snippet}
           {#snippet actions()}
-            <a class="v2-btn" href={resolve('/goals')}>Clear filter</a>
+            <a class="v2-btn" href={resolve('/goals')}>{tx('Clear filter')}</a>
           {/snippet}
         </EmptyState>
       {:else}
         <EmptyState
-          title={data.can_edit ? 'No goals set' : 'Nothing assigned to you'}
+          title={data.can_edit ? tx('No goals set') : tx('Nothing assigned to you')}
           body={data.can_edit
-            ? 'A goal is a target and a period. Once one exists, closed-won deals count towards it automatically. Nobody has to update a number.'
-            : 'Nothing is assigned to you or your teams. An administrator sets these, and closed-won deals count towards them automatically once one exists.'}
+            ? tx('A goal is a target and a period. Once one exists, closed-won deals count towards it automatically. Nobody has to update a number.')
+            : tx('Nothing is assigned to you or your teams. An administrator sets these, and closed-won deals count towards them automatically once one exists.')}
         >
           {#snippet icon()}<Target size={21} />{/snippet}
           {#snippet actions()}
             {#if data.can_edit}
-              <a class="v2-btn v2-btn-primary" href={resolve('/goals/new')}>New goal</a>
+              <a class="v2-btn v2-btn-primary" href={resolve('/goals/new')}>{tx('New goal')}</a>
             {/if}
           {/snippet}
         </EmptyState>
@@ -201,7 +203,7 @@
     {:else}
       <div class="v2-split v2-split-wide">
         <div>
-          <div class="v2-label" style="margin-bottom:10px">This period</div>
+          <div class="v2-label" style="margin-bottom:10px">{tx('This period')}</div>
           <div style="display:flex;flex-direction:column;gap:10px">
             {#each data.goals as g (g.id)}
               {@const elapsed = elapsedPercent(g)}
@@ -218,7 +220,7 @@
                            checking the arithmetic against the pipeline needs to
                            know that before they file a bug. -->
                       {#if weightedTypes(g)}
-                        · <span title="Some deal types count at an adjusted value"
+                        · <span title={tx('Some deal types count at an adjusted value')}
                           >weighted ({weightedTypes(g)})</span
                         >
                       {/if}
@@ -229,7 +231,7 @@
                     {#if data.can_edit}
                       <a
                         href={resolve(`/goals/${g.id}/edit`)}
-                        style="font-size:11px;color:var(--v2-slate);text-decoration:none">Edit</a
+                        style="font-size:11px;color:var(--v2-slate);text-decoration:none">{tx('Edit')}</a
                       >
                     {/if}
                   </div>
@@ -282,7 +284,7 @@
                     {#if over}
                       Period ended {shortDate(g.period_end)}
                     {:else}
-                      <span class="v2-num">{elapsed}%</span> through the period
+                      <span class="v2-num">{elapsed}%</span> {tx('through the period')}
                     {/if}
                   </span>
                 </div>

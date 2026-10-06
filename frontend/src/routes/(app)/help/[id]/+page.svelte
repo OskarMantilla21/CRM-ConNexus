@@ -5,6 +5,8 @@
   import Pill from '$lib/v2/components/Pill.svelte';
   import { shortDate } from '$lib/v2/format.js';
   import { Paperclip, Send } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -22,10 +24,12 @@
 
 <PageHeader title={ticket.subject} center width="840px">
   {#snippet sub()}
-    {ticket.reference} · {ticket.categoryLabel} · opened {shortDate(ticket.createdAt)}
+    {ticket.reference} · {tx(ticket.categoryLabel)} · {tx('opened {when}', {
+      when: shortDate(ticket.createdAt)
+    })}
   {/snippet}
   {#snippet actions()}
-    <Pill tone={STATUS_TONE[ticket.status]}>{ticket.statusLabel}</Pill>
+    <Pill tone={STATUS_TONE[ticket.status]}>{tx(ticket.statusLabel)}</Pill>
   {/snippet}
 </PageHeader>
 
@@ -34,19 +38,19 @@
     class="v2-pad"
     style="padding-top:18px;padding-bottom:32px;max-width:840px;margin-inline:auto"
   >
-    <a class="back" href={resolve('/help')}>Back to help</a>
+    <a class="back" href={resolve('/help')}>{tx('Back to help')}</a>
 
     <div class="summary v2-card">
-      <span><b>Status</b>{ticket.statusLabel}</span>
-      <span><b>Priority</b>{ticket.priorityLabel}</span>
+      <span><b>{tx('Status')}</b>{tx(ticket.statusLabel)}</span>
+      <span><b>{tx('Priority')}</b>{tx(ticket.priorityLabel)}</span>
       <span
-        ><b>Assigned</b>{ticket.assigned
-          ? 'Support agent assigned'
-          : 'Waiting for assignment'}</span
+        ><b>{tx('Assigned')}</b>{ticket.assigned
+          ? tx('Support agent assigned')
+          : tx('Waiting for assignment')}</span
       >
     </div>
 
-    <div class="v2-label" style="margin:22px 0 10px">Conversation</div>
+    <div class="v2-label" style="margin:22px 0 10px">{tx('Conversation')}</div>
     <div class="conversation">
       {#each ticket.messages as message (message.id)}
         <article class:staff={message.authorType === 'staff'} class="message v2-card">
@@ -65,12 +69,12 @@
     </div>
 
     {#if form?.error}<p class="v2-card error">{form.error}</p>{/if}
-    {#if form?.sent}<p class="v2-card sent">Your reply was sent.</p>{/if}
+    {#if form?.sent}<p class="v2-card sent">{tx('Your reply was sent.')}</p>{/if}
 
     {#if ticket.status === 'closed'}
       <div class="v2-card closed">
-        This ticket is closed. Open a new ticket if you still need help.
-        <a class="v2-btn" href={resolve('/help/new')}>New ticket</a>
+        {tx('This ticket is closed. Open a new ticket if you still need help.')}
+        <a class="v2-btn" href={resolve('/help/new')}>{tx('New ticket')}</a>
       </div>
     {:else}
       <form
@@ -87,21 +91,21 @@
         }}
       >
         <div class="v2-field">
-          <label for="reply">Reply</label>
+          <label for="reply">{tx('Reply')}</label>
           <textarea
             id="reply"
             class="v2-input"
             name="body"
             rows="5"
             maxlength="10000"
-            placeholder="Add any details that will help us investigate."
+            placeholder={tx('Add any details that will help us investigate.')}
             >{form?.body ?? ''}</textarea
           >
         </div>
         <div class="compose-actions">
-          <input class="v2-input" type="file" name="attachment" aria-label="Attach a file" />
+          <input class="v2-input" type="file" name="attachment" aria-label={tx('Attach a file')} />
           <button class="v2-btn v2-btn-primary" type="submit" disabled={submitting}
-            ><Send />{submitting ? 'Sending…' : 'Send reply'}</button
+            ><Send />{submitting ? tx('Sending…') : tx('Send reply')}</button
           >
         </div>
       </form>

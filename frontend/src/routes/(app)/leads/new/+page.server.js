@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { EDITABLE_FIELDS, createLead, getLeadFormOptions } from '$lib/server/v2/leads.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -24,7 +26,7 @@ export const actions = {
       created = await createLead(event, values);
     } catch (/** @type {any} */ err) {
       // Values go back so a rejected form is not a blank form.
-      return fail(400, { values, error: readableError(err, 'Could not create the lead.') });
+      return fail(400, { values, error: readableError(err, tx('Could not create the lead.')) });
     }
 
     redirect(303, created?.id ? `/leads/${created.id}` : '/leads');

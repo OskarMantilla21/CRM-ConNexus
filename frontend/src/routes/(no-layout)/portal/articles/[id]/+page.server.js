@@ -16,6 +16,8 @@ import {
   getArticle,
   loginPath
 } from '$lib/server/portal';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 /** Send an expired or missing session back to the right org's sign-in page. */
 function toLogin(cookies) {
@@ -38,7 +40,7 @@ export async function load({ cookies, params }) {
   } catch (err) {
     if (err instanceof PortalError) {
       if (err.status === 401 || err.status === 403) toLogin(cookies);
-      if (err.status === 404) throw error(404, 'Article not found');
+      if (err.status === 404) throw error(404, tx('Article not found'));
     }
     throw err;
   }

@@ -1,4 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import {
   deleteArticle,
   getArticle,
@@ -30,12 +32,12 @@ export const actions = {
   setStatus: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const status = form.get('status')?.toString() ?? '';
-    if (!status) return fail(400, { error: 'No status to set.' });
+    if (!status) return fail(400, { error: tx('No status to set.') });
 
     try {
       await updateArticle({ cookies }, params.id, { status });
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not change the status.') });
+      return fail(400, { error: readableError(err, tx('Could not change the status.')) });
     }
     return { status };
   },
@@ -57,7 +59,7 @@ export const actions = {
       return fail(400, {
         error: readableError(
           err,
-          published ? 'Could not publish this article.' : 'Could not unpublish this article.'
+          published ? tx('Could not publish this article.') : tx('Could not unpublish this article.')
         )
       });
     }
@@ -73,7 +75,7 @@ export const actions = {
       await deleteArticle({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       const code = err?.status >= 400 && err?.status < 500 ? err.status : 400;
-      return fail(code, { error: readableError(err, 'Could not delete this article.') });
+      return fail(code, { error: readableError(err, tx('Could not delete this article.')) });
     }
     redirect(303, '/solutions');
   }

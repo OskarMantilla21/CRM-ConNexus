@@ -26,6 +26,7 @@
  *   closed child is still cascaded.
  */
 
+import '$lib/i18n/pages/serve.js';
 import { tx } from '$lib/i18n/translate.js';
 import { RESTRICTED_TICKET_NAME } from '$lib/v2/enums.js';
 
@@ -121,13 +122,18 @@ export function subtreeTruncated(root, id) {
  */
 export function cascadeSummary({ count, truncated = false }) {
   if (count === 0) {
-    return 'Nothing linked to this ticket is still open, so closing it changes nothing else.';
+    return tx(
+      'Nothing linked to this ticket is still open, so closing it changes nothing else.'
+    );
   }
-  const noun = count === 1 ? 'ticket' : 'tickets';
   const tail = truncated
-    ? ' There may be more further down than are listed here, and those close too.'
+    ? tx(' There may be more further down than are listed here, and those close too.')
     : '';
-  return `${count} linked ${noun} ${count === 1 ? 'is' : 'are'} still open and will be closed with it.${tail}`;
+  const line =
+    count === 1
+      ? tx('{count} linked ticket is still open and will be closed with it.', { count })
+      : tx('{count} linked tickets are still open and will be closed with it.', { count });
+  return `${line}${tail}`;
 }
 
 /**
@@ -140,12 +146,12 @@ export function cascadeSummary({ count, truncated = false }) {
  * @param {{ cascade: boolean, cascaded: number }} args
  */
 export function closeResultMessage({ cascade, cascaded }) {
-  if (!cascade) return 'Ticket closed.';
+  if (!cascade) return tx('Ticket closed.');
   if (cascaded === 0) {
-    return 'Ticket closed. Nothing linked was open, so nothing else changed.';
+    return tx('Ticket closed. Nothing linked was open, so nothing else changed.');
   }
-  const noun = cascaded === 1 ? 'ticket' : 'tickets';
-  return `Ticket closed, and ${cascaded} linked ${noun} with it.`;
+  if (cascaded === 1) return tx('Ticket closed, and {n} linked ticket with it.', { n: cascaded });
+  return tx('Ticket closed, and {n} linked tickets with it.', { n: cascaded });
 }
 
 /**

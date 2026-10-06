@@ -26,6 +26,9 @@
     invoiceStatusLabel
   } from '$lib/v2/enums.js';
   import { ChevronRight, Mail, Phone } from '@lucide/svelte';
+  import { industryLabel } from '$lib/v2/enums.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -45,45 +48,54 @@
       fact on this page: a stalled deal, or an invoice past its due date. */
   let headline = $derived(
     stalled.length && pastDue.length
-      ? `${stalled[0].name} is stalled and ${pastDue[0].invoice_number} is past due, same account, two problems.`
+      ? tx('{name} is stalled and {invoice} is past due, same account, two problems.', {
+          name: stalled[0].name,
+          invoice: pastDue[0].invoice_number
+        })
       : stalled.length
-        ? `${stalled[0].name} has not moved in ${stalled[0].days_in_current_stage} days.`
+        ? tx('{name} has not moved in {days} days.', {
+            name: stalled[0].name,
+            days: stalled[0].days_in_current_stage
+          })
         : pastDue.length
-          ? `${pastDue[0].invoice_number} is past due, ${money(pastDue[0].amount_due, pastDue[0].currency)}.`
+          ? tx('{invoice} is past due, {amount}.', {
+              invoice: pastDue[0].invoice_number,
+              amount: money(pastDue[0].amount_due, pastDue[0].currency)
+            })
           : null
   );
 </script>
 
 <PageHeader title={account.name} record>
   {#snippet crumb()}
-    <a href={resolve('/accounts')}>Accounts</a>
+    <a href={resolve('/accounts')}>{tx('Accounts')}</a>
     <ChevronRight size={12} />
-    <span>{account.industry || 'No industry'}</span>
+    <span>{industryLabel(account.industry_value) || tx('No industry')}</span>
   {/snippet}
   {#snippet sub()}
     {[
-      account.industry,
-      account.number_of_employees ? `${account.number_of_employees} staff` : null,
+      industryLabel(account.industry_value),
+      account.number_of_employees ? tx('{n} staff', { n: account.number_of_employees }) : null,
       /* Derived: the close date of the first deal won here. There is no
          contract model, so this is what "customer since" can honestly mean. */
       account.first_won_on
-        ? `customer since ${longDate(account.first_won_on)}`
-        : 'No deals won yet',
-      owners.length ? `owned by ${owners[0]}` : null
+        ? tx('customer since {date}', { date: longDate(account.first_won_on) })
+        : tx('No deals won yet'),
+      owners.length ? tx('owned by {name}', { name: owners[0] }) : null
     ]
       .filter(Boolean)
       .join(' · ')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve(`/accounts/${account.id}/edit`)}>Edit</a>
+    <a class="v2-btn" href={resolve(`/accounts/${account.id}/edit`)}>{tx('Edit')}</a>
     {#if data.canDelete}
       <!-- Offered only when the API's delete rule admits this caller; the
            DELETE asks the same rule again. -->
       <ConfirmAction
         action="?/delete"
-        label="Delete"
-        confirmLabel="Delete for good"
-        explain="Deletes {account.name} permanently. This cannot be undone."
+        label={tx('Delete')}
+        confirmLabel={tx('Delete for good')}
+        explain={tx('Deletes {name} permanently. This cannot be undone.', { name: account.name })}
       />
     {/if}
   {/snippet}
@@ -93,33 +105,42 @@
   <div class="v2-pad" style="padding-bottom:32px">
     <div class="v2-stats" style="margin-bottom:16px">
       <StatCard
-        label="Revenue won"
+        label={tx('Revenue won')}
         value={account.won_by_currency?.length ? moneyEach(account.won_by_currency) : '—'}
         tone={account.won_by_currency?.length ? 'moss' : 'slate'}
         detail={account.won_count
-          ? `${account.won_count} deal${account.won_count === 1 ? '' : 's'} won`
-          : 'Nothing won yet'}
+          ? account.won_count === 1
+            ? tx('{n} deal won', { n: account.won_count })
+            : tx('{n} deals won', { n: account.won_count })
+          : tx('Nothing won yet')}
       />
       <StatCard
-        label="Open pipeline"
+        label={tx('Open pipeline')}
         value={account.pipeline_by_currency?.length ? moneyEach(account.pipeline_by_currency) : '—'}
         detail={account.open_deal_count
-          ? `${account.open_deal_count} open deal${account.open_deal_count === 1 ? '' : 's'}`
-          : 'No open deals'}
+          ? account.open_deal_count === 1
+            ? tx('{n} open deal', { n: account.open_deal_count })
+            : tx('{n} open deals', { n: account.open_deal_count })
+          : tx('No open deals')}
       />
       <StatCard
-        label="Past due"
+        label={tx('Past due')}
         value={account.overdue_by_currency?.length ? moneyEach(account.overdue_by_currency) : '—'}
         tone={account.overdue_by_currency?.length ? 'rust' : 'slate'}
         detail={pastDue.length
           ? pastDue.map((/** @type {any} */ i) => i.invoice_number).join(', ')
-          : 'Nothing past due'}
+          : tx('Nothing past due')}
       />
       <StatCard
-        label="Open tickets"
+        label={tx('Open tickets')}
         value={String(account.open_tickets ?? 0)}
         tone={tickets.some((/** @type {any} */ t) => t.priority === 'Urgent') ? 'rust' : 'slate'}
-        detail={tickets.length ? `${tickets[0].name} · ${tickets[0].priority}` : 'None open'}
+        detail={tickets.length
+          ? tx('{name} · {priority}', {
+              name: tickets[0].name,
+              priority: choiceLabel(tickets[0].priority)
+            })
+          : tx('None open')}
       />
     </div>
 
@@ -138,9 +159,9 @@
           own. It comes back when invoices is.
         -->
         <NextAction
-          label="Needs you"
+          label={tx('Needs you')}
           text={headline}
-          action={stalled.length ? 'Open the deal' : null}
+          action={stalled.length ? tx('Open the deal') : null}
           href={stalled.length ? `/pipeline/${stalled[0].id}` : null}
           tone="rust"
         />
@@ -167,8 +188,8 @@
       <!-- Deals -->
       <section class="v2-card" style="overflow:hidden">
         <div class="v2-card-head">
-          <span class="v2-label">Deals</span>
-          <a href={resolve('/pipeline')}>View all</a>
+          <span class="v2-label">{tx('Deals')}</span>
+          <a href={resolve('/pipeline')}>{tx('View all')}</a>
         </div>
         {#each deals as d (d.id)}
           <a
@@ -183,13 +204,13 @@
               <div class="v2-sub" style="font-size:11.5px">
                 {d.stage_label}{d.closed_on
                   ? CLOSED_KINDS.includes(d.stage_kind)
-                    ? ` · closed ${shortDate(d.closed_on)}`
-                    : ` · due ${shortDate(d.closed_on)}`
+                    ? ` · ${tx('closed {date}', { date: shortDate(d.closed_on) })}`
+                    : ` · ${tx('due {date}', { date: shortDate(d.closed_on) })}`
                   : ''}
               </div>
             </div>
             {#if d.aging_status === 'red' && !CLOSED_KINDS.includes(d.stage_kind)}
-              <Pill tone="rust">{d.days_in_current_stage}d</Pill>
+              <Pill tone="rust">{tx('{n}d', { n: d.days_in_current_stage })}</Pill>
             {/if}
             <span class="v2-num" style="font-weight:600;font-size:13px"
               >{money(d.amount, d.currency)}</span
@@ -197,7 +218,7 @@
           </a>
         {:else}
           <p class="v2-sub" style="padding:14px 15px;font-size:12.5px">
-            No deals yet. Create one when there is something real to sell.
+            {tx('No deals yet. Create one when there is something real to sell.')}
           </p>
         {/each}
       </section>
@@ -205,8 +226,8 @@
       <!-- People -->
       <section class="v2-card" style="overflow:hidden">
         <div class="v2-card-head">
-          <span class="v2-label">People</span>
-          <a href={resolve('/contacts')}>View all</a>
+          <span class="v2-label">{tx('People')}</span>
+          <a href={resolve('/contacts')}>{tx('View all')}</a>
         </div>
         {#each contacts as c (c.id)}
           <div
@@ -224,25 +245,25 @@
               <!-- title and department. The mock showed a "relationship"
                    (Champion / Blocker); Contact has no such field. -->
               <div class="v2-sub" style="font-size:11.5px">
-                {[c.title, c.department].filter(Boolean).join(' · ') || 'No title recorded'}
+                {[c.title, c.department].filter(Boolean).join(' · ') || tx('No title recorded')}
               </div>
             </a>
             {#if c.email}
-              <a class="v2-btn v2-btn-sm" href="mailto:{c.email}" aria-label="Email {c.first_name}">
+              <a class="v2-btn v2-btn-sm" href="mailto:{c.email}" aria-label={tx('Email {name}', { name: c.first_name })}>
                 <Mail size={13} />
               </a>
             {/if}
             {#if c.phone && !c.do_not_call}
-              <a class="v2-btn v2-btn-sm" href="tel:{c.phone}" aria-label="Call {c.first_name}">
+              <a class="v2-btn v2-btn-sm" href="tel:{c.phone}" aria-label={tx('Call {name}', { name: c.first_name })}>
                 <Phone size={13} />
               </a>
             {/if}
           </div>
         {:else}
           <p class="v2-sub" style="padding:14px 15px;font-size:12.5px">
-            Nobody here yet. <a href={resolve(`/contacts/new?account=${account.id}`)}
-              >Add the person</a
-            > you actually talk to.
+            {tx('Nobody here yet.')} <a href={resolve(`/contacts/new?account=${account.id}`)}
+              >{tx('Add the person')}</a
+            > {tx('you actually talk to.')}
           </p>
         {/each}
       </section>
@@ -250,8 +271,8 @@
       <!-- Tickets -->
       <section class="v2-card" style="overflow:hidden">
         <div class="v2-card-head">
-          <span class="v2-label">Tickets</span>
-          <a href={resolve('/tickets')}>View all</a>
+          <span class="v2-label">{tx('Tickets')}</span>
+          <a href={resolve('/tickets')}>{tx('View all')}</a>
         </div>
         {#each tickets as t (t.id)}
           <!-- A link again: tickets is wired, so a real id sent to
@@ -261,13 +282,12 @@
             style="display:flex;gap:12px;align-items:center;padding:11px 15px;border-bottom:1px solid var(--v2-line-soft);color:inherit;text-decoration:none"
           >
             <span style="flex:1;font-size:13px;min-width:0">{t.name}</span>
-            <span class="v2-sub" style="font-size:11.5px">{t.status}</span>
-            <Pill tone={PRIORITY_TONE[t.priority]}>{t.priority}</Pill>
+            <span class="v2-sub" style="font-size:11.5px">{choiceLabel(t.status)}</span>
+            <Pill tone={PRIORITY_TONE[t.priority]}>{choiceLabel(t.priority)}</Pill>
           </a>
         {:else}
           <p class="v2-sub" style="padding:14px 15px;font-size:12.5px">
-            No tickets. <a href={resolve(`/tickets/new?account=${account.id}`)}>Raise one</a> if something
-            is wrong.
+            {tx('No tickets.')} <a href={resolve(`/tickets/new?account=${account.id}`)}>{tx('Raise one')}</a> {tx('if something is wrong.')}
           </p>
         {/each}
       </section>
@@ -275,8 +295,8 @@
       <!-- Invoices -->
       <section class="v2-card" style="overflow:hidden">
         <div class="v2-card-head">
-          <span class="v2-label">Invoices</span>
-          <a href={resolve('/invoices')}>View all</a>
+          <span class="v2-label">{tx('Invoices')}</span>
+          <a href={resolve('/invoices')}>{tx('View all')}</a>
         </div>
         {#each invoices as inv (inv.id)}
           <!-- A link now: invoices is wired, so a real id sent to
@@ -287,14 +307,14 @@
           >
             <span class="v2-num" style="font-size:12.5px">{inv.invoice_number}</span>
             <Pill tone={inv.past_due ? 'rust' : INVOICE_STATUS_TONE[inv.status]}>
-              {inv.past_due ? 'Past due' : invoiceStatusLabel(inv.status)}
+              {inv.past_due ? tx('Past due') : invoiceStatusLabel(inv.status)}
             </Pill>
             <span class="v2-num" style="margin-left:auto;font-weight:600;font-size:13px">
               {money(inv.past_due ? inv.amount_due : inv.total_amount, inv.currency)}
             </span>
           </a>
         {:else}
-          <p class="v2-sub" style="padding:14px 15px;font-size:12.5px">Nothing billed yet.</p>
+          <p class="v2-sub" style="padding:14px 15px;font-size:12.5px">{tx('Nothing billed yet.')}</p>
         {/each}
       </section>
     </div>

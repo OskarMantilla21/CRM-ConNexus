@@ -2,6 +2,8 @@ import { env as publicEnv } from '$env/dynamic/public';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import axios from 'axios';
 import { describeError } from '$lib/server/log-safe.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -25,6 +27,6 @@ export async function load({ cookies }) {
   } catch (error) {
     if (isRedirect(error)) throw error;
     console.error('Error fetching the user directory:', describeError(error));
-    return { users: [], error: 'No se pudo cargar el directorio de usuarios.' };
+    return { users: [], error: tx('Could not load the user directory.') };
   }
 }

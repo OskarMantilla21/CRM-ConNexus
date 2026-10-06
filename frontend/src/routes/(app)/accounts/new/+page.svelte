@@ -18,6 +18,9 @@
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import DuplicateNotice from '$lib/v2/components/DuplicateNotice.svelte';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
+  import { industryLabel } from '$lib/v2/enums.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form: result } = $props();
@@ -47,23 +50,23 @@
   let errors = $derived.by(() => {
     /** @type {Record<string, string>} */
     const e = {};
-    if (!form.name.trim()) e.name = 'Give the account the name you would search for.';
+    if (!form.name.trim()) e.name = tx('Give the account the name you would search for.');
 
     if (form.annual_revenue !== '') {
       const n = Number(form.annual_revenue);
-      if (!Number.isFinite(n)) e.annual_revenue = 'Annual revenue has to be a number.';
-      else if (n < 0) e.annual_revenue = 'Annual revenue cannot be negative.';
+      if (!Number.isFinite(n)) e.annual_revenue = tx('Annual revenue has to be a number.');
+      else if (n < 0) e.annual_revenue = tx('Annual revenue cannot be negative.');
     }
     if (form.number_of_employees !== '') {
       const n = Number(form.number_of_employees);
-      if (!Number.isInteger(n)) e.number_of_employees = 'Headcount is a whole number.';
-      else if (n < 0) e.number_of_employees = 'Headcount cannot be negative.';
+      if (!Number.isInteger(n)) e.number_of_employees = tx('Headcount is a whole number.');
+      else if (n < 0) e.number_of_employees = tx('Headcount cannot be negative.');
     }
     if (form.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email))
-      e.email = 'That does not look like an email address.';
+      e.email = tx('That does not look like an email address.');
     // The exact regex from `flexible_phone_validator`.
     if (form.phone && !/^[\d\s\-()+.]{7,25}$/.test(form.phone))
-      e.phone = '7 to 25 characters: digits, spaces, brackets, dots, dashes. No extensions.';
+      e.phone = tx('7 to 25 characters: digits, spaces, brackets, dots, dashes. No extensions.');
 
     return e;
   });
@@ -94,14 +97,14 @@
   };
 </script>
 
-<PageHeader title="New account" center>
+<PageHeader title={tx('New account')} center>
   {#snippet crumb()}
-    <a href={resolve('/accounts')}>Accounts</a>
+    <a href={resolve('/accounts')}>{tx('Accounts')}</a>
     <ChevronRight size={12} />
-    <span>New</span>
+    <span>{tx('New')}</span>
   {/snippet}
   {#snippet sub()}
-    A company you sell to. Everything else attaches to it later.
+    {tx('A company you sell to. Everything else attaches to it later.')}
   {/snippet}
 </PageHeader>
 
@@ -115,14 +118,14 @@
       >
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">The server refused this</div>
+          <div style="font-weight:600">{tx('The server refused this')}</div>
           <div class="v2-sub" style="margin-top:2px">{result.error}</div>
         </div>
       </div>
     {/if}
 
     <div class="v2-field">
-      <label for="f-name">Account name</label>
+      <label for="f-name">{tx('Account name')}</label>
       <input
         id="f-name"
         name="name"
@@ -134,24 +137,24 @@
       {#if show('name')}
         <p class="v2-error">{errors.name}</p>
       {:else}
-        <p class="v2-hint">Has to be unique in this organisation, ignoring capitals.</p>
+        <p class="v2-hint">{tx('Has to be unique in this organisation, ignoring capitals.')}</p>
       {/if}
     </div>
 
     <div class="pair">
       <div class="v2-field">
-        <label for="f-industry">Industry</label>
+        <label for="f-industry">{tx('Industry')}</label>
         <select id="f-industry" name="industry" class="v2-input" bind:value={form.industry}>
-          <option value="">Not recorded</option>
+          <option value="">{tx('Not recorded')}</option>
           {#each data.industries as i (i.value)}
-            <option value={i.value}>{i.label}</option>
+            <option value={i.value}>{industryLabel(i.value)}</option>
           {/each}
         </select>
       </div>
       <div class="v2-field">
-        <label for="f-owner">Owner</label>
+        <label for="f-owner">{tx('Owner')}</label>
         <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-          <option value="">Nobody</option>
+          <option value="">{tx('Nobody')}</option>
           {#each data.owners as o (o.id)}
             <!-- The value is the Profile id, not the display name. -->
             <option value={o.id}>{o.name}</option>
@@ -162,7 +165,7 @@
 
     <div class="pair">
       <div class="v2-field">
-        <label for="f-email">Email</label>
+        <label for="f-email">{tx('Email')}</label>
         <input
           id="f-email"
           name="email"
@@ -175,7 +178,7 @@
         {#if show('email')}<p class="v2-error">{errors.email}</p>{/if}
       </div>
       <div class="v2-field">
-        <label for="f-phone">Phone</label>
+        <label for="f-phone">{tx('Phone')}</label>
         <input
           id="f-phone"
           name="phone"
@@ -189,13 +192,13 @@
     </div>
 
     <div class="v2-field">
-      <label for="f-website">Website</label>
+      <label for="f-website">{tx('Website')}</label>
       <input id="f-website" name="website" class="v2-input" type="url" bind:value={form.website} />
     </div>
 
     <div class="pair">
       <div class="v2-field">
-        <label for="f-staff">Headcount</label>
+        <label for="f-staff">{tx('Headcount')}</label>
         <input
           id="f-staff"
           name="number_of_employees"
@@ -209,7 +212,7 @@
         {#if show('number_of_employees')}<p class="v2-error">{errors.number_of_employees}</p>{/if}
       </div>
       <div class="v2-field">
-        <label for="f-revenue">Annual revenue</label>
+        <label for="f-revenue">{tx('Annual revenue')}</label>
         <input
           id="f-revenue"
           name="annual_revenue"
@@ -226,13 +229,13 @@
 
     <div class="pair">
       <div class="v2-field">
-        <label for="f-city">City</label>
+        <label for="f-city">{tx('City')}</label>
         <input id="f-city" name="city" class="v2-input" bind:value={form.city} />
       </div>
       <div class="v2-field">
-        <label for="f-country">Country</label>
+        <label for="f-country">{tx('Country')}</label>
         <select id="f-country" name="country" class="v2-input" bind:value={form.country}>
-          <option value="">Not recorded</option>
+          <option value="">{tx('Not recorded')}</option>
           {#each data.countries as c (c.value)}
             <option value={c.value}>{c.label}</option>
           {/each}
@@ -241,7 +244,7 @@
     </div>
 
     <div class="v2-field">
-      <label for="f-notes">Notes</label>
+      <label for="f-notes">{tx('Notes')}</label>
       <textarea
         id="f-notes"
         name="description"
@@ -256,8 +259,8 @@
     />
 
     <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit">Create account</button>
-      <a class="v2-btn" href={resolve('/accounts')}>Cancel</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create account')}</button>
+      <a class="v2-btn" href={resolve('/accounts')}>{tx('Cancel')}</a>
     </div>
   </form>
 </div>

@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import { untrack, tick } from 'svelte';
   import { enhance } from '$app/forms';
@@ -51,17 +53,17 @@
   let errors = $derived.by(() => {
     /** @type {Record<string, string>} */
     const e = {};
-    if (!form.name.trim()) e.name = 'Give the goal a name you would recognise in a list.';
+    if (!form.name.trim()) e.name = tx('Give the goal a name you would recognise in a list.');
 
     const target = Number(form.target_value);
-    if (form.target_value === '') e.target_value = 'What is the target?';
+    if (form.target_value === 'tx(') e.target_value = tx(')What is the target?');
     else if (!Number.isFinite(target) || target <= 0)
-      e.target_value = 'Target has to be a number greater than zero.';
+      e.target_value = tx('Target has to be a number greater than zero.');
 
-    if (!form.period_start) e.period_start = 'When does the period start?';
-    if (!form.period_end) e.period_end = 'When does the period end?';
+    if (!form.period_start) e.period_start = tx('When does the period start?');
+    if (!form.period_end) e.period_end = tx('When does the period end?');
     else if (form.period_start && form.period_end <= form.period_start)
-      e.period_end = 'The end has to be after the start.';
+      e.period_end = tx('The end has to be after the start.');
 
     return e;
   });
@@ -88,18 +90,18 @@
 </script>
 
 {#if !data.can_edit}
-  <PageHeader title="New goal">
-    {#snippet crumb()}<a href={resolve('/goals')}>Goals</a> ›{/snippet}
+  <PageHeader title={tx('New goal')}>
+    {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
   </PageHeader>
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
+      label={tx('Admins only')}
       text="Setting goals is limited to admins. Ask an admin on your team to add a quota or target."
     />
   </div>
 {:else}
-  <PageHeader title="New goal" center>
-    {#snippet crumb()}<a href={resolve('/goals')}>Goals</a> ›{/snippet}
+  <PageHeader title={tx('New goal')} center>
+    {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
     {#snippet sub()}
       A target and a period. Closed-won deals count towards it automatically.
     {/snippet}
@@ -115,14 +117,14 @@
         >
           <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
           <div class="v2-next-body">
-            <div style="font-weight:600">The server refused this goal</div>
+            <div style="font-weight:600">{tx('The server refused this goal')}</div>
             <div class="v2-sub" style="margin-top:2px">{result.error}</div>
           </div>
         </div>
       {/if}
 
       <div class="v2-field">
-        <label for="f-name">Goal name</label>
+        <label for="f-name">{tx('Goal name')}</label>
         <input
           id="f-name"
           name="name"
@@ -131,7 +133,7 @@
           onblur={() => (touched.name = true)}
           aria-invalid={show('name') ? 'true' : undefined}
           aria-describedby={show('name') ? 'e-name' : 'h-name'}
-          placeholder="Q3 revenue. Priya"
+          placeholder={tx('Q3 revenue. Priya')}
         />
         {#if show('name')}
           <p class="v2-error" id="e-name">{errors.name}</p>
@@ -144,7 +146,7 @@
 
       <div class="v2-pair">
         <div class="v2-field">
-          <label for="f-type">Measured in</label>
+          <label for="f-type">{tx('Measured in')}</label>
           <select id="f-type" name="goal_type" class="v2-input" bind:value={form.goal_type}>
             {#each Object.entries(GOAL_TYPE_LABEL) as [key, label] (key)}
               <option value={key}>{label}</option>
@@ -157,7 +159,7 @@
         </div>
 
         <div class="v2-field">
-          <label for="f-target">Target</label>
+          <label for="f-target">{tx('Target')}</label>
           <input
             id="f-target"
             name="target_value"
@@ -185,7 +187,7 @@
            keeps (or, on create, defaults) the org's currency. -->
       {#if form.goal_type === 'REVENUE'}
         <div class="v2-field">
-          <label for="f-currency">Currency</label>
+          <label for="f-currency">{tx('Currency')}</label>
           <select id="f-currency" name="currency" class="v2-input" bind:value={form.currency}>
             {#each currencyOptions as c (c.value)}
               <option value={c.value}>{c.label}</option>
@@ -199,20 +201,20 @@
       {/if}
 
       <div class="v2-field">
-        <label for="f-period">Period</label>
+        <label for="f-period">{tx('Period')}</label>
         <select id="f-period" name="period_type" class="v2-input" bind:value={form.period_type}>
           {#each Object.entries(PERIOD_TYPE_LABEL) as [key, label] (key)}
             <option value={key}>{label}</option>
           {/each}
         </select>
-        <p class="v2-hint">A label for the window below. The dates are what actually scope it.</p>
+        <p class="v2-hint">{tx('A label for the window below. The dates are what actually scope it.')}</p>
       </div>
 
       <DealTypeWeights weights={{}} goalType={form.goal_type} />
 
       <div class="v2-pair">
         <div class="v2-field">
-          <label for="f-start">Period start</label>
+          <label for="f-start">{tx('Period start')}</label>
           <input
             id="f-start"
             name="period_start"
@@ -227,7 +229,7 @@
         </div>
 
         <div class="v2-field">
-          <label for="f-end">Period end</label>
+          <label for="f-end">{tx('Period end')}</label>
           <input
             id="f-end"
             name="period_end"
@@ -243,18 +245,18 @@
       </div>
 
       <div class="v2-field">
-        <label for="f-owner">Whose goal</label>
+        <label for="f-owner">{tx('Whose goal')}</label>
         <select id="f-owner" name="target" class="v2-input" bind:value={form.target}>
-          <option value="org">Whole org</option>
+          <option value="org">{tx('Whole org')}</option>
           {#if data.people?.length}
-            <optgroup label="Person">
+            <optgroup label={tx('Person')}>
               {#each data.people as p (p.id)}
                 <option value="profile:{p.id}">{p.name}</option>
               {/each}
             </optgroup>
           {/if}
           {#if data.teams?.length}
-            <optgroup label="Team">
+            <optgroup label={tx('Team')}>
               {#each data.teams as t (t.id)}
                 <option value="team:{t.id}">{t.name}</option>
               {/each}
@@ -268,11 +270,11 @@
       </div>
 
       <div style="display:flex;gap:8px;align-items:center;margin-top:22px">
-        <button class="v2-btn v2-btn-primary" type="submit">Create goal</button>
-        <a class="v2-btn" href={resolve('/goals')}>Cancel</a>
+        <button class="v2-btn v2-btn-primary" type="submit">{tx('Create goal')}</button>
+        <a class="v2-btn" href={resolve('/goals')}>{tx('Cancel')}</a>
         <span class="v2-sub" style="margin-left:auto;font-size:12px">
           <span class="v2-num">{REQUIRED.filter((f) => !errors[f]).length}</span>
-          of <span class="v2-num">{REQUIRED.length}</span> required fields done
+          of <span class="v2-num">{REQUIRED.length}</span> {tx('required fields done')}
         </span>
       </div>
     </form>

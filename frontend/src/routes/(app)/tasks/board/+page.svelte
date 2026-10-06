@@ -32,6 +32,8 @@
   import { count, shortDate, daysSince } from '$lib/v2/format.js';
   import { BOARD_PRIORITY_LABEL, BOARD_PRIORITY_TONE } from '$lib/v2/enums.js';
   import { Plus, ChevronDown, TriangleAlert } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -138,22 +140,22 @@
       } else {
         moveError =
           (result.type === 'failure' && /** @type {any} */ (result.data)?.error) ||
-          'Could not move the card; reverted.';
+          tx('Could not move the card; reverted.');
         await invalidateAll();
       }
     } catch {
-      moveError = 'Could not move the card, reverted.';
+      moveError = tx('Could not move the card, reverted.');
       await invalidateAll();
     }
   }
 </script>
 
-<PageHeader title="Tasks">
+<PageHeader title={tx('Tasks')}>
   {#snippet sub()}
     {#if data.board}
       {data.board.name}{data.board.description ? ` · ${data.board.description}` : ''}
     {:else}
-      Boards
+      {tx('Boards')}
     {/if}
   {/snippet}
   {#snippet actions()}
@@ -192,10 +194,11 @@
   <div class="v2-pad" style="padding-top:32px">
     <div class="v2-empty">
       <Plus size={22} style="opacity:0.4" />
-      <p class="v2-empty-title">No boards yet</p>
+      <p class="v2-empty-title">{tx('No boards yet')}</p>
       <p class="v2-sub" style="max-width:34ch;text-align:center">
-        A board organises work into columns you drag cards between. It starts with To Do, In
-        Progress and Done, and you can rename them later.
+        {tx(
+          'A board organises work into columns you drag cards between. It starts with To Do, In Progress and Done, and you can rename them later.'
+        )}
       </p>
       <form
         class="v2-lane-add-form"
@@ -211,9 +214,9 @@
               await invalidateAll();
             } else if (result.type === 'failure') {
               createBoardError =
-                /** @type {any} */ (result.data)?.error || 'Could not create the board.';
+                /** @type {any} */ (result.data)?.error || tx('Could not create the board.');
             } else if (result.type === 'error') {
-              createBoardError = 'Could not create the board.';
+              createBoardError = tx('Could not create the board.');
             }
           };
         }}
@@ -222,13 +225,13 @@
         <input
           class="v2-input"
           name="name"
-          placeholder="Board name"
+          placeholder={tx('Board name')}
           maxlength="255"
           required
           autofocus
         />
         <button class="v2-btn v2-btn-primary" type="submit" disabled={createBoardBusy}>
-          {createBoardBusy ? 'Creating…' : 'Create board'}
+          {createBoardBusy ? tx('Creating…') : tx('Create board')}
         </button>
       </form>
       {#if createBoardError}
@@ -248,23 +251,23 @@
 
   <div class="v2-pad" style="padding-top:16px;flex:none">
     <div class="v2-stats">
-      <StatCard label="Open cards" value={count(totals.open)} tone="ink" />
+      <StatCard label={tx('Open cards')} value={count(totals.open)} tone="ink" />
       <StatCard
-        label="Overdue"
+        label={tx('Overdue')}
         value={count(totals.overdue)}
         tone={totals.overdue > 0 ? 'rust' : 'slate'}
-        detail="Past due and not marked done"
+        detail={tx('Past due and not marked done')}
       />
       <StatCard
-        label="Unassigned"
+        label={tx('Unassigned')}
         value={count(totals.unassigned)}
         tone={totals.unassigned > 0 ? 'clay' : 'slate'}
       />
       <StatCard
-        label="Columns over limit"
+        label={tx('Columns over limit')}
         value={count(totals.over_limit)}
         tone={totals.over_limit > 0 ? 'clay' : 'slate'}
-        detail="More cards than the column allows"
+        detail={tx('More cards than the column allows')}
       />
     </div>
   </div>
@@ -285,7 +288,12 @@
         {#if over}
           <div class="v2-lane-over">
             <TriangleAlert size={12} style="flex:none" />
-            <span>{lane.cards.length - lane.limit} over the limit of {lane.limit}</span>
+            <span
+              >{tx('{n} over the limit of {limit}', {
+                n: lane.cards.length - lane.limit,
+                limit: lane.limit
+              })}</span
+            >
           </div>
         {/if}
 
@@ -315,7 +323,7 @@
                   >{BOARD_PRIORITY_LABEL[t.priority]}</Pill
                 >
                 {#if overdue}
-                  <Pill tone="rust">{daysSince(t.due_date)}d late</Pill>
+                  <Pill tone="rust">{tx('{n}d late', { n: daysSince(t.due_date) })}</Pill>
                 {/if}
               </div>
 
@@ -326,11 +334,13 @@
                   {/each}
                 {:else}
                   <!-- Named, not an empty slot. A blank reads as a rendering gap. -->
-                  <span class="v2-sub" style="font-size:11.5px">Unassigned</span>
+                  <span class="v2-sub" style="font-size:11.5px">{tx('Unassigned')}</span>
                 {/if}
                 {#if t.due_date}
                   <span class="v2-sub" style="margin-left:auto;font-size:11.5px">
-                    {done ? 'done ' : ''}{shortDate(done ? t.completed_at : t.due_date)}
+                    {done
+                      ? tx('done {date}', { date: shortDate(t.completed_at) })
+                      : shortDate(t.due_date)}
                   </span>
                 {/if}
               </div>
@@ -340,14 +350,16 @@
                      work by every count on this page, and by the API's. -->
                 <div class="v2-card-flag">
                   <TriangleAlert size={12} style="flex:none" />
-                  <span>In Done, never marked complete, still counted as open</span>
+                  <span
+                    >{tx('In Done, never marked complete, still counted as open')}</span
+                  >
                 </div>
               {/if}
             </div>
           {/each}
         </div>
         {#if lane.cards.length === 0}
-          <p class="v2-sub v2-lane-empty">Drop a card here</p>
+          <p class="v2-sub v2-lane-empty">{tx('Drop a card here')}</p>
         {/if}
 
         <!-- Add a card. Any board member can, so it sits on every lane. Kept
@@ -366,9 +378,9 @@
                   await invalidateAll();
                 } else if (result.type === 'failure') {
                   addCardError =
-                    /** @type {any} */ (result.data)?.error || 'Could not add the card.';
+                    /** @type {any} */ (result.data)?.error || tx('Could not add the card.');
                 } else if (result.type === 'error') {
-                  addCardError = 'Could not add the card.';
+                  addCardError = tx('Could not add the card.');
                 }
               };
             }}
@@ -378,7 +390,7 @@
             <input
               class="v2-input v2-lane-add-input"
               name="title"
-              placeholder="Card title"
+              placeholder={tx('Card title')}
               required
               autofocus
               disabled={addCardBusy}
@@ -386,7 +398,7 @@
             <textarea
               class="v2-input v2-lane-add-input"
               name="description"
-              placeholder="Description (optional)"
+              placeholder={tx('Description (optional)')}
               rows="2"
               disabled={addCardBusy}></textarea>
             <select class="v2-input v2-lane-add-input" name="priority" disabled={addCardBusy}>
@@ -399,7 +411,7 @@
             {/if}
             <div class="v2-lane-add-actions">
               <button type="submit" class="v2-btn v2-btn-primary v2-btn-sm" disabled={addCardBusy}>
-                {addCardBusy ? 'Adding…' : 'Add card'}
+                {addCardBusy ? tx('Adding…') : tx('Add card')}
               </button>
               <button
                 type="button"
@@ -407,13 +419,13 @@
                 onclick={closeCardForm}
                 disabled={addCardBusy}
               >
-                Cancel
+                {tx('Cancel')}
               </button>
             </div>
           </form>
         {:else}
           <button class="v2-lane-add" onclick={() => openCardForm(lane.id)}>
-            <Plus size={13} /> Add card
+            <Plus size={13} /> {tx('Add card')}
           </button>
         {/if}
       </section>
@@ -439,9 +451,9 @@
                   await invalidateAll();
                 } else if (result.type === 'failure') {
                   addColumnError =
-                    /** @type {any} */ (result.data)?.error || 'Could not add the column.';
+                    /** @type {any} */ (result.data)?.error || tx('Could not add the column.');
                 } else if (result.type === 'error') {
-                  addColumnError = 'Could not add the column.';
+                  addColumnError = tx('Could not add the column.');
                 }
               };
             }}
@@ -459,7 +471,7 @@
               <input
                 class="v2-input v2-lane-add-input"
                 name="name"
-                placeholder="Column name"
+                placeholder={tx('Column name')}
                 required
                 autofocus
                 disabled={addColumnBusy}
@@ -469,7 +481,7 @@
                 type="color"
                 name="color"
                 value="#6b7280"
-                aria-label="Column colour"
+                aria-label={tx('Column colour')}
                 disabled={addColumnBusy}
               />
             </div>
@@ -482,7 +494,7 @@
                 class="v2-btn v2-btn-primary v2-btn-sm"
                 disabled={addColumnBusy}
               >
-                {addColumnBusy ? 'Adding…' : 'Add column'}
+                {addColumnBusy ? tx('Adding…') : tx('Add column')}
               </button>
               <button
                 type="button"
@@ -493,13 +505,13 @@
                 }}
                 disabled={addColumnBusy}
               >
-                Cancel
+                {tx('Cancel')}
               </button>
             </div>
           </form>
         {:else}
           <button class="v2-lane-add v2-lane-add-lane" onclick={() => (showAddColumn = true)}>
-            <Plus size={14} /> Add column
+            <Plus size={14} /> {tx('Add column')}
           </button>
         {/if}
       </section>
@@ -511,9 +523,9 @@
      word "task" suggests that, and everyone assumes a card here is also a task
      there, so it is said once, in the open. -->
 <p class="v2-sub v2-pad" style="font-size:11.5px;padding-bottom:14px;flex:none;margin:0">
-  Cards on a board are separate records from the
-  <a href={resolve('/tasks')} style="color:inherit">task list</a>. A card here does not appear
-  there, and completing one does not complete the other.
+  {tx('Cards on a board are separate records from the')}
+  <a href={resolve('/tasks')} style="color:inherit">{tx('task list')}</a>.
+  {tx('A card here does not appear there, and completing one does not complete the other.')}
 </p>
 
 <style>

@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { EDITABLE_FIELDS, getContactForEdit, updateContact } from '$lib/server/v2/contacts.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -51,7 +53,7 @@ export const actions = {
     try {
       await updateContact({ cookies }, params.id, values);
     } catch (/** @type {any} */ err) {
-      return fail(400, { values, error: readableError(err, 'Could not save this contact.') });
+      return fail(400, { values, error: readableError(err, tx('Could not save this contact.')) });
     }
 
     redirect(303, `/contacts/${params.id}`);

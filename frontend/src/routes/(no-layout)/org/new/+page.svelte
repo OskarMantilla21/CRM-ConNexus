@@ -6,6 +6,8 @@
   import { goto } from '$app/navigation';
   import imgLogo from '$lib/assets/images/logo.png';
   import { ArrowLeft, Check, AlertCircle } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   let { data, form } = $props();
 
@@ -41,7 +43,7 @@
 </script>
 
 <svelte:head>
-  <title>Create organisation · BottleCRM</title>
+  <title>{tx('Create organisation · BottleCRM')}</title>
 </svelte:head>
 
 <div class="v2-root v2-auth">
@@ -53,8 +55,8 @@
 
     <div class="v2-auth-card">
       <div class="v2-auth-head">
-        <h1>Create organisation</h1>
-        <p>Set up a new workspace for your team.</p>
+        <h1>{tx('Create organisation')}</h1>
+        <p>{tx('Set up a new workspace for your team.')}</p>
       </div>
 
       <form
@@ -69,21 +71,21 @@
         }}
       >
         <div class="v2-field">
-          <label for="org_name">Organisation name</label>
+          <label for="org_name">{tx('Organisation name')}</label>
           <input
             type="text"
             id="org_name"
             name="org_name"
             class="v2-input"
-            placeholder="e.g. Acme Inc."
+            placeholder={tx('e.g. Acme Inc.')}
             required
             disabled={isSubmitting || !!form?.data}
           />
-          <p class="v2-hint">This becomes your workspace name in BottleCRM.</p>
+          <p class="v2-hint">{tx('This becomes your workspace name in BottleCRM.')}</p>
         </div>
 
         <div class="v2-field">
-          <label for="timezone">Time zone</label>
+          <label for="timezone">{tx('Time zone')}</label>
           <select
             id="timezone"
             name="timezone"
@@ -96,17 +98,19 @@
             {/each}
           </select>
           <p class="v2-hint">
-            Sets when a day starts here, so "due today" and "overdue" mean what your team expects.
-            You can change it later in Settings.
+            {tx(
+              'Sets when a day starts here, so "due today" and "overdue" mean what your team expects. You can change it later in Settings.'
+            )}
           </p>
         </div>
 
         {#if packs.length > 0}
           <fieldset class="v2-field pack-choice">
-            <legend>What kind of business is this?</legend>
+            <legend>{tx('What kind of business is this?')}</legend>
             <p class="v2-hint" style="margin-top:0">
-              Sets up a starter pipeline, tags and fields for your industry. You can change
-              everything later.
+              {tx(
+                'Sets up a starter pipeline, tags and fields for your industry. You can change everything later.'
+              )}
             </p>
 
             <label class="pack-opt">
@@ -118,8 +122,8 @@
                 disabled={isSubmitting || !!form?.data}
               />
               <span class="pack-opt-body">
-                <b>Skip for now</b>
-                <span class="v2-hint" style="margin:0">Start with a blank workspace.</span>
+                <b>{tx('Skip for now')}</b>
+                <span class="v2-hint" style="margin:0">{tx('Start with a blank workspace.')}</span>
               </span>
             </label>
 
@@ -146,9 +150,9 @@
           <div class="v2-auth-note v2-auth-note-bad" style="margin-bottom:14px">
             <AlertCircle />
             <div>
-              <b>Couldn't create organisation</b>
+              <b>{tx("Couldn't create organisation")}</b>
               <div style="font-weight:400;margin-top:2px">
-                {form.error.name || 'Please try again.'}
+                {form.error.name || tx('Please try again.')}
               </div>
             </div>
           </div>
@@ -158,8 +162,8 @@
           <div class="v2-auth-note v2-auth-note-ok" style="margin-bottom:14px">
             <Check />
             <div>
-              <b>Organisation created</b>
-              <div style="font-weight:400;margin-top:2px">Taking you to your workspaces…</div>
+              <b>{tx('Organisation created')}</b>
+              <div style="font-weight:400;margin-top:2px">{tx('Taking you to your workspaces…')}</div>
             </div>
           </div>
         {/if}
@@ -171,12 +175,12 @@
         >
           {#if isSubmitting}
             <span class="v2-spin"></span>
-            <span>Creating…</span>
+            <span>{tx('Creating…')}</span>
           {:else if form?.data}
             <Check size={15} />
-            <span>Created</span>
+            <span>{tx('Created')}</span>
           {:else}
-            <span>Create organisation</span>
+            <span>{tx('Create organisation')}</span>
           {/if}
         </button>
       </form>
@@ -184,9 +188,10 @@
 
     <div class="v2-auth-foot">
       <a href={resolve('/org')} style="display:inline-flex;align-items:center;gap:5px">
-        <ArrowLeft size={13} /> Back to organisations
+        <ArrowLeft size={13} /> {tx('Back to organisations')}
       </a>
     </div>
+    <LanguageSelect />
   </div>
 </div>
 

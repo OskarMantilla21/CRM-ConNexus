@@ -22,6 +22,8 @@
   import { Plus, ShieldAlert } from '@lucide/svelte';
   import WebhookFields from './WebhookFields.svelte';
   import SecretOnce from './SecretOnce.svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -46,33 +48,33 @@
    * @param {any} e
    */
   function creatorLabel(e) {
-    return e.created_by ? e.created_by.name || e.created_by.email : 'a removed user';
+    return e.created_by ? e.created_by.name || e.created_by.email : tx('a removed user');
   }
 
   /** @param {any} e */
   function endpointState(e) {
-    if (e.is_active) return { tone: /** @type {const} */ ('moss'), label: 'Sending' };
+    if (e.is_active) return { tone: /** @type {const} */ ('moss'), label: tx('Sending') };
     // The server turned it off: a 410 from the receiver, or its creator lost
     // the standing to own it. Either way an admin can turn it back on.
-    if (e.disabled_reason) return { tone: /** @type {const} */ ('clay'), label: 'Paused' };
-    return { tone: /** @type {const} */ ('slate'), label: 'Off' };
+    if (e.disabled_reason) return { tone: /** @type {const} */ ('clay'), label: tx('Paused') };
+    return { tone: /** @type {const} */ ('slate'), label: tx('Off') };
   }
 </script>
 
-<PageHeader title="Webhooks">
+<PageHeader title={tx('Webhooks')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
     {#if !data.forbidden}
       <span class="v2-num"
         >{count(data.endpoints.filter((/** @type {any} */ e) => e.is_active).length)}</span
       >
-      sending of <span class="v2-num">{count(data.endpoints.length)}</span>
+      {tx('sending of')} <span class="v2-num">{count(data.endpoints.length)}</span>
     {/if}
   {/snippet}
   {#snippet actions()}
     {#if !data.forbidden && !atLimit}
       <button class="v2-btn v2-btn-primary" onclick={() => (creating = !creating)}>
-        <Plus />New webhook
+        <Plus />{tx('New webhook')}
       </button>
     {/if}
   {/snippet}
@@ -81,8 +83,8 @@
 {#if data.forbidden}
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
-      text="Webhooks send copies of this organization's records to other services, and a hook URL is often a secret of its own, so only admins can see or change them."
+      label={tx('Admins only')}
+      text={tx("Webhooks send copies of this organization's records to other services, and a hook URL is often a secret of its own, so only admins can see or change them.")}
     />
   </div>
 {:else}
@@ -90,14 +92,14 @@
     <div class="v2-pad" style="padding-top:16px;padding-bottom:32px">
       {#if form?.created?.secret}
         <SecretOnce
-          title="Webhook added, copy its signing secret now"
+          title={tx('Webhook added, copy its signing secret now')}
           secret={form.created.secret}
         />
       {/if}
 
       {#if form?.create?.error && !creating}
         <div style="margin-bottom:16px">
-          <NextAction label="That did not work" text={form.create.error} tone="rust" />
+          <NextAction label={tx('That did not work')} text={form.create.error} tone="rust" />
         </div>
       {/if}
 
@@ -120,14 +122,14 @@
             </p>
           {/if}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-            <button class="v2-btn v2-btn-primary wh-tap" disabled={busy}>Add webhook</button>
+            <button class="v2-btn v2-btn-primary wh-tap" disabled={busy}>{tx('Add webhook')}</button>
             <button
               type="button"
               class="v2-btn wh-tap"
               disabled={busy}
               onclick={() => (creating = false)}
             >
-              Cancel
+              {tx('Cancel')}
             </button>
           </div>
         </form>
@@ -135,18 +137,18 @@
 
       {#if atLimit}
         <p class="v2-sub" style="font-size:12px;margin:0 0 14px">
-          An organization can have at most {data.limit} webhooks. Remove one to add another.
+          {tx('An organization can have at most {n} webhooks. Remove one to add another.', { n: data.limit })}
         </p>
       {/if}
 
       {#if !data.endpoints.length}
         <EmptyState
-          title="No webhooks yet"
-          body="A webhook posts to a URL whenever a lead, deal, ticket or other record changes. Point one at Zapier, n8n, Slack or your own code."
+          title={tx('No webhooks yet')}
+          body={tx('A webhook posts to a URL whenever a lead, deal, ticket or other record changes. Point one at Zapier, n8n, Slack or your own code.')}
         >
           {#snippet actions()}
             <button class="v2-btn v2-btn-primary" onclick={() => (creating = true)}>
-              <Plus />New webhook
+              <Plus />{tx('New webhook')}
             </button>
           {/snippet}
         </EmptyState>
@@ -155,10 +157,10 @@
           <table class="v2-table">
             <thead>
               <tr>
-                <th>Endpoint</th>
-                <th>State</th>
-                <th class="v2-r">Events</th>
-                <th data-m="hide">Added</th>
+                <th>{tx('Endpoint')}</th>
+                <th>{tx('State')}</th>
+                <th class="v2-r">{tx('Events')}</th>
+                <th data-m="hide">{tx('Added')}</th>
               </tr>
             </thead>
             <tbody>
@@ -172,8 +174,8 @@
                     >
                       <div class="v2-table-primary" style="word-break:break-all">{e.url}</div>
                       <div class="v2-table-secondary">
-                        {e.description || (e.format === 'slack' ? 'Slack' : 'Signed JSON')}
-                        · by {creatorLabel(e)}
+                        {e.description || (e.format === 'slack' ? 'Slack' : tx('Signed JSON'))}
+                        {tx('· by {who}', { who: creatorLabel(e) })}
                       </div>
                     </a>
                   </td>
@@ -194,15 +196,11 @@
         <ShieldAlert size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
         <div>
           <div style="font-weight:600;font-size:13px">
-            Check the signature before trusting a delivery
+            {tx('Check the signature before trusting a delivery')}
           </div>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 0">
-            Every JSON delivery carries an <code>X-BottleCRM-Signature</code> header: an HMAC-SHA256 of
-            the timestamp and the raw body, keyed with the webhook's secret. A failed delivery is retried
-            five times over about eight and a half hours, and an endpoint that answers 410 Gone is paused.
-            So is every webhook whose creator stops being an admin, is deactivated or leaves; any admin
-            can turn it back on and then answers for it. The Webhooks page in the documentation has verification
-            code and Zapier and n8n recipes.
+            {tx('Every JSON delivery carries an')} <code>X-BottleCRM-Signature</code>
+            {tx("header: an HMAC-SHA256 of the timestamp and the raw body, keyed with the webhook's secret. A failed delivery is retried five times over about eight and a half hours, and an endpoint that answers 410 Gone is paused. So is every webhook whose creator stops being an admin, is deactivated or leaves; any admin can turn it back on and then answers for it. The Webhooks page in the documentation has verification code and Zapier and n8n recipes.")}
           </p>
         </div>
       </div>

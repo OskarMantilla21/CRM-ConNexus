@@ -28,6 +28,8 @@
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import { count, relativeDays } from '$lib/v2/format.js';
   import { FileText, FileSpreadsheet, File, Users, Upload, Lock, Pencil } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -60,53 +62,58 @@
    */
   function reachLabel(d) {
     const names = d.shared_to.map((p) => p.name.split(' ')[0]);
-    if (!names.length) return d.teams.length ? '' : 'Nobody yet';
-    if (names.length <= 2) return names.join(' and ');
-    return `${names.slice(0, 2).join(', ')} and ${names.length - 2} more`;
+    if (!names.length) return d.teams.length ? '' : tx('Nobody yet');
+    if (names.length <= 2) return names.join(tx(' and '));
+    return tx('{names} and {n} more', {
+      names: names.slice(0, 2).join(', '),
+      n: names.length - 2
+    });
   }
 </script>
 
-<PageHeader title="Documents">
+<PageHeader title={tx('Documents')}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.active)}</span> active ·
-    <span class="v2-num">{count(totals.inactive)}</span> archived
+    <span class="v2-num">{count(totals.active)}</span> {tx('active')} ·
+    <span class="v2-num">{count(totals.inactive)}</span> {tx('archived')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn v2-btn-primary" href={resolve('/documents/new')}><Upload />Upload</a>
+    <a class="v2-btn v2-btn-primary" href={resolve('/documents/new')}><Upload />{tx('Upload')}</a>
   {/snippet}
 </PageHeader>
 
 {#if page.url.search}
   <p class="v2-sub" style="font-size:11.5px;margin:8px 0 0">
-    These numbers describe the filtered list.
+    {tx('These numbers describe the filtered list.')}
   </p>
 {/if}
 
 <div class="v2-pad" style="padding-top:14px;flex:none">
   <div class="v2-stats">
     <StatCard
-      label="Given to nobody"
+      label={tx('Given to nobody')}
       value={count(totals.unshared)}
       tone={totals.unshared ? 'clay' : 'slate'}
-      detail="Only the uploader and admins"
+      detail={tx('Only the uploader and admins')}
     />
-    <StatCard label="Active" value={count(totals.active)} tone="ink" />
-    <StatCard label="Archived" value={count(totals.inactive)} tone="slate" />
-    <StatCard label="Total" value={count(totals.count)} tone="slate" />
+    <StatCard label={tx('Active')} value={count(totals.active)} tone="ink" />
+    <StatCard label={tx('Archived')} value={count(totals.inactive)} tone="slate" />
+    <StatCard label={tx('Total')} value={count(totals.count)} tone="slate" />
   </div>
 </div>
 
-<FilterBar page="documents" url={page.url} meta="Newest first" />
+<FilterBar page="documents" url={page.url} meta={tx('Newest first')} />
 
 <div class="v2-scroll">
   {#if documents.length === 0}
     <EmptyState
-      title="No documents yet"
-      body="Contracts, runbooks, price sheets. The things you send people often enough to stop hunting for. Share each one with the people or the team who need it; an unshared upload is visible only to you and to admins."
+      title={tx('No documents yet')}
+      body={tx(
+        'Contracts, runbooks, price sheets. The things you send people often enough to stop hunting for. Share each one with the people or the team who need it; an unshared upload is visible only to you and to admins.'
+      )}
     >
       {#snippet icon()}<FileText size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/documents/new')}>Upload a document</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/documents/new')}>{tx('Upload a document')}</a>
       {/snippet}
     </EmptyState>
   {:else}
@@ -114,11 +121,11 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Document</th>
-            <th>Who can open it</th>
-            <th>Uploaded by</th>
-            <th class="v2-r">Size</th>
-            <th class="v2-r">Added</th>
+            <th>{tx('Document')}</th>
+            <th>{tx('Who can open it')}</th>
+            <th>{tx('Uploaded by')}</th>
+            <th class="v2-r">{tx('Size')}</th>
+            <th class="v2-r">{tx('Added')}</th>
             <th></th>
           </tr>
         </thead>
@@ -180,7 +187,7 @@
                   <a
                     class="edit"
                     href={resolve(`/documents/${d.id}/edit`)}
-                    title="Manage this document"
+                    title={tx('Manage this document')}
                   >
                     <Pencil size={13} />
                   </a>
@@ -193,7 +200,7 @@
     </div>
 
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
-      Showing <span class="v2-num">{documents.length}</span> of
+      {tx('Showing')} <span class="v2-num">{documents.length}</span> {tx('of')}
       <span class="v2-num">{count(totals.count)}</span>
     </p>
   {/if}

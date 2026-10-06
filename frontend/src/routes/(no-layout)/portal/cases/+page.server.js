@@ -16,6 +16,8 @@ import {
   listCases,
   loginPath
 } from '$lib/server/portal';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 /** Send an expired or missing session back to the right org's sign-in page. */
 function toLogin(cookies) {
@@ -53,7 +55,7 @@ export const actions = {
     const description = String(form.get('description') || '').trim();
     const priority = String(form.get('priority') || 'Normal');
 
-    if (!name) return fail(400, { error: 'Give your request a short summary.' });
+    if (!name) return fail(400, { error: tx('Give your request a short summary.') });
 
     try {
       const data = await createCase(token, { name, description, priority });
@@ -62,7 +64,9 @@ export const actions = {
       if (err?.status === 303) throw err;
       if (err instanceof PortalError) {
         if (err.status === 401 || err.status === 403) toLogin(cookies);
-        return fail(err.status, { error: err.data?.name?.[0] || 'Could not send that request.' });
+        return fail(err.status, {
+          error: tx(err.data?.name?.[0] || 'Could not send that request.')
+        });
       }
       throw err;
     }

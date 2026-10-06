@@ -1,4 +1,6 @@
 import { fail } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { getTicketBoard, moveTicket } from '$lib/server/v2/ticket-board.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 
@@ -32,12 +34,12 @@ export const actions = {
     const mode = String(form.get('mode') || '');
     const aboveId = String(form.get('above_id') || '');
     const belowId = String(form.get('below_id') || '');
-    if (!id || !laneId) return fail(400, { error: 'Missing ticket or column.' });
+    if (!id || !laneId) return fail(400, { error: tx('Missing ticket or column.') });
     try {
       await moveTicket({ cookies }, id, { mode, laneId, aboveId, belowId });
       return { success: true };
     } catch (err) {
-      const message = readableError(err, 'Could not move the ticket.').replace(/^status: /, '');
+      const message = readableError(err, tx('Could not move the ticket.')).replace(/^status: /, '');
       return fail(/** @type {any} */ (err)?.status === 403 ? 403 : 400, { error: message });
     }
   }

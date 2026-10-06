@@ -7,6 +7,8 @@ import {
   duplicateInvoice
 } from '$lib/server/v2/invoices.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * One invoice, with its line items.
@@ -25,7 +27,7 @@ export const actions = {
       await sendInvoice({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 404 ? 404 : 400, {
-        error: readableError(err, 'Could not send this invoice.')
+        error: readableError(err, tx('Could not send this invoice.'))
       });
     }
     return { sent: true };
@@ -47,7 +49,7 @@ export const actions = {
       );
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 404 ? 404 : 400, {
-        error: readableError(err, 'Could not record that payment.')
+        error: readableError(err, tx('Could not record that payment.'))
       });
     }
     return { paid: true };
@@ -59,7 +61,7 @@ export const actions = {
       await cancelInvoice({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 404 ? 404 : 400, {
-        error: readableError(err, 'Could not cancel this invoice.')
+        error: readableError(err, tx('Could not cancel this invoice.'))
       });
     }
     return { cancelled: true };
@@ -75,7 +77,7 @@ export const actions = {
       created = await duplicateInvoice({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 404 ? 404 : 400, {
-        error: readableError(err, 'Could not duplicate this invoice.')
+        error: readableError(err, tx('Could not duplicate this invoice.'))
       });
     }
     const newId = created?.invoice?.id;

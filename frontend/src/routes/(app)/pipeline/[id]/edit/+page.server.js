@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail } from '@sveltejs/kit';
 import { EDITABLE_FIELDS, getDealForEdit, updateDeal } from '$lib/server/v2/deals.js';
 
@@ -44,7 +46,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       // The API's field errors are the ones that count: this form's own
       // checks are a UX hint and the serializer is the rule.
-      return fail(400, { values, error: String(err?.message ?? 'Could not save the deal.') });
+      return fail(400, { values, error: String(err?.message ?? tx('Could not save the deal.')) });
     }
 
     return { saved: true };

@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/ui/button/index.js';
   import { ArrowLeft, Home, Compass, Users, FileText, Ticket, BarChart3 } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   /**
    * @typedef {Object} Props
@@ -19,21 +20,23 @@
   let showLinks = $derived(showQuickLinks ?? isNotFound);
 
   let title = $derived.by(() => {
-    if (isNotFound) return 'Page not found';
-    if (status === 403) return "You don't have access to this page";
-    if (status === 401) return 'Please sign in to continue';
-    if (status >= 500) return 'Something went wrong';
-    return 'Unable to open this page';
+    if (isNotFound) return tx('Page not found');
+    if (status === 403) return tx("You don't have access to this page");
+    if (status === 401) return tx('Please sign in to continue');
+    if (status >= 500) return tx('Something went wrong');
+    return tx('Unable to open this page');
   });
 
   let description = $derived.by(() => {
     if (message) return message;
-    if (isNotFound) return "The page you're looking for doesn't exist or may have been moved.";
-    if (status === 403) return 'Your account does not have permission to view this resource.';
-    if (status === 401) return 'Your session may have expired. Sign in again to continue.';
+    if (isNotFound) return tx("The page you're looking for doesn't exist or may have been moved.");
+    if (status === 403) return tx('Your account does not have permission to view this resource.');
+    if (status === 401) return tx('Your session may have expired. Sign in again to continue.');
     if (status >= 500)
-      return "An unexpected error occurred on our end. We've been notified. Please try again in a moment.";
-    return 'Please check the URL or try going back to where you came from.';
+      return tx(
+        "An unexpected error occurred on our end. We've been notified. Please try again in a moment."
+      );
+    return tx('Please check the URL or try going back to where you came from.');
   });
 
   const quickLinks = [
@@ -80,11 +83,11 @@
     <div class="flex flex-col items-center justify-center gap-3 sm:flex-row">
       <Button onclick={() => goto(resolve('/'))} class="gap-2">
         <Home class="h-4 w-4" />
-        Go to dashboard
+        {tx('Go to dashboard')}
       </Button>
       <Button variant="outline" onclick={goBack} class="gap-2">
         <ArrowLeft class="h-4 w-4" />
-        Go back
+        {tx('Go back')}
       </Button>
     </div>
 
@@ -94,7 +97,7 @@
         <div class="mb-4 flex items-center justify-center gap-2">
           <Compass class="text-muted-foreground h-4 w-4" />
           <span class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-            Try one of these
+            {tx('Try one of these')}
           </span>
         </div>
         <div class="flex flex-wrap items-center justify-center gap-2">
@@ -104,7 +107,7 @@
               class="border-border/60 bg-background hover:border-primary/40 hover:bg-accent hover:text-foreground text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors"
             >
               <link.icon class="h-3.5 w-3.5" />
-              {link.label}
+              {tx(link.label)}
             </a>
           {/each}
         </div>

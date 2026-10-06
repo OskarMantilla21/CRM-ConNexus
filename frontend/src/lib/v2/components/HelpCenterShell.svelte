@@ -13,6 +13,8 @@
    */
   import '$lib/v2/styles/v2.css';
   import { resolve } from '$app/paths';
+  import { tx } from '$lib/i18n/translate.js';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /** @type {{ name: string, slug: string, children: import('svelte').Snippet }} */
   let { name, slug, children } = $props();
@@ -20,10 +22,13 @@
 
 <div class="v2-root hc">
   <header class="hc-top">
-    <a class="hc-brand" href={resolve(`/help-center/${slug}`)}>
-      {name || 'Help center'}
-      <span class="hc-kind">Help center</span>
-    </a>
+    <div class="hc-bar">
+      <a class="hc-brand" href={resolve(`/help-center/${slug}`)}>
+        {name || tx('Help center')}
+        <span class="hc-kind">{tx('Help center')}</span>
+      </a>
+      <LanguageSelect />
+    </div>
   </header>
   <main class="hc-main">
     {@render children()}
@@ -41,14 +46,20 @@
   .hc-top {
     border-bottom: 1px solid var(--v2-rule, #e5e7eb);
   }
+  .hc-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px 20px;
+  }
   .hc-brand {
     display: flex;
     align-items: baseline;
     gap: 10px;
     flex-wrap: wrap;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 14px 20px;
     min-height: 44px;
     box-sizing: border-box;
     font-weight: 600;
@@ -69,8 +80,8 @@
     padding: 32px 20px 64px;
   }
   @media (max-width: 768px) {
-    .hc-brand {
-      padding: 12px 16px;
+    .hc-bar {
+      padding: 8px 16px;
     }
     .hc-main {
       padding: 20px 16px 48px;

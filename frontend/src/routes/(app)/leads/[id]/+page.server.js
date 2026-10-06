@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { addLeadNote, convertLead, deleteLead, getLead } from '$lib/server/v2/leads.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -31,15 +33,15 @@ export const actions = {
     if (!comment) {
       return fail(400, {
         message: file
-          ? 'Add a note to save alongside the file.'
-          : 'Write something before you save the note.'
+          ? tx('Add a note to save alongside the file.')
+          : tx('Write something before you save the note.')
       });
     }
 
     try {
       await addLeadNote({ cookies }, params.id, comment, file);
     } catch (/** @type {any} */ err) {
-      return fail(400, { message: String(err?.message ?? 'Could not save that note.') });
+      return fail(400, { message: String(err?.message ?? tx('Could not save that note.')) });
     }
 
     return { noted: true };
@@ -62,7 +64,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       // A lead this profile may not open is a 404, the same as a missing one.
       return fail(err?.status === 404 ? 404 : 400, {
-        error: readableError(err, 'Could not convert this lead.')
+        error: readableError(err, tx('Could not convert this lead.'))
       });
     }
   },
@@ -76,7 +78,7 @@ export const actions = {
       await deleteLead({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       const code = err?.status >= 400 && err?.status < 500 ? err.status : 400;
-      return fail(code, { deleteError: readableError(err, 'Could not delete this lead.') });
+      return fail(code, { deleteError: readableError(err, tx('Could not delete this lead.')) });
     }
     redirect(303, '/leads');
   }

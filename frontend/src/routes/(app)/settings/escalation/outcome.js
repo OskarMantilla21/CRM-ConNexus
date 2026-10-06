@@ -29,6 +29,8 @@
  * `mobile/lib/data/models/escalation_policy.dart` carries the same rules.
  */
 import { ESCALATION_ACTION_LABEL, ESCALATION_PRIORITIES } from '$lib/v2/enums.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * "the Support team", but "the Support Team" when the name already says so.
@@ -45,7 +47,7 @@ export function teamPhrase(name) {
   const lower = trimmed.toLowerCase();
   const saysSo =
     lower === 'team' || lower === 'teams' || lower.endsWith(' team') || lower.endsWith(' teams');
-  return saysSo ? `the ${trimmed}` : `the ${trimmed} team`;
+  return saysSo ? tx('the {name}', { name: trimmed }) : tx('the {name} team', { name: trimmed });
 }
 
 /** Whether an action emails anybody at all. @param {string} action */
@@ -72,7 +74,7 @@ export function halfFires(policy, kind) {
  * @returns {{ text: string, dead: boolean }}
  */
 export function escalationOutcome(policy, kind) {
-  if (!policy?.is_active) return { text: 'Nothing. The policy is turned off', dead: true };
+  if (!policy?.is_active) return { text: tx('Nothing. The policy is turned off'), dead: true };
 
   const target = policy[`${kind}_target`];
   const team = policy.notify_team;
@@ -82,8 +84,10 @@ export function escalationOutcome(policy, kind) {
     // no target reads as "somebody is told" and is the case where nobody is.
     return {
       text: team
-        ? `Nothing. No target is set, and ${teamPhrase(team.name)} is not notified on its own`
-        : 'Nothing. No target is set',
+        ? tx('Nothing. No target is set, and {team} is not notified on its own', {
+            team: teamPhrase(team.name)
+          })
+        : tx('Nothing. No target is set'),
       dead: true
     };
   }
@@ -91,8 +95,10 @@ export function escalationOutcome(policy, kind) {
   const action = policy[`${kind}_action`];
   const label = ESCALATION_ACTION_LABEL[action] ?? action;
   const who =
-    team && actionNotifies(action) ? `${target.name} and ${teamPhrase(team.name)}` : target.name;
-  return { text: `${label} ${who}`, dead: false };
+    team && actionNotifies(action)
+      ? tx('{name} and {team}', { name: target.name, team: teamPhrase(team.name) })
+      : target.name;
+  return { text: tx('{action} {who}', { action: label, who }), dead: false };
 }
 
 /**
@@ -110,7 +116,8 @@ export function teamIgnoredNote(policy, kind) {
   if (!team || !halfFires(policy, kind)) return null;
   if (actionNotifies(policy[`${kind}_action`])) return null;
   const phrase = teamPhrase(team.name);
-  return `${phrase[0].toUpperCase()}${phrase.slice(1)} is not notified here: this half only reassigns.`;
+  const capped = `${phrase[0].toUpperCase()}${phrase.slice(1)}`;
+  return tx('{phrase} is not notified here: this half only reassigns.', { phrase: capped });
 }
 
 /** @type {('first_response' | 'resolution')[]} */
@@ -162,5 +169,8 @@ export function unconfiguredPriorities(policies) {
 export function joinWithAnd(parts) {
   if (!parts.length) return '';
   if (parts.length === 1) return parts[0];
-  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+  return tx('{left} and {right}', {
+    left: parts.slice(0, -1).join(', '),
+    right: parts[parts.length - 1]
+  });
 }

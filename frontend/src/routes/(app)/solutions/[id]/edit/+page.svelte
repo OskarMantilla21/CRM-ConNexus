@@ -15,6 +15,8 @@
   import { enhance } from '$app/forms';
   import { untrack } from 'svelte';
   import { ChevronLeft } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -55,25 +57,25 @@
   let locked = $derived(data.article.is_published);
 </script>
 
-<PageHeader title="Edit article" record center width="760px">
+<PageHeader title={tx('Edit article')} record center width="760px">
   {#snippet crumb()}
     <a href={resolve(`/solutions/${data.article.id}`)}
       ><ChevronLeft size={13} />{data.article.title}</a
     >
   {/snippet}
   {#snippet sub()}
-    {data.article.author || 'Unknown author'} · used on
-    <span class="v2-num">{data.article.use_count}</span> tickets
+    {data.article.author || tx('Unknown author')} · {tx('used on')}
+    <span class="v2-num">{data.article.use_count}</span> {tx('tickets')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve(`/solutions/${data.article.id}`)}>Cancel</a>
+    <a class="v2-btn" href={resolve(`/solutions/${data.article.id}`)}>{tx('Cancel')}</a>
     <button
       class="v2-btn v2-btn-primary"
       type="submit"
       form="article-form"
       disabled={!ready || saving}
     >
-      {saving ? 'Saving…' : 'Save changes'}
+      {saving ? tx('Saving…') : tx('Save changes')}
     </button>
   {/snippet}
 </PageHeader>
@@ -101,34 +103,36 @@
 
       {#if data.article.is_published}
         <p class="notice">
-          This article is published, so anything saved here is what customers read in the portal and
-          what agents are offered on tickets.
+          {tx(
+            'This article is published, so anything saved here is what customers read in the portal and what agents are offered on tickets.'
+          )}
         </p>
       {/if}
 
       <div class="v2-card" style="padding:18px 20px">
         <label class="f">
-          <span>Title</span>
+          <span>{tx('Title')}</span>
           <input name="title" bind:value={title} />
-          <em>Say the symptom the way a customer would report it, not the fix.</em>
+          <em>{tx('Say the symptom the way a customer would report it, not the fix.')}</em>
         </label>
 
         <label class="f" style="margin-top:18px">
-          <span>Answer</span>
+          <span>{tx('Answer')}</span>
           <textarea name="description" rows="12" bind:value={description}></textarea>
-          <em>This is pasted into replies as-is.</em>
+          <em>{tx('This is pasted into replies as-is.')}</em>
         </label>
       </div>
 
       {#if data.tags.length > 0}
         <div class="v2-card" style="padding:18px 20px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:4px">Tags</div>
+          <div class="v2-label" style="margin-bottom:4px">{tx('Tags')}</div>
           <!-- Internal filing only. The portal uses these to pick related
                articles and never prints the names, which read like "At Risk"
                and "VIP" because the vocabulary is shared with deals. -->
           <p class="lead">
-            Customers never see these names, but articles sharing one are shown to each other in the
-            portal.
+            {tx(
+              'Customers never see these names, but articles sharing one are shown to each other in the portal.'
+            )}
           </p>
           <div class="tags">
             {#each data.tags as tag (tag.id)}
@@ -149,7 +153,7 @@
 
       <div class="v2-card" style="padding:18px 20px;margin-top:14px">
         <label class="f" style="max-width:240px">
-          <span>Review status</span>
+          <span>{tx('Review status')}</span>
           <select name="status" bind:value={status} disabled={locked}>
             {#each statuses as s (s)}
               <option value={s}>{SOLUTION_STATUS_LABEL[s]}</option>
@@ -157,11 +161,11 @@
           </select>
           <em>
             {#if locked}
-              A published article cannot move back down the workflow. Unpublish it first.
+              {tx('A published article cannot move back down the workflow. Unpublish it first.')}
             {:else if !data.canRelease}
-              Approving is an admin's call. It is what lets an article be published.
+              {tx("Approving is an admin's call. It is what lets an article be published.")}
             {:else}
-              Approving does not publish it. That is a separate button on the article.
+              {tx('Approving does not publish it. That is a separate button on the article.')}
             {/if}
           </em>
         </label>

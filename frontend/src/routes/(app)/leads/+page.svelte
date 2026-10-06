@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
@@ -25,8 +27,8 @@
      to the literal, so an org with no terminology sees exactly what it saw
      before. The values are tenant text and render as plain text. */
   let terms = $derived(data.org?.terminology);
-  let plural = $derived(t(terms, 'lead.plural', 'Leads'));
-  let singular = $derived(t(terms, 'lead.singular', 'lead'));
+  let plural = $derived(t(terms, 'lead.plural', tx('Leads')));
+  let singular = $derived(t(terms, 'lead.singular', tx('lead')));
 
   /**
    * The same rule the API counts with, so the highlighted rows and the
@@ -40,12 +42,12 @@
 
 <PageHeader title={plural}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.count)}</span> open ·
-    <span class="v2-num">{totals.unworked_over_a_week}</span> unworked for more than a week
+    <span class="v2-num">{count(totals.count)}</span> {tx('open ·')}
+    <span class="v2-num">{totals.unworked_over_a_week}</span> {tx('unworked for more than a week')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve('/leads/board')}>Board</a>
-    <button class="v2-btn" onclick={() => (importOpen = true)}><Upload />Import</button>
+    <a class="v2-btn" href={resolve('/leads/board')}>{tx('Board')}</a>
+    <button class="v2-btn" onclick={() => (importOpen = true)}><Upload />{tx('Import')}</button>
     <!-- The page's own query string: the export rebuilds the same API query
          from it, so the file holds every row this list would page through. -->
     <a
@@ -53,9 +55,9 @@
       href="{resolve('/api/leads/export')}?{page.url.searchParams}"
       data-sveltekit-reload
     >
-      <Download />Export
+      <Download />{tx('Export')}
     </a>
-    <a class="v2-btn v2-btn-primary" href={resolve('/leads/new')}><Plus />New {singular}</a>
+    <a class="v2-btn v2-btn-primary" href={resolve('/leads/new')}><Plus />{tx('New')} {singular}</a>
   {/snippet}
 </PageHeader>
 
@@ -66,7 +68,7 @@
   tags={data.tags}
   meId={data.meId}
   saved={data.savedViews}
-  meta="Least recently touched first"
+  meta={tx('Least recently touched first')}
 />
 
 <LeadImportDrawer
@@ -78,13 +80,13 @@
 <div class="v2-scroll">
   {#if leads.length === 0}
     <EmptyState
-      title="No {plural.toLowerCase()} yet"
-      body="A lead is somebody who might buy, before you know enough to call it a deal. Import a list, or add the last person who emailed you."
+      title={tx('No {name} yet', { name: plural.toLowerCase() })}
+      body={tx('A lead is somebody who might buy, before you know enough to call it a deal. Import a list, or add the last person who emailed you.')}
     >
       {#snippet icon()}<Target size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/leads/new')}>New {singular}</a>
-        <button class="v2-btn" onclick={() => (importOpen = true)}>Import</button>
+        <a class="v2-btn v2-btn-primary" href={resolve('/leads/new')}>{tx('New')} {singular}</a>
+        <button class="v2-btn" onclick={() => (importOpen = true)}>{tx('Import')}</button>
       {/snippet}
     </EmptyState>
   {:else}
@@ -92,13 +94,13 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Lead</th>
-            <th>Company</th>
-            <th>Status</th>
-            <th>Source</th>
-            <th class="v2-r">Est. value</th>
-            <th>Last touch</th>
-            <th>Owner</th>
+            <th>{tx('Lead')}</th>
+            <th>{tx('Company')}</th>
+            <th>{tx('Status')}</th>
+            <th>{tx('Source')}</th>
+            <th class="v2-r">{tx('Est. value')}</th>
+            <th>{tx('Last touch')}</th>
+            <th>{tx('Owner')}</th>
           </tr>
         </thead>
         <tbody>
@@ -114,8 +116,8 @@
                 <div>{l.company_name}</div>
                 <div class="v2-table-secondary" data-m="hide">{l.industry}</div>
               </td>
-              <td data-m="tag"><Pill tone={LEAD_STATUS_TONE[l.status]}>{l.status}</Pill></td>
-              <td class="v2-muted" data-m="hide" style="font-size:12.5px">{l.source}</td>
+              <td data-m="tag"><Pill tone={LEAD_STATUS_TONE[l.status]}>{choiceLabel(l.status)}</Pill></td>
+              <td class="v2-muted" data-m="hide" style="font-size:12.5px">{choiceLabel(l.source)}</td>
               <td class="v2-r v2-num"
                 >{l.opportunity_amount ? money(l.opportunity_amount, l.currency) : '—'}</td
               >
@@ -132,11 +134,11 @@
                 {#if l.last_contacted}
                   {relativeDays(l.last_contacted)}
                 {:else}
-                  <div>Not contacted</div>
+                  <div>{tx('Not contacted')}</div>
                   <!-- Stacked, matching the Company cell. Inline, these two ran
                        together into "Not contactedadded 64 days ago". -->
                   <div class="v2-table-secondary" data-m="hide">
-                    added {relativeDays(l.created_at)}
+                    {tx('added {when}', { when: relativeDays(l.created_at) })}
                   </div>
                 {/if}
               </td>
@@ -147,7 +149,7 @@
       </table>
     </div>
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
-      Showing <span class="v2-num">{leads.length}</span> of
+      {tx('Showing')} <span class="v2-num">{leads.length}</span> {tx('of')}
       <span class="v2-num">{count(totals.count)}</span>
     </p>
   {/if}

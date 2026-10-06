@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   /**
    * Who can get in, and how much they can do.
@@ -57,42 +59,42 @@
 </script>
 
 {#if data.forbidden}
-  <PageHeader title="Team and access" />
+  <PageHeader title={tx('Team and access')} />
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
+      label={tx('Admins only')}
       text="Managing people, roles and access is limited to organization admins. Ask an admin on your team if you need someone added or a role changed."
     />
   </div>
 {:else}
-  <PageHeader title="Team and access">
+  <PageHeader title={tx('Team and access')}>
     {#snippet sub()}
-      <span class="v2-num">{count(data.totals.count)}</span> people ·
-      <span class="v2-num">{count(data.totals.admins)}</span> admins
+      <span class="v2-num">{count(data.totals.count)}</span> {tx('people ·')}
+      <span class="v2-num">{count(data.totals.admins)}</span> {tx('admins')}
     {/snippet}
     {#snippet actions()}
       <button class="v2-btn v2-btn-primary" onclick={() => (inviting = !inviting)}>
-        <UserPlus />Invite
+        <UserPlus />{tx('Invite')}
       </button>
     {/snippet}
   </PageHeader>
 
   <div class="v2-pad" style="padding-top:16px;flex:none">
     <div class="v2-stats">
-      <StatCard label="Active people" value={count(data.totals.count)} tone="ink" />
+      <StatCard label={tx('Active people')} value={count(data.totals.count)} tone="ink" />
       <StatCard
-        label="Admins"
+        label={tx('Admins')}
         value={count(data.totals.admins)}
         tone="clay"
-        detail="Can change roles and org settings"
+        detail={tx('Can change roles and org settings')}
       />
       <StatCard
-        label="Never signed in"
+        label={tx('Never signed in')}
         value={count(data.totals.never_signed_in)}
         tone={data.totals.never_signed_in ? 'clay' : 'slate'}
-        detail={data.totals.never_signed_in ? 'Invited, seat unclaimed' : 'Everyone has signed in'}
+        detail={data.totals.never_signed_in ? tx('Invited, seat unclaimed') : tx('Everyone has signed in')}
       />
-      <StatCard label="Deactivated" value={count(data.totals.deactivated)} tone="slate" />
+      <StatCard label={tx('Deactivated')} value={count(data.totals.deactivated)} tone="slate" />
     </div>
   </div>
 
@@ -117,7 +119,7 @@
               required
               class="v2-input"
               style="width:100%"
-              placeholder="name@company.com"
+              placeholder={tx('name@company.com')}
             />
           </div>
           <div>
@@ -125,11 +127,11 @@
               Role
             </label>
             <select id="invite-role" name="role" class="v2-input" style="width:130px">
-              <option value="USER">Member</option>
-              <option value="ADMIN">Admin</option>
+              <option value="USER">{tx('Member')}</option>
+              <option value="ADMIN">{tx('Admin')}</option>
             </select>
           </div>
-          <button class="v2-btn v2-btn-primary" disabled={busy}>Send invite</button>
+          <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Send invite')}</button>
           <button type="button" class="v2-btn" disabled={busy} onclick={() => (inviting = false)}>
             Cancel
           </button>
@@ -154,7 +156,7 @@
         </p>
       {:else if form?.error}
         <div style="margin-bottom:16px">
-          <NextAction label="That did not work" text={form.error} tone="rust" />
+          <NextAction label={tx('That did not work')} text={form.error} tone="rust" />
         </div>
       {/if}
 
@@ -168,25 +170,25 @@
         -->
         <div style="margin-bottom:20px">
           <NextAction
-            label="Loose end"
-            text={`${data.totals.tokens_on_deactivated} API ${data.totals.tokens_on_deactivated === 1 ? 'token belongs' : 'tokens belong'} to a deactivated account. Deactivating already stops them at login, but they are not revoked. Reactivating the account would bring them back. Revoke to close that off.`}
+            label={tx('Loose end')}
+            text={`${data.totals.tokens_on_deactivated} API ${data.totals.tokens_on_deactivated === 1 ? tx('token belongs') : tx('tokens belong')} to a deactivated account. Deactivating already stops them at login, but they are not revoked. Reactivating the account would bring them back. Revoke to close that off.`}
             action="Review tokens"
             href="/settings/api-tokens"
           />
         </div>
       {/if}
 
-      <div class="v2-label" style="margin-bottom:10px">People</div>
+      <div class="v2-label" style="margin-bottom:10px">{tx('People')}</div>
       <div class="v2-table-wrap" style="margin-bottom:26px">
         <table class="v2-table">
           <thead>
             <tr>
-              <th>Person</th>
-              <th>Role</th>
-              <th>Teams</th>
-              <th data-m="hide">Tokens</th>
-              <th class="v2-r">Last signed in</th>
-              <th class="v2-r">Manage</th>
+              <th>{tx('Person')}</th>
+              <th>{tx('Role')}</th>
+              <th>{tx('Teams')}</th>
+              <th data-m="hide">{tx('Tokens')}</th>
+              <th class="v2-r">{tx('Last signed in')}</th>
+              <th class="v2-r">{tx('Manage')}</th>
             </tr>
           </thead>
           <tbody>
@@ -199,7 +201,7 @@
                     <span style="min-width:0">
                       <span class="v2-table-primary">
                         {m.name}{#if m.is_you}<span class="v2-sub" style="font-weight:400"
-                            >, you</span
+                            >{tx(', you')}</span
                           >{/if}
                       </span>
                       <span class="v2-table-secondary" style="display:block">{m.email}</span>
@@ -209,7 +211,7 @@
                 <td data-m="tag">
                   <Pill tone={m.is_active ? ROLE_TONE[m.role] : 'slate'}>{ROLE_LABEL[m.role]}</Pill>
                   {#if !m.is_active}
-                    <span class="v2-table-secondary" style="display:block">Deactivated</span>
+                    <span class="v2-table-secondary" style="display:block">{tx('Deactivated')}</span>
                   {/if}
                 </td>
                 <td>
@@ -238,7 +240,7 @@
                   {#if m.last_login}
                     {relativeDays(m.last_login)}
                   {:else}
-                    <span style="color:var(--v2-clay);font-weight:600">never</span>
+                    <span style="color:var(--v2-clay);font-weight:600">{tx('never')}</span>
                   {/if}
                 </td>
                 <td class="v2-r">
@@ -262,10 +264,10 @@
                           class="v2-btn v2-btn-sm"
                           disabled={busy || (m.role === 'ADMIN' && isLastAdmin)}
                           title={m.role === 'ADMIN' && isLastAdmin
-                            ? 'The org must keep at least one admin'
+                            ? tx('The org must keep at least one admin')
                             : ''}
                         >
-                          {m.role === 'ADMIN' ? 'Make member' : 'Make admin'}
+                          {m.role === 'ADMIN' ? tx('Make member') : tx('Make admin')}
                         </button>
                       </form>
                       <!-- Activate / deactivate. The last active admin cannot
@@ -281,11 +283,11 @@
                           class="v2-btn v2-btn-sm"
                           disabled={busy || (m.is_active && isLastAdmin)}
                           title={m.is_active && isLastAdmin
-                            ? 'The org must keep at least one active admin'
+                            ? tx('The org must keep at least one active admin')
                             : ''}
                           style={m.is_active ? 'color:var(--v2-rust)' : ''}
                         >
-                          {m.is_active ? 'Deactivate' : 'Reactivate'}
+                          {m.is_active ? tx('Deactivate') : tx('Reactivate')}
                         </button>
                       </form>
                     </span>
@@ -297,7 +299,7 @@
         </table>
       </div>
 
-      <div class="v2-label" style="margin-bottom:10px">Teams</div>
+      <div class="v2-label" style="margin-bottom:10px">{tx('Teams')}</div>
       <div class="v2-card" style="overflow:hidden;margin-bottom:14px">
         {#each data.teams as t (t.id)}
           <div class="v2-setting">
@@ -312,7 +314,7 @@
           </div>
         {:else}
           <div class="v2-setting">
-            <span class="v2-sub" style="font-size:12px">No teams yet.</span>
+            <span class="v2-sub" style="font-size:12px">{tx('No teams yet.')}</span>
           </div>
         {/each}
       </div>

@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
@@ -40,7 +42,7 @@
 
 <PageHeader title={deal.name} record>
   {#snippet crumb()}
-    <a href={resolve('/pipeline')}>Pipeline</a>
+    <a href={resolve('/pipeline')}>{tx('Pipeline')}</a>
     <ChevronRight size={12} />
     <a href={resolve(`/accounts/${deal.account.id}`)}>{deal.account.name}</a>
   {/snippet}
@@ -48,9 +50,9 @@
     <!-- "Move stage" was a second button that did nothing. Stage is edited on
          the form below, where the page can show what moving it costs, the
          aging clock resets, instead of moving it in one anonymous click. -->
-    <a class="v2-btn" href={resolve(`/pipeline/${deal.id}/edit`)}>Edit</a>
+    <a class="v2-btn" href={resolve(`/pipeline/${deal.id}/edit`)}>{tx('Edit')}</a>
     <a class="v2-btn" href="{resolve('/invoices/estimates/new')}?opportunity={deal.id}"
-      >Create estimate</a
+      >{tx('Create estimate')}</a
     >
     {#if deal.stage_kind === 'won'}
       <form
@@ -75,8 +77,8 @@
            DELETE asks the same rule again. -->
       <ConfirmAction
         action="?/delete"
-        label="Delete"
-        confirmLabel="Delete for good"
+        label={tx('Delete')}
+        confirmLabel={tx('Delete for good')}
         explain="Deletes {deal.name} permanently. This cannot be undone."
       />
     {/if}
@@ -101,7 +103,7 @@
         <span
           class="v2-pill"
           style={i <= stageIndex
-            ? 'color:var(--v2-ink);background:color-mix(in srgb, var(--v2-ink) 9%, transparent)'
+            ? tx('color:var(--v2-ink);background:color-mix(in srgb, var(--v2-ink) 9%, transparent)')
             : 'color:var(--v2-slate);background:var(--v2-line-soft)'}
         >
           {#if i < stageIndex}<Check size={11} />{/if}
@@ -123,20 +125,20 @@
           nothing to render. A suggestion the system invented is worse than no
           suggestion, because people act on it.
         -->
-        <div class="v2-label" style="margin-bottom:12px">Activity</div>
+        <div class="v2-label" style="margin-bottom:12px">{tx('Activity')}</div>
         <Timeline events={activity} />
 
         {#if lineItems.length}
-          <div class="v2-label" style="margin:22px 0 10px">Line items</div>
+          <div class="v2-label" style="margin:22px 0 10px">{tx('Line items')}</div>
           <div class="v2-card" style="overflow:hidden">
             <table class="v2-table">
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th class="v2-r">Qty</th>
-                  <th class="v2-r">Unit price</th>
-                  <th class="v2-r">Discount</th>
-                  <th class="v2-r">Total</th>
+                  <th>{tx('Product')}</th>
+                  <th class="v2-r">{tx('Qty')}</th>
+                  <th class="v2-r">{tx('Unit price')}</th>
+                  <th class="v2-r">{tx('Discount')}</th>
+                  <th class="v2-r">{tx('Total')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -159,12 +161,12 @@
               style="display:flex;justify-content:flex-end;gap:24px;padding:11px 14px;border-top:1px solid var(--v2-line);font-size:13px"
             >
               {#if discount > 0}
-                <span class="v2-muted">Subtotal</span>
+                <span class="v2-muted">{tx('Subtotal')}</span>
                 <span class="v2-num v2-muted">{money(subtotal, deal.currency)}</span>
-                <span class="v2-muted">Discounts</span>
+                <span class="v2-muted">{tx('Discounts')}</span>
                 <span class="v2-num v2-muted">−{money(discount, deal.currency)}</span>
               {/if}
-              <span style="font-weight:650">Total</span>
+              <span style="font-weight:650">{tx('Total')}</span>
               <span class="v2-num" style="font-weight:650">{money(deal.amount, deal.currency)}</span
               >
             </div>
@@ -175,37 +177,37 @@
   </div>
 
   <aside class="v2-rail">
-    <div class="v2-label v2-rail-head">Deal</div>
+    <div class="v2-label v2-rail-head">{tx('Deal')}</div>
     <dl class="v2-kv">
       {#if data.pipeline}
-        <dt>Pipeline</dt>
+        <dt>{tx('Pipeline')}</dt>
         <dd>{data.pipeline.name}</dd>
       {/if}
-      <dt>Stage</dt>
+      <dt>{tx('Stage')}</dt>
       <dd>{deal.stage_label}</dd>
-      <dt>Value</dt>
+      <dt>{tx('Value')}</dt>
       <dd class="v2-num">{money(deal.amount, deal.currency)}</dd>
-      <dt>Probability</dt>
+      <dt>{tx('Probability')}</dt>
       <dd class="v2-num">{deal.probability}%</dd>
-      <dt>Expected close</dt>
+      <dt>{tx('Expected close')}</dt>
       <dd>{longDate(deal.closed_on)}</dd>
-      <dt>Type</dt>
+      <dt>{tx('Type')}</dt>
       <dd>{OPPORTUNITY_TYPE_LABEL[deal.opportunity_type]}</dd>
-      <dt>Source</dt>
+      <dt>{tx('Source')}</dt>
       <dd style="text-transform:lowercase">{deal.lead_source || '—'}</dd>
-      <dt>Owner</dt>
-      <dd>{deal.assigned_to || 'Unassigned'}</dd>
+      <dt>{tx('Owner')}</dt>
+      <dd>{deal.assigned_to || tx('Unassigned')}</dd>
       <!--
         "Last activity" used to be here, reading a `last_activity_at` the model
         does not have. Aging is measured from the last stage change, a
         narrower claim, and the one the board is actually coloured by, so that
         is what this row says now.
       -->
-      <dt>Stage since</dt>
+      <dt>{tx('Stage since')}</dt>
       <dd>{longDate(deal.stage_changed_at)}</dd>
     </dl>
 
-    <div class="v2-label v2-rail-head">People</div>
+    <div class="v2-label v2-rail-head">{tx('People')}</div>
     {#each contacts as c (c.id)}
       <!-- A link now that `/contacts/<uuid>` resolves. These names were
            plain text because the contacts module was still fixtures. -->
@@ -220,7 +222,7 @@
           <!-- `relationship` (Champion, Blocker) was a fixture field. Contact
                has `title` and `department`, so the line says those. -->
           <div class="v2-sub" style="font-size:11px">
-            {[c.title, c.department].filter(Boolean).join(' · ') || 'No title recorded'}
+            {[c.title, c.department].filter(Boolean).join(' · ') || tx('No title recorded')}
           </div>
         </div>
       </a>

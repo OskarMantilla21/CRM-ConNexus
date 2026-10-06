@@ -26,6 +26,8 @@
   import PortalLineItems from '$lib/v2/components/PortalLineItems.svelte';
   import LineItemsEditor from '$lib/v2/components/LineItemsEditor.svelte';
   import { CURRENCY_CODES } from '$lib/constants/filters.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import {
     blankLine,
     documentDiscountError,
@@ -159,19 +161,19 @@
   }
 </script>
 
-<PageHeader title="New estimate">
+<PageHeader title={tx('New estimate')}>
   {#snippet sub()}
-    Nothing is sent until you send it. Saving leaves it as a draft
+    {tx('Nothing is sent until you send it. Saving leaves it as a draft')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve('/invoices/estimates')}>Cancel</a>
+    <a class="v2-btn" href={resolve('/invoices/estimates')}>{tx('Cancel')}</a>
     <button
       type="submit"
       form="estimate-form"
       class="v2-btn v2-btn-primary"
       disabled={!ready || saving}
     >
-      {saving ? 'Saving…' : 'Save as draft'}
+      {saving ? tx('Saving…') : tx('Save as draft')}
     </button>
   {/snippet}
 </PageHeader>
@@ -205,13 +207,13 @@
     <div class="v2-split">
       <div>
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:12px">Who and when</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Who and when')}</div>
 
           <div class="grid2">
             <label class="f">
-              <span>Account</span>
+              <span>{tx('Account')}</span>
               <select bind:value={accountId} onchange={accountChanged}>
-                <option value="">Choose an account</option>
+                <option value="">{tx('Choose an account')}</option>
                 {#each data.accounts as a (a.id)}
                   <option value={a.id}>{a.name}</option>
                 {/each}
@@ -219,9 +221,9 @@
             </label>
 
             <label class="f">
-              <span>Contact</span>
+              <span>{tx('Contact')}</span>
               <select bind:value={contactId} disabled={!accountId}>
-                <option value="">{accountId ? 'Choose a contact' : 'Pick an account first'}</option>
+                <option value="">{accountId ? tx('Choose a contact') : tx('Pick an account first')}</option>
                 {#each contactOptions as c (c.id)}
                   <option value={c.id}
                     >{c.name}{c.account_name ? ` · ${c.account_name}` : ''}</option
@@ -231,14 +233,14 @@
             </label>
 
             <label class="f">
-              <span>Title</span>
-              <input bind:value={title} placeholder="What this estimate covers" required />
+              <span>{tx('Title')}</span>
+              <input bind:value={title} placeholder={tx('What this estimate covers')} required />
             </label>
 
             <label class="f">
-              <span>Deal <span class="opt">(optional)</span></span>
+              <span>{tx('Deal')} <span class="opt">{tx('(optional)')}</span></span>
               <select bind:value={dealId} disabled={!accountId}>
-                <option value="">No deal</option>
+                <option value="">{tx('No deal')}</option>
                 {#each dealOptions as d (d.id)}
                   <option value={d.id}>{d.name}</option>
                 {/each}
@@ -246,46 +248,46 @@
             </label>
 
             <label class="f">
-              <span>Issue date</span>
+              <span>{tx('Issue date')}</span>
               <input type="date" bind:value={issueDate} />
             </label>
 
             <label class="f">
-              <span>Valid until</span>
+              <span>{tx('Valid until')}</span>
               <input type="date" bind:value={expiryDate} min={issueDate} />
             </label>
 
             <label class="f">
-              <span>Currency</span>
+              <span>{tx('Currency')}</span>
               <select bind:value={currency}>
                 {#each CURRENCIES as c (c.value)}
-                  <option value={c.value}>{c.label}</option>
+                  <option value={c.value}>{tx(c.label)}</option>
                 {/each}
               </select>
             </label>
           </div>
 
           {#if datesBackwards}
-            <p class="warn" role="alert">The estimate cannot expire before it is issued.</p>
+            <p class="warn" role="alert">{tx('The estimate cannot expire before it is issued.')}</p>
           {/if}
         </div>
 
         <LineItemsEditor bind:items products={data.products} {currency} />
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:12px">Adjustments</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Adjustments')}</div>
           <div class="grid2">
             <label class="f">
-              <span>Discount</span>
+              <span>{tx('Discount')}</span>
               <select bind:value={discountType}>
-                <option value="">None</option>
-                <option value="PERCENTAGE">Percentage</option>
-                <option value="FIXED">Fixed amount</option>
+                <option value="">{tx('None')}</option>
+                <option value="PERCENTAGE">{tx('Percentage')}</option>
+                <option value="FIXED">{tx('Fixed amount')}</option>
               </select>
             </label>
             {#if discountType}
               <label class="f">
-                <span>{discountType === 'PERCENTAGE' ? 'Percent off' : 'Amount off'}</span>
+                <span>{discountType === 'PERCENTAGE' ? tx('Percent off') : tx('Amount off')}</span>
                 <input
                   type="number"
                   min="0"
@@ -295,12 +297,12 @@
                   aria-invalid={Boolean(discountError)}
                 />
                 {#if discountError}
-                  <small class="field-err" role="alert">{discountError}</small>
+                  <small class="field-err" role="alert">{tx(discountError)}</small>
                 {/if}
               </label>
             {/if}
             <label class="f">
-              <span>Tax rate %</span>
+              <span>{tx('Tax rate %')}</span>
               <input
                 type="number"
                 min="0"
@@ -310,21 +312,21 @@
                 aria-invalid={Boolean(taxError)}
               />
               {#if taxError}
-                <small class="field-err" role="alert">{taxError}</small>
+                <small class="field-err" role="alert">{tx(taxError)}</small>
               {/if}
             </label>
           </div>
-          <p class="hint">Tax applies to the subtotal after the discount.</p>
+          <p class="hint">{tx('Tax applies to the subtotal after the discount.')}</p>
         </div>
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
           <label class="f">
-            <span>Notes to the customer</span>
-            <textarea rows="3" bind:value={notes} placeholder="Appears on the estimate"></textarea>
+            <span>{tx('Notes to the customer')}</span>
+            <textarea rows="3" bind:value={notes} placeholder={tx('Appears on the estimate')}></textarea>
           </label>
           <label class="f" style="margin-top:12px">
-            <span>Terms</span>
-            <textarea rows="3" bind:value={terms} placeholder="Deposit, scope, what is excluded"
+            <span>{tx('Terms')}</span>
+            <textarea rows="3" bind:value={terms} placeholder={tx('Deposit, scope, what is excluded')}
             ></textarea>
           </label>
         </div>
@@ -333,7 +335,7 @@
       <div>
         <div class="v2-card preview">
           <div class="v2-card-head">
-            <span class="v2-label">What the customer will see</span>
+            <span class="v2-label">{tx('What the customer will see')}</span>
           </div>
           <div style="padding:14px 16px 16px">
             {#if usableLines.length}
@@ -350,19 +352,19 @@
               />
             {:else}
               <p class="empty">
-                Add a line with a description and an amount, and the customer's copy appears here.
+                {tx('Add a line with a description and an amount, and the customer\'s copy appears here.')}
               </p>
             {/if}
           </div>
         </div>
 
         <div class="v2-card" style="padding:15px 16px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:9px">Assigned on save</div>
+          <div class="v2-label" style="margin-bottom:9px">{tx('Assigned on save')}</div>
           <dl class="derived">
-            <dt>Estimate number</dt>
+            <dt>{tx('Estimate number')}</dt>
             <dd>EST-<span class="v2-num">{issueDate.replace(/-/g, '')}</span>-nnnn</dd>
-            <dt>Customer link</dt>
-            <dd>Generated, and only sent when you send the estimate</dd>
+            <dt>{tx('Customer link')}</dt>
+            <dd>{tx('Generated, and only sent when you send the estimate')}</dd>
           </dl>
         </div>
       </div>

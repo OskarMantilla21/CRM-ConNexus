@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import { untrack, tick } from 'svelte';
   import { enhance } from '$app/forms';
@@ -46,18 +48,18 @@
   let errors = $derived.by(() => {
     /** @type {Record<string, string>} */
     const e = {};
-    if (!String(form.name).trim()) e.name = 'Give the goal a name you would recognise in a list.';
+    if (!String(form.name).trim()) e.name = tx('Give the goal a name you would recognise in a list.');
 
     const target = Number(form.target_value);
     if (form.target_value === '' || form.target_value === null)
-      e.target_value = 'What is the target?';
+      e.target_value = tx('What is the target?');
     else if (!Number.isFinite(target) || target <= 0)
-      e.target_value = 'Target has to be a number greater than zero.';
+      e.target_value = tx('Target has to be a number greater than zero.');
 
-    if (!form.period_start) e.period_start = 'When does the period start?';
-    if (!form.period_end) e.period_end = 'When does the period end?';
+    if (!form.period_start) e.period_start = tx('When does the period start?');
+    if (!form.period_end) e.period_end = tx('When does the period end?');
     else if (form.period_start && form.period_end <= form.period_start)
-      e.period_end = 'The end has to be after the start.';
+      e.period_end = tx('The end has to be after the start.');
 
     return e;
   });
@@ -84,18 +86,18 @@
 </script>
 
 {#if !data.can_edit}
-  <PageHeader title="Edit goal">
-    {#snippet crumb()}<a href={resolve('/goals')}>Goals</a> ›{/snippet}
+  <PageHeader title={tx('Edit goal')}>
+    {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
   </PageHeader>
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
+      label={tx('Admins only')}
       text="Changing goals is limited to admins. Ask an admin on your team to adjust a quota or target."
     />
   </div>
 {:else}
-  <PageHeader title="Edit goal" center>
-    {#snippet crumb()}<a href={resolve('/goals')}>Goals</a> ›{/snippet}
+  <PageHeader title={tx('Edit goal')} center>
+    {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
     {#snippet sub()}{data.goal.name}{/snippet}
   </PageHeader>
 
@@ -109,14 +111,14 @@
         >
           <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
           <div class="v2-next-body">
-            <div style="font-weight:600">The server refused this change</div>
+            <div style="font-weight:600">{tx('The server refused this change')}</div>
             <div class="v2-sub" style="margin-top:2px">{result.error}</div>
           </div>
         </div>
       {/if}
 
       <div class="v2-field">
-        <label for="f-name">Goal name</label>
+        <label for="f-name">{tx('Goal name')}</label>
         <input
           id="f-name"
           name="name"
@@ -131,7 +133,7 @@
 
       <div class="v2-pair">
         <div class="v2-field">
-          <label for="f-type">Measured in</label>
+          <label for="f-type">{tx('Measured in')}</label>
           <select id="f-type" name="goal_type" class="v2-input" bind:value={form.goal_type}>
             {#each Object.entries(GOAL_TYPE_LABEL) as [key, label] (key)}
               <option value={key}>{label}</option>
@@ -140,7 +142,7 @@
         </div>
 
         <div class="v2-field">
-          <label for="f-target">Target</label>
+          <label for="f-target">{tx('Target')}</label>
           <input
             id="f-target"
             name="target_value"
@@ -167,7 +169,7 @@
            keeps (or, on create, defaults) the org's currency. -->
       {#if form.goal_type === 'REVENUE'}
         <div class="v2-field">
-          <label for="f-currency">Currency</label>
+          <label for="f-currency">{tx('Currency')}</label>
           <select id="f-currency" name="currency" class="v2-input" bind:value={form.currency}>
             {#each currencyOptions as c (c.value)}
               <option value={c.value}>{c.label}</option>
@@ -181,7 +183,7 @@
       {/if}
 
       <div class="v2-field">
-        <label for="f-period">Period</label>
+        <label for="f-period">{tx('Period')}</label>
         <select id="f-period" name="period_type" class="v2-input" bind:value={form.period_type}>
           {#each Object.entries(PERIOD_TYPE_LABEL) as [key, label] (key)}
             <option value={key}>{label}</option>
@@ -193,7 +195,7 @@
 
       <div class="v2-pair">
         <div class="v2-field">
-          <label for="f-start">Period start</label>
+          <label for="f-start">{tx('Period start')}</label>
           <input
             id="f-start"
             name="period_start"
@@ -207,7 +209,7 @@
         </div>
 
         <div class="v2-field">
-          <label for="f-end">Period end</label>
+          <label for="f-end">{tx('Period end')}</label>
           <input
             id="f-end"
             name="period_end"
@@ -223,18 +225,18 @@
 
       <div class="v2-pair">
         <div class="v2-field">
-          <label for="f-owner">Whose goal</label>
+          <label for="f-owner">{tx('Whose goal')}</label>
           <select id="f-owner" name="target" class="v2-input" bind:value={form.target}>
-            <option value="org">Whole org</option>
+            <option value="org">{tx('Whole org')}</option>
             {#if data.people?.length}
-              <optgroup label="Person">
+              <optgroup label={tx('Person')}>
                 {#each data.people as p (p.id)}
                   <option value="profile:{p.id}">{p.name}</option>
                 {/each}
               </optgroup>
             {/if}
             {#if data.teams?.length}
-              <optgroup label="Team">
+              <optgroup label={tx('Team')}>
                 {#each data.teams as t (t.id)}
                   <option value="team:{t.id}">{t.name}</option>
                 {/each}
@@ -244,20 +246,20 @@
         </div>
 
         <div class="v2-field">
-          <label for="f-active">Status</label>
+          <label for="f-active">{tx('Status')}</label>
           <select id="f-active" name="is_active" class="v2-input" bind:value={form.is_active}>
-            <option value="true">Active. Counts towards totals</option>
-            <option value="false">Paused, kept, but not counted</option>
+            <option value="true">{tx('Active. Counts towards totals')}</option>
+            <option value="false">{tx('Paused, kept, but not counted')}</option>
           </select>
         </div>
       </div>
 
       <div style="display:flex;gap:8px;align-items:center;margin-top:22px">
-        <button class="v2-btn v2-btn-primary" type="submit">Save goal</button>
-        <a class="v2-btn" href={resolve('/goals')}>Cancel</a>
+        <button class="v2-btn v2-btn-primary" type="submit">{tx('Save goal')}</button>
+        <a class="v2-btn" href={resolve('/goals')}>{tx('Cancel')}</a>
         <span class="v2-sub" style="margin-left:auto;font-size:12px">
           <span class="v2-num">{REQUIRED.filter((f) => !errors[f]).length}</span>
-          of <span class="v2-num">{REQUIRED.length}</span> required fields done
+          of <span class="v2-num">{REQUIRED.length}</span> {tx('required fields done')}
         </span>
       </div>
     </form>
@@ -273,7 +275,7 @@
           class="v2-btn"
           type="button"
           style="color:var(--v2-rust)"
-          onclick={() => (confirmingDelete = true)}>Delete this goal</button
+          onclick={() => (confirmingDelete = true)}>{tx('Delete this goal')}</button
         >
         <p class="v2-sub" style="font-size:12px;margin-top:8px">
           A finished goal is usually better paused than deleted. Paused keeps its history. Delete
@@ -284,10 +286,10 @@
           <div style="display:flex;gap:8px;align-items:center">
             <span class="v2-sub" style="font-size:13px">Delete “{data.goal.name}” for good?</span>
             <button class="v2-btn v2-btn-primary" type="submit" style="background:var(--v2-rust)"
-              >Yes, delete</button
+              >{tx('Yes, delete')}</button
             >
             <button class="v2-btn" type="button" onclick={() => (confirmingDelete = false)}
-              >Keep it</button
+              >{tx('Keep it')}</button
             >
           </div>
         </form>
