@@ -10,7 +10,7 @@
  */
 
 import { env as publicEnv } from '$env/dynamic/public';
-import { redirect, fail } from '@sveltejs/kit';
+import { isRedirect, redirect, fail } from '@sveltejs/kit';
 import axios from 'axios';
 import { describeError } from '$lib/server/log-safe.js';
 import { relayHeaders } from '$lib/server/relay.js';
@@ -60,6 +60,7 @@ export async function load({ cookies, locals }) {
 
     return { orgs };
   } catch (error) {
+    if (isRedirect(error)) throw error;
     // Never log the raw error: its axios `config.headers` carries the JWT.
     console.error('Error fetching organizations:', describeError(error));
     // Return empty array so user can create a new organization

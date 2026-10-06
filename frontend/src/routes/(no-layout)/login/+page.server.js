@@ -17,6 +17,7 @@ import { env as publicEnv } from '$env/dynamic/public';
 import { generateCodeVerifier, generateCodeChallenge, generateState } from '$lib/utils/pkce.js';
 import { describeError } from '$lib/server/log-safe.js';
 import { relayHeaders } from '$lib/server/relay.js';
+import { tx } from '$lib/i18n/translate.js';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_SCOPES = ['openid', 'email', 'profile'].join(' ');
@@ -202,7 +203,7 @@ export const actions = {
     const email = formData.get('email');
 
     if (!email) {
-      return { success: false, error: 'Email is required' };
+      return { success: false, error: tx('Email is required') };
     }
 
     try {

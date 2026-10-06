@@ -17,6 +17,7 @@
  * is safe on either side of the network.
  */
 
+import { tx } from '$lib/i18n/translate.js';
 import { daysSince } from '$lib/v2/format.js';
 
 /**
@@ -51,7 +52,9 @@ export function staleness(token, now = new Date()) {
   if (!token?.is_live) return null;
   const days = daysSince(lastActivityAt(token), now);
   if (days === null || days <= 90) return null;
-  return token.last_used_at ? `unused for ${days} days` : `never used, issued ${days} days ago`;
+  return token.last_used_at
+    ? tx('unused for {days} days', { days })
+    : tx('never used, issued {days} days ago', { days });
 }
 
 /**
@@ -62,9 +65,9 @@ export function staleness(token, now = new Date()) {
  * @returns {{ label: string, tone: 'ink'|'slate'|'clay'|'rust'|'moss' }}
  */
 export function tokenStatus(token) {
-  if (token?.revoked_at) return { label: 'Revoked', tone: 'slate' };
-  if (!token?.is_live) return { label: 'Expired', tone: 'slate' };
-  return { label: 'Live', tone: 'moss' };
+  if (token?.revoked_at) return { label: tx('Revoked'), tone: 'slate' };
+  if (!token?.is_live) return { label: tx('Expired'), tone: 'slate' };
+  return { label: tx('Live'), tone: 'moss' };
 }
 
 /**
@@ -85,11 +88,13 @@ export function tokenStatus(token) {
 export function scopeSummary(token, options = {}) {
   const scopes = token?.scopes ?? [];
   if (scopes.length === 0) {
-    if (options.ownerLabel) return `Everything ${options.ownerLabel} can`;
+    if (options.ownerLabel) return tx('Everything {name} can', { name: options.ownerLabel });
     const first = (token?.owner?.name ?? '').split(' ')[0];
-    return first ? `Everything ${first} can` : 'Everything its owner can';
+    return first
+      ? tx('Everything {name} can', { name: first })
+      : tx('Everything its owner can');
   }
-  if (scopes.every((/** @type {string} */ s) => s.endsWith(':read'))) return 'Read only';
+  if (scopes.every((/** @type {string} */ s) => s.endsWith(':read'))) return tx('Read only');
   return scopes.join(', ');
 }
 

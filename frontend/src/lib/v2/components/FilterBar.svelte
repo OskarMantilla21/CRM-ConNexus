@@ -35,6 +35,7 @@
   import { X, Plus, ChevronDown } from '@lucide/svelte';
   import { FILTERS, activeChips, activePresetKey, withParams } from '$lib/v2/filters.js';
   import { invoiceStatusLabel } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
   import SavedViews from '$lib/v2/components/SavedViews.svelte';
 
   let {
@@ -82,7 +83,7 @@
   // it, filtering by a colleague would light up "Mine".
   let activeKey = $derived(activePresetKey(page, url, meId));
   let activeLabel = $derived(
-    descriptor.presets.find((/** @type {any} */ p) => p.key === activeKey)?.label ?? 'All'
+    tx(descriptor.presets.find((/** @type {any} */ p) => p.key === activeKey)?.label ?? 'All')
   );
 
   /**
@@ -140,7 +141,7 @@
           class:v2-menu-item-on={preset.key === activeKey}
           href={resolve(asInternalPath(presetHref(preset)))}
         >
-          {preset.label}
+          {tx(preset.label)}
         </a>
       {/each}
     </div>
@@ -154,7 +155,9 @@
     <span class="v2-chip">
       <b>{chip.label}</b>
       {chip.value}
-      <a href={resolve(asInternalPath(chip.href))} aria-label="Remove the {chip.label} filter"
+      <a
+        href={resolve(asInternalPath(chip.href))}
+        aria-label={tx('Remove the {label} filter', { label: chip.label })}
         ><X size={12} /></a
       >
     </span>
@@ -164,7 +167,7 @@
     <details class="v2-filter-menu">
       <summary class="v2-chip v2-chip-add">
         <Plus size={12} />
-        Filter
+        {tx('Filter')}
       </summary>
       <form class="v2-menu v2-filter-form" method="GET">
         <!-- Params the form does not own (the preset's own, plus paging) would
@@ -185,7 +188,7 @@
 
         {#each visibleFields as field (field.key)}
           <label class="v2-filter-row">
-            <span class="v2-label">{field.label}</span>
+            <span class="v2-label">{tx(field.label)}</span>
             {#if field.type === 'date-range'}
               <span class="v2-filter-dates">
                 <input
@@ -209,7 +212,7 @@
                   min="0"
                   name={field.gteKey}
                   value={url.searchParams.get(field.gteKey) ?? ''}
-                  placeholder="Min"
+                  placeholder={tx('Min')}
                 />
                 <input
                   class="v2-input"
@@ -217,17 +220,17 @@
                   min="0"
                   name={field.lteKey}
                   value={url.searchParams.get(field.lteKey) ?? ''}
-                  placeholder="Max"
+                  placeholder={tx('Max')}
                 />
               </span>
             {:else if field.type === 'boolean'}
               <select class="v2-input" name={field.key}>
-                <option value="">Any</option>
+                <option value="">{tx('Any')}</option>
                 <option value="true" selected={url.searchParams.get(field.key) === 'true'}
-                  >Yes</option
+                  >{tx('Yes')}</option
                 >
                 <option value="false" selected={url.searchParams.get(field.key) === 'false'}
-                  >No</option
+                  >{tx('No')}</option
                 >
               </select>
             {:else if field.type === 'text'}
@@ -236,7 +239,7 @@
                 type="text"
                 name={field.key}
                 value={url.searchParams.get(field.key) ?? ''}
-                placeholder="Any"
+                placeholder={tx('Any')}
               />
             {:else if field.multi && url.searchParams.getAll(field.key).length > 1}
               <!-- Several values (a saved view, or the phone's multi-select)
@@ -246,11 +249,13 @@
                 <input type="hidden" name={field.key} {value} />
               {/each}
               <span class="v2-sub"
-                >{url.searchParams.getAll(field.key).length} selected. Remove the chip to choose again.</span
+                >{tx('{n} selected. Remove the chip to choose again.', {
+                  n: url.searchParams.getAll(field.key).length
+                })}</span
               >
             {:else}
               <select class="v2-input" name={field.key}>
-                <option value="">Any</option>
+                <option value="">{tx('Any')}</option>
                 {#each optionsFor(field) as option (option.id)}
                   <option
                     value={option.id}
@@ -265,8 +270,8 @@
         {/each}
 
         <div class="v2-filter-actions">
-          <button class="v2-btn v2-btn-primary v2-btn-sm" type="submit">Apply</button>
-          <a class="v2-btn v2-btn-sm" href={resolve(asInternalPath(url.pathname))}>Clear all</a>
+          <button class="v2-btn v2-btn-primary v2-btn-sm" type="submit">{tx('Apply')}</button>
+          <a class="v2-btn v2-btn-sm" href={resolve(asInternalPath(url.pathname))}>{tx('Clear all')}</a>
         </div>
       </form>
     </details>

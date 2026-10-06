@@ -20,6 +20,8 @@
  *   moss  → won, paid, completed
  */
 
+import { localize, tx } from '$lib/i18n/translate.js';
+
 /**
  * Deal stages are configured per org and per pipeline (`DealStage`), so there
  * is no stage list here: pages read the stages from the API. What a stage
@@ -28,17 +30,21 @@
  */
 export const CLOSED_KINDS = ['won', 'lost'];
 
-export const OPPORTUNITY_TYPE_LABEL = {
+export const OPPORTUNITY_TYPE_LABEL = localize({
   NEW_BUSINESS: 'New Business',
   EXISTING_BUSINESS: 'Existing Business',
   RENEWAL: 'Renewal',
   UPSELL: 'Upsell',
   CROSS_SELL: 'Cross-sell'
-};
+});
 
 /** Opportunity.aging_status. The API returns these three strings verbatim. */
 export const AGING_TONE = { green: 'slate', yellow: 'clay', red: 'rust' };
-export const AGING_LABEL = { green: 'On pace', yellow: 'Past expected', red: 'Stalled' };
+export const AGING_LABEL = localize({
+  green: 'On pace',
+  yellow: 'Past expected',
+  red: 'Stalled'
+});
 
 export const LEAD_STATUS_TONE = {
   assigned: 'slate',
@@ -59,13 +65,13 @@ export const LEAD_STATUS_TONE = {
  */
 export const LEAD_STATUSES = ['assigned', 'in process', 'converted', 'recycled', 'closed'];
 
-export const LEAD_STATUS_LABEL = {
+export const LEAD_STATUS_LABEL = localize({
   assigned: 'Assigned',
   'in process': 'In process',
   converted: 'Converted',
   recycled: 'Recycled',
   closed: 'Closed'
-};
+});
 
 /**
  * The statuses the leads LIST can display. `LeadListView` excludes `converted`
@@ -86,7 +92,7 @@ export const LEAD_SOURCES = [
   'other'
 ];
 
-export const LEAD_SOURCE_LABEL = {
+export const LEAD_SOURCE_LABEL = localize({
   call: 'Call',
   email: 'Email',
   'existing customer': 'Existing customer',
@@ -94,7 +100,7 @@ export const LEAD_SOURCE_LABEL = {
   'public relations': 'Public relations',
   compaign: 'Campaign',
   other: 'Other'
-};
+});
 
 /**
  * Mirrors `leads/workflow.py::IRREVERSIBLE_STATUSES`. A converted lead can be
@@ -140,8 +146,9 @@ export const INDUSTRIES = [
   'VENTURE CAPITAL'
 ];
 
-/** "FOOD & BEVERAGE" → "Food & beverage". The value sent to the API is unchanged. */
-export const industryLabel = (v) => (!v ? '' : v.charAt(0) + v.slice(1).toLowerCase());
+/** "FOOD & BEVERAGE" → "Food & beverage", then the active language. The value sent to the API is unchanged. */
+export const industryLabel = (v) =>
+  !v ? '' : tx(v.charAt(0) + v.slice(1).toLowerCase());
 
 export const PRIORITY_TONE = { Urgent: 'rust', High: 'clay', Normal: 'slate', Low: 'slate' };
 
@@ -175,7 +182,7 @@ export const INVOICE_STATUS_TONE = {
 };
 
 /** INVOICE_STATUS uses an underscore on the wire; never show it to a person. */
-export const invoiceStatusLabel = (s) => String(s ?? '').replace(/_/g, ' ');
+export const invoiceStatusLabel = (s) => tx(String(s ?? '').replace(/_/g, ' '));
 
 /**
  * tasks.Task.STATUS_CHOICES / PRIORITY_CHOICES.
@@ -199,7 +206,11 @@ export const TASK_PRIORITY_TONE = { Low: 'slate', Medium: 'slate', High: 'clay' 
  * customers could not see looked live. Both are surfaced here.
  */
 export const SOLUTION_STATUS = ['draft', 'reviewed', 'approved'];
-export const SOLUTION_STATUS_LABEL = { draft: 'Draft', reviewed: 'Reviewed', approved: 'Approved' };
+export const SOLUTION_STATUS_LABEL = localize({
+  draft: 'Draft',
+  reviewed: 'Reviewed',
+  approved: 'Approved'
+});
 export const SOLUTION_STATUS_TONE = { draft: 'slate', reviewed: 'clay', approved: 'moss' };
 
 /**
@@ -209,34 +220,34 @@ export const SOLUTION_STATUS_TONE = { draft: 'slate', reviewed: 'clay', approved
  * what they mean rather than repeating the wire value: "behind" alone does not
  * tell you behind on what. They are pace judgements, not percentages.
  */
-export const GOAL_TYPE_LABEL = {
+export const GOAL_TYPE_LABEL = localize({
   REVENUE: 'Revenue',
   DEALS_CLOSED: 'Deals closed',
   ACTIVITIES: 'Activities'
-};
+});
 
 /** Opportunity types, for the per-goal weighting on a revenue or deals goal. */
-export const DEAL_TYPE_LABEL = {
+export const DEAL_TYPE_LABEL = localize({
   NEW_BUSINESS: 'New business',
   EXISTING_BUSINESS: 'Existing business',
   RENEWAL: 'Renewal',
   UPSELL: 'Upsell',
   CROSS_SELL: 'Cross-sell'
-};
+});
 
-export const PERIOD_TYPE_LABEL = {
+export const PERIOD_TYPE_LABEL = localize({
   MONTHLY: 'Monthly',
   QUARTERLY: 'Quarterly',
   YEARLY: 'Yearly',
   CUSTOM: 'Custom'
-};
+});
 
-export const GOAL_STATUS_LABEL = {
+export const GOAL_STATUS_LABEL = localize({
   completed: 'Target met',
   on_track: 'On pace',
   at_risk: 'Slipping',
   behind: 'Behind pace'
-};
+});
 
 export const GOAL_STATUS_TONE = {
   completed: 'moss',
@@ -246,12 +257,12 @@ export const GOAL_STATUS_TONE = {
 };
 
 /** cases.approvals: APPROVAL_STATE_CHOICES. */
-export const APPROVAL_STATE_LABEL = {
+export const APPROVAL_STATE_LABEL = localize({
   pending: 'Waiting',
   approved: 'Approved',
   rejected: 'Rejected',
   cancelled: 'Withdrawn'
-};
+});
 
 export const APPROVAL_STATE_TONE = {
   pending: 'clay',
@@ -279,7 +290,7 @@ export const ESTIMATE_STATUS_TONE = {
 };
 
 /** invoices.RECURRING_FREQUENCIES; CUSTOM carries its interval in custom_days. */
-export const RECURRING_FREQUENCY_LABEL = {
+export const RECURRING_FREQUENCY_LABEL = localize({
   WEEKLY: 'Weekly',
   BIWEEKLY: 'Every 2 weeks',
   MONTHLY: 'Monthly',
@@ -287,23 +298,23 @@ export const RECURRING_FREQUENCY_LABEL = {
   SEMI_ANNUALLY: 'Every 6 months',
   YEARLY: 'Yearly',
   CUSTOM: 'Custom'
-};
+});
 
-export const PAYMENT_TERMS_LABEL = {
+export const PAYMENT_TERMS_LABEL = localize({
   DUE_ON_RECEIPT: 'Due on receipt',
   NET_15: 'Net 15',
   NET_30: 'Net 30',
   NET_45: 'Net 45',
   NET_60: 'Net 60',
   CUSTOM: 'Custom'
-};
+});
 
 /**
  * common.Profile.role. Two values, and that is the whole set. ADMIN and USER.
  * Role is server-derived from the profile; nothing the browser sends decides
  * it. This map exists to label a value the API gave us, never to offer one.
  */
-export const ROLE_LABEL = { ADMIN: 'Admin', USER: 'Member' };
+export const ROLE_LABEL = localize({ ADMIN: 'Admin', USER: 'Member' });
 export const ROLE_TONE = { ADMIN: 'clay', USER: 'slate' };
 
 /* ── ticket handling configuration ──────────────────────────────────────── */
@@ -314,46 +325,46 @@ export const ROLE_TONE = { ADMIN: 'clay', USER: 'slate' };
  * sentence the rule performs, because they sit next to the target list that
  * completes them.
  */
-export const ROUTING_STRATEGY_LABEL = {
+export const ROUTING_STRATEGY_LABEL = localize({
   direct: 'Always to',
   round_robin: 'Round-robin between',
   least_busy: 'Whoever has fewest open, of',
   by_team: 'Anyone on'
-};
+});
 
 /** Standalone names for the strategy select. `ROUTING_STRATEGY_LABEL` above
  *  is a sentence fragment that runs into the target names on the rule card,
  *  so it cannot double as an option label. */
-export const ROUTING_STRATEGY_NAME = {
+export const ROUTING_STRATEGY_NAME = localize({
   direct: 'Direct',
   round_robin: 'Round robin',
   least_busy: 'Least busy',
   by_team: 'By team'
-};
+});
 
 /** Fields a routing condition can test, in the words the rest of the app uses. */
-export const CONDITION_FIELD_LABEL = {
+export const CONDITION_FIELD_LABEL = localize({
   priority: 'Priority',
   case_type: 'Type',
   account: 'Account',
   tags: 'Tags',
   from_email_domain: 'Sender domain',
   mailbox_id: 'Mailbox'
-};
+});
 
-export const CONDITION_OP_LABEL = {
+export const CONDITION_OP_LABEL = localize({
   eq: 'is',
   in: 'is one of',
   contains: 'includes',
   regex: 'matches'
-};
+});
 
 /** cases.EscalationPolicy.ACTION_CHOICES. */
-export const ESCALATION_ACTION_LABEL = {
+export const ESCALATION_ACTION_LABEL = localize({
   notify: 'Notify',
   reassign: 'Reassign to',
   notify_and_reassign: 'Notify and reassign to'
-};
+});
 
 /** cases.EscalationPolicy priorities, worst first. This is the display order
  *  the escalation page sorts by, not the model's `ordering = ("priority",)`,
@@ -384,14 +395,14 @@ export const MAILBOX_PROVIDER_LABEL = {
 /* ── vocabulary ─────────────────────────────────────────────────────────── */
 
 /** common.CustomFieldDefinition.FIELD_TYPE_CHOICES. */
-export const FIELD_TYPE_LABEL = {
+export const FIELD_TYPE_LABEL = localize({
   text: 'Text',
   textarea: 'Long text',
   number: 'Number',
   dropdown: 'Dropdown',
   date: 'Date',
   checkbox: 'Checkbox'
-};
+});
 
 /** The statuses a reopened ticket may come back as.
  *
@@ -404,7 +415,7 @@ export const FIELD_TYPE_LABEL = {
 export const REOPEN_TO_STATUSES = ['New', 'Assigned', 'Pending'];
 
 /** Plural forms for the target model, for reading in a heading. */
-export const TARGET_MODEL_LABEL = {
+export const TARGET_MODEL_LABEL = localize({
   Account: 'Accounts',
   Case: 'Tickets',
   Contact: 'Contacts',
@@ -414,9 +425,9 @@ export const TARGET_MODEL_LABEL = {
   Opportunity: 'Deals',
   RecurringInvoice: 'Recurring invoices',
   Task: 'Tasks'
-};
+});
 
-export const MACRO_SCOPE_LABEL = { org: 'Everyone', personal: 'Just you' };
+export const MACRO_SCOPE_LABEL = localize({ org: 'Everyone', personal: 'Just you' });
 
 /* ── board ──────────────────────────────────────────────────────────────── */
 
@@ -425,12 +436,12 @@ export const MACRO_SCOPE_LABEL = { org: 'Everyone', personal: 'Just you' };
  * TASK_PRIORITY (Low/Medium/High) and PRIORITY_TONE (Urgent/High/Normal/Low).
  * Three enums for one word across three models; keep them apart.
  */
-export const BOARD_PRIORITY_LABEL = {
+export const BOARD_PRIORITY_LABEL = localize({
   low: 'Low',
   medium: 'Medium',
   high: 'High',
   urgent: 'Urgent'
-};
+});
 export const BOARD_PRIORITY_TONE = {
   low: 'slate',
   medium: 'slate',
@@ -439,7 +450,7 @@ export const BOARD_PRIORITY_TONE = {
 };
 
 /** tasks.BoardMember.ROLE_CHOICES, board-local, unrelated to Profile.role. */
-export const BOARD_ROLE_LABEL = { owner: 'Owner', admin: 'Admin', member: 'Member' };
+export const BOARD_ROLE_LABEL = localize({ owner: 'Owner', admin: 'Admin', member: 'Member' });
 
 /**
  * Option lists for the list-page filters. Values are what goes on the wire;

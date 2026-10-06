@@ -26,6 +26,7 @@
  *   closed child is still cascaded.
  */
 
+import { tx } from '$lib/i18n/translate.js';
 import { RESTRICTED_TICKET_NAME } from '$lib/v2/enums.js';
 
 /** Statuses a cascading close leaves alone: already closed, or merged away. */
@@ -78,7 +79,7 @@ export function openDescendants(root, id) {
       if (!NOT_OPEN.includes(child.status) && child.is_active !== false) {
         out.push({
           id: child.id,
-          name: child.restricted ? RESTRICTED_NAME : child.name,
+          name: child.restricted ? tx(RESTRICTED_NAME) : child.name,
           status: child.status,
           restricted: Boolean(child.restricted)
         });

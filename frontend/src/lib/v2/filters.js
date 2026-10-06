@@ -23,6 +23,7 @@
  * shape, two named params and no derived key, only the value it validates is
  * numeric rather than an ISO date.
  */
+import { tx } from '$lib/i18n/translate.js';
 import {
   CASE_PRIORITIES,
   CASE_STATUSES,
@@ -369,18 +370,18 @@ export function activeChips(
       const value =
         field.type === 'number-range'
           ? from && to
-            ? `${from} to ${to}`
+            ? tx('{from} to {to}', { from, to })
             : from
-              ? `over ${from}`
-              : `under ${to}`
+              ? tx('over {from}', { from })
+              : tx('under {to}', { to })
           : from && to
-            ? `${from} to ${to}`
+            ? tx('{from} to {to}', { from, to })
             : from
-              ? `from ${from}`
-              : `up to ${to}`;
+              ? tx('from {from}', { from })
+              : tx('up to {to}', { to });
       chips.push({
         key: field.key,
-        label: field.label,
+        label: tx(field.label),
         value,
         href: withParams(url, {
           [/** @type {string} */ (field.gteKey)]: null,
@@ -401,12 +402,18 @@ export function activeChips(
       if (field.type === 'tag') return nameFrom(lookups.tags ?? [], raw);
       if (field.type === 'account') return nameFrom(lookups.accounts ?? [], raw);
       if (field.type === 'stage') return nameFrom(lookups.stages ?? [], raw);
-      if (field.type === 'boolean') return raw === 'true' ? 'Yes' : 'No';
-      return field.labelFor ? field.labelFor(raw) : raw;
+      if (field.type === 'text') return raw;
+      if (field.type === 'boolean') return raw === 'true' ? tx('Yes') : tx('No');
+      return field.labelFor ? field.labelFor(raw) : tx(raw);
     };
     const value = raws.map((raw) => show(/** @type {string} */ (raw))).join(', ');
 
-    chips.push({ key: field.key, label: field.label, value, href: withoutParam(url, field.key) });
+    chips.push({
+      key: field.key,
+      label: tx(field.label),
+      value,
+      href: withoutParam(url, field.key)
+    });
   }
   return chips;
 }

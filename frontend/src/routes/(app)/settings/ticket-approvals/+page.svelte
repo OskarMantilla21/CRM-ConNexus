@@ -34,6 +34,7 @@
   import ConfirmAction from '$lib/v2/components/ConfirmAction.svelte';
   import { count } from '$lib/v2/format.js';
   import { ROLE_LABEL } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
   import { missingOptions, missingOption, inactiveOptionLabel } from '$lib/v2/pickers.js';
   import {
     approverSentence,
@@ -58,7 +59,7 @@
   // `Profile.role` value (see the module docstring), so it has no entry in
   // that map and would render as `undefined`. Labelled here instead.
   function approverRoleLabel(role) {
-    return role === 'MANAGER' ? 'Manager' : (ROLE_LABEL[role] ?? role);
+    return role === 'MANAGER' ? tx('Manager') : (ROLE_LABEL[role] ?? role);
   }
 
   // `null` when the panel is closed, `'new'` when adding, or the rule object

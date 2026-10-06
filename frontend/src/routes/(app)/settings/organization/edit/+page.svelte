@@ -25,7 +25,7 @@
   import SettingsCrumb from '$lib/v2/components/SettingsCrumb.svelte';
   import NextAction from '$lib/v2/components/NextAction.svelte';
   import { CURRENCY_CODES } from '$lib/constants/filters.js';
-  import { COUNTRIES } from '$lib/constants/countries.js';
+  import { COUNTRIES, getCountryName } from '$lib/constants/countries.js';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -38,7 +38,7 @@
   // The full list the backend COUNTRIES accepts, so every stored code has an
   // option. A code missing here would leave the select on its first entry and
   // the next save would silently clear the org's country.
-  const countryOptions = COUNTRIES.map((c) => ({ value: c.code, label: c.name }));
+  const countryOptions = COUNTRIES.map((c) => ({ value: c.code, label: getCountryName(c.code) }));
 
   const org = untrack(() => data.org ?? {});
   // Always includes the org's current value, because the API builds the list

@@ -1,10 +1,13 @@
 /** Formatting helpers for v2. Every number rendered goes through one of these. */
 
+import { dateLocale, numberLocale } from '$lib/i18n/locale.js';
+import { tx } from '$lib/i18n/translate.js';
+
 /** @param {number|string|null|undefined} n */
 export function money(n, currency = 'USD') {
   const v = Number(n ?? 0);
   if (!Number.isFinite(v)) return '—';
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(numberLocale(), {
     style: 'currency',
     currency,
     maximumFractionDigits: v % 1 === 0 ? 0 : 2
@@ -45,7 +48,7 @@ export function sumByCurrency(rows, field = 'amount') {
 /** @param {number|string|null|undefined} n */
 export function count(n) {
   const v = Number(n ?? 0);
-  return Number.isFinite(v) ? v.toLocaleString('en-US') : '—';
+  return Number.isFinite(v) ? v.toLocaleString(numberLocale()) : '—';
 }
 
 /** @param {string|null|undefined} name */
@@ -88,7 +91,7 @@ export function shortDate(iso, now = new Date()) {
   const d = parseIso(iso);
   if (!d) return '—';
   const sameYear = d.getFullYear() === now.getFullYear();
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(dateLocale(), {
     day: 'numeric',
     month: 'short',
     ...(sameYear ? {} : { year: 'numeric' })
@@ -99,7 +102,7 @@ export function shortDate(iso, now = new Date()) {
 export function longDate(iso) {
   const d = parseIso(iso);
   if (!d) return '—';
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(dateLocale(), {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
@@ -117,11 +120,11 @@ export function daysSince(iso, now = new Date()) {
 export function relativeDays(iso, now = new Date()) {
   const n = daysSince(iso, now);
   if (n === null) return '—';
-  if (n === 0) return 'today';
-  if (n === 1) return 'yesterday';
-  if (n > 1) return `${n} days ago`;
-  if (n === -1) return 'tomorrow';
-  return `in ${Math.abs(n)} days`;
+  if (n === 0) return tx('today');
+  if (n === 1) return tx('yesterday');
+  if (n > 1) return tx('{n} days ago', { n });
+  if (n === -1) return tx('tomorrow');
+  return tx('in {n} days', { n: Math.abs(n) });
 }
 
 /**
@@ -138,10 +141,12 @@ export function relativeTime(iso, now = new Date()) {
   if (!d) return '—';
   const mins = Math.floor((now.getTime() - d.getTime()) / 60000);
   if (mins < 0) return relativeDays(iso, now);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  if (mins < 1) return tx('just now');
+  if (mins === 1) return tx('1 minute ago');
+  if (mins < 60) return tx('{n} minutes ago', { n: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  if (hrs === 1) return tx('1 hour ago');
+  if (hrs < 24) return tx('{n} hours ago', { n: hrs });
   return relativeDays(iso, now);
 }
 

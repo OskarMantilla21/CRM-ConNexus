@@ -25,6 +25,8 @@
     LogOut
   } from '@lucide/svelte';
   import { t } from '$lib/terminology.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /**
    * One flat tree, grouped by what the person is doing rather than by which
@@ -127,11 +129,16 @@
   let groups = $derived(
     GROUPS.map((group) => ({
       ...group,
+      label: tx(group.label),
       items: group.items
         .filter((item) => isAdmin || !item.admin)
-        .map((item) =>
-          item.termKey ? { ...item, label: t(terminology, item.termKey, item.label) } : item
-        )
+        .map((item) => ({
+          ...item,
+          // A pack's own wording wins. The fallback is the translated label.
+          label: item.termKey
+            ? t(terminology, item.termKey, tx(item.label))
+            : tx(item.label)
+        }))
     })).filter((group) => group.items.length > 0)
   );
 
@@ -139,7 +146,7 @@
     exact ? page.url.pathname === href : page.url.pathname.startsWith(href);
 </script>
 
-<nav class="v2-nav" aria-label="Main">
+<nav class="v2-nav" aria-label={tx('Main')}>
   <div class="v2-org">
     <span class="v2-mark">{org.name.slice(0, 1)}</span>
     <b>{org.name}</b>
@@ -170,7 +177,7 @@
   <div class="v2-nav-foot">
     <button class="v2-link v2-nav-search" type="button" onclick={onsearch}>
       <Search />
-      Search
+      {tx('Search')}
       <span class="v2-count">⌘K</span>
     </button>
     <!-- Personal, not work: your own feed sits with your own profile rather
@@ -181,18 +188,18 @@
       aria-current={isActive('/notifications', false) ? 'page' : undefined}
     >
       <Bell />
-      Notifications
+      {tx('Notifications')}
       {#if counts.notifications}
         <span class="v2-count">{counts.notifications}</span>
       {/if}
     </a>
     <a class="v2-link" href={resolve('/profile')}>
       <CircleUser />
-      Your profile
+      {tx('Your profile')}
     </a>
     <a class="v2-link" href={resolve('/help')}>
       <CircleHelp />
-      Help
+      {tx('Help')}
     </a>
     <!-- The phone app for people on the hosted service. No pulsing dot. A
          download link is not something that needs you right now, and v2 keeps
@@ -204,15 +211,16 @@
       rel="noopener noreferrer"
     >
       <Smartphone />
-      Download app
+      {tx('Download app')}
     </a>
     <!-- Leaving the app. Last in the list, and a plain link. /logout is a
          server load that clears the auth cookies and redirects to /login, so a
          GET navigation is all it takes and no data-fetching component follows. -->
     <a class="v2-link" href={resolve('/logout')} data-sveltekit-reload>
       <LogOut />
-      Sign out
+      {tx('Sign out')}
     </a>
+    <LanguageSelect />
   </div>
 </nav>
 

@@ -21,6 +21,8 @@
   import { relativeDays, shortDate, count } from '$lib/v2/format.js';
   import { ROLE_LABEL, ROLE_TONE } from '$lib/v2/enums.js';
   import { KeyRound, Lock, ArrowLeftRight, CalendarDays } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -66,11 +68,11 @@
 
 <PageHeader title={name} record>
   {#snippet sub()}
-    {ROLE_LABEL[p.role]} · {data.org.name} · joined {shortDate(p.joined_at)}
+    {ROLE_LABEL[p.role]} · {data.org.name} · {tx('joined {date}', { date: shortDate(p.joined_at) })}
   {/snippet}
   {#snippet actions()}
     {#if !editing}
-      <button class="v2-btn v2-btn-primary" onclick={openEdit}>Edit details</button>
+      <button class="v2-btn v2-btn-primary" onclick={openEdit}>{tx('Edit details')}</button>
     {/if}
   {/snippet}
 </PageHeader>
@@ -79,7 +81,7 @@
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     <div class="v2-split">
       <div>
-        <div class="v2-label" style="margin-bottom:10px">You</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('You')}</div>
 
         {#if editing}
           <form
@@ -90,7 +92,7 @@
             style="padding:17px 18px;margin-bottom:20px"
           >
             <div class="v2-field">
-              <label for="f-name">Full name</label>
+              <label for="f-name">{tx('Full name')}</label>
               <input
                 id="f-name"
                 name="name"
@@ -100,7 +102,7 @@
               />
             </div>
             <div class="v2-field" style="margin-top:12px">
-              <label for="f-phone">Phone</label>
+              <label for="f-phone">{tx('Phone')}</label>
               <input
                 id="f-phone"
                 name="phone"
@@ -108,14 +110,14 @@
                 bind:value={editPhone}
                 placeholder="+44 20 7946 0100"
               />
-              <p class="v2-hint">Digits and separators only. Leave blank to remove it.</p>
+              <p class="v2-hint">{tx('Digits and separators only. Leave blank to remove it.')}</p>
             </div>
             {#if editError}
               <p class="v2-error" style="margin-top:10px">{editError}</p>
             {/if}
             <div style="display:flex;gap:8px;margin-top:16px">
-              <button class="v2-btn v2-btn-primary" type="submit">Save</button>
-              <button class="v2-btn" type="button" onclick={() => (editing = false)}>Cancel</button>
+              <button class="v2-btn v2-btn-primary" type="submit">{tx('Save')}</button>
+              <button class="v2-btn" type="button" onclick={() => (editing = false)}>{tx('Cancel')}</button>
             </div>
           </form>
         {:else}
@@ -128,37 +130,45 @@
               </div>
             </div>
             <dl class="v2-kv">
-              <dt>Phone</dt>
+              <dt>{tx('Phone')}</dt>
               <dd class="v2-num" style="font-size:12px">{p.phone || '—'}</dd>
-              <dt>Teams</dt>
+              <dt>{tx('Teams')}</dt>
               <dd>{p.teams.join(', ') || '—'}</dd>
-              <dt>Joined</dt>
+              <dt>{tx('Joined')}</dt>
               <dd>{shortDate(p.joined_at)}</dd>
-              <dt>Last signed in</dt>
+              <dt>{tx('Last signed in')}</dt>
               <dd>{relativeDays(p.last_login)}</dd>
             </dl>
           </div>
         {/if}
 
-        <div class="v2-label" style="margin-bottom:10px">Organisations</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Language')}</div>
+        <div class="v2-card" style="padding:14px 16px;margin-bottom:20px">
+          <p class="v2-sub" style="margin:0 0 10px">{tx('Choose the language for this browser.')}</p>
+          <LanguageSelect />
+        </div>
+
+        <div class="v2-label" style="margin-bottom:10px">{tx('Organisations')}</div>
         <div class="v2-card" style="overflow:hidden">
           {#each p.orgs as o (o.id)}
             <div class="v2-setting">
               <div class="v2-setting-body">
                 <b>{o.name}</b>
                 <span class="v2-sub" style="font-size:11.5px">
-                  You are {ROLE_LABEL[o.role] === 'Admin' ? 'an admin' : 'a member'} here
+                  {tx('You are {role} here', {
+                    role: o.role === 'ADMIN' ? tx('an admin') : tx('a member')
+                  })}
                 </span>
               </div>
               {#if o.is_current}
-                <Pill tone="ink" dot>Current</Pill>
+                <Pill tone="ink" dot>{tx('Current')}</Pill>
               {:else}
                 <!-- Switching org re-issues the token; it does not edit a field
                      on this page. The action swaps the cookies and reloads. -->
                 <form method="POST" action="?/switchOrg" use:enhance class="v2-inline-form">
                   <input type="hidden" name="org_id" value={o.id} />
                   <button class="v2-btn v2-btn-sm" type="submit">
-                    <ArrowLeftRight size={12} />Switch
+                    <ArrowLeftRight size={12} />{tx('Switch')}
                   </button>
                 </form>
               {/if}

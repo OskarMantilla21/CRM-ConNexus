@@ -7,6 +7,8 @@
   import imgGoogle from '$lib/assets/images/google.svg';
   import imgLogo from '$lib/assets/images/logo.png';
   import { Mail, Check } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   let { data = {} } = $props();
 
@@ -28,19 +30,19 @@
       if (result?.type === 'success') {
         magicLinkSent = true;
       } else if (result?.type === 'failure') {
-        magicLinkError = result.data?.error || 'Something went wrong. Please try again.';
+        magicLinkError = result.data?.error || tx('Something went wrong. Please try again.');
       } else if (!result) {
-        magicLinkError = 'Something went wrong. Please try again.';
+        magicLinkError = tx('Something went wrong. Please try again.');
       }
     };
   }
 </script>
 
 <svelte:head>
-  <title>Sign in · BottleCRM</title>
+  <title>{tx('Sign in · BottleCRM')}</title>
   <meta
     name="description"
-    content="Sign in to BottleCRM to manage your contacts, deals, and grow your business."
+    content={tx('Sign in to BottleCRM to manage your contacts, deals, and grow your business.')}
   />
 </svelte:head>
 
@@ -53,8 +55,8 @@
 
     <div class="v2-auth-card">
       <div class="v2-auth-head">
-        <h1>Sign in</h1>
-        <p>Welcome back. Choose how you'd like to continue.</p>
+        <h1>{tx('Sign in')}</h1>
+        <p>{tx("Welcome back. Choose how you'd like to continue.")}</p>
       </div>
 
       <!-- Primary path. Google's mark keeps a white tile so it stays legible on
@@ -69,22 +71,22 @@
       >
         {#if isLoading}
           <span class="v2-spin"></span>
-          <span>Redirecting…</span>
+          <span>{tx('Redirecting…')}</span>
         {:else}
           <img src={imgGoogle} alt="" class="v2-auth-gicon" />
-          <span>Continue with Google</span>
+          <span>{tx('Continue with Google')}</span>
         {/if}
       </a>
 
-      <div class="v2-auth-divider">or</div>
+      <div class="v2-auth-divider">{tx('or')}</div>
 
       {#if magicLinkSent}
         <div class="v2-auth-note v2-auth-note-ok">
           <Check />
           <div>
-            <b>Check your email.</b>
+            <b>{tx('Check your email.')}</b>
             <div style="font-weight:400;margin-top:2px">
-              We sent a sign-in link. It expires in 10 minutes.
+              {tx('We sent a sign-in link. It expires in 10 minutes.')}
             </div>
           </div>
         </div>
@@ -94,7 +96,7 @@
           use:enhance={handleMagicLink}
           style="display:flex;flex-direction:column;gap:9px"
         >
-          <label for="email" class="v2-sr-only">Email address</label>
+          <label for="email" class="v2-sr-only">{tx('Email address')}</label>
           <input
             id="email"
             type="email"
@@ -108,10 +110,10 @@
           <button type="submit" class="v2-btn v2-btn-block" disabled={isSendingLink}>
             {#if isSendingLink}
               <span class="v2-spin"></span>
-              <span>Sending…</span>
+              <span>{tx('Sending…')}</span>
             {:else}
               <Mail size={15} />
-              <span>Continue with email</span>
+              <span>{tx('Continue with email')}</span>
             {/if}
           </button>
         </form>
@@ -124,13 +126,14 @@
     </div>
 
     <p class="v2-sub" style="text-align:center;margin:14px 0 0">
-      New here? Enter your email above to get started.
+      {tx('New here? Enter your email above to get started.')}
     </p>
 
+    <LanguageSelect />
     <div class="v2-auth-foot">
-      <a href="https://bottlecrm.io/privacy-policy">Privacy</a>
+      <a href="https://bottlecrm.io/privacy-policy">{tx('Privacy')}</a>
       <span class="v2-auth-dot"></span>
-      <a href="https://bottlecrm.io/terms">Terms</a>
+      <a href="https://bottlecrm.io/terms">{tx('Terms')}</a>
       <span class="v2-auth-dot"></span>
       <a href="https://github.com/django-crm/Django-CRM" target="_blank" rel="noopener">GitHub</a>
     </div>
