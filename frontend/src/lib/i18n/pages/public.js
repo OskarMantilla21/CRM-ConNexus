@@ -1172,7 +1172,47 @@ export const messages = {
   Ticket: { es: 'Ticket', pt: 'Chamado' },
   entries: { es: 'registros', pt: 'registros' },
   billable: { es: 'facturable', pt: 'faturável' },
-  worth: { es: 'valor', pt: 'valor' }
+  worth: { es: 'valor', pt: 'valor' },
+  CEO: { es: 'CEO', pt: 'CEO' },
+  Employee: { es: 'Empleado', pt: 'Funcionário' },
+  'Daily work': { es: 'Trabajo del día', pt: 'Trabalho do dia' },
+  Permissions: { es: 'Permisos', pt: 'Permissões' },
+  'The CEO chooses what this administrator can open.': {
+    es: 'El CEO elige qué puede abrir este administrador.',
+    pt: 'O CEO escolhe o que este administrador pode abrir.'
+  },
+  'Save role': { es: 'Guardar rol', pt: 'Salvar papel' },
+  'The CEO has every permission. An administrator has the ones the CEO saved.': {
+    es: 'El CEO tiene todos los permisos. Un administrador tiene los que el CEO guardó.',
+    pt: 'O CEO tem todas as permissões. Um administrador tem as que o CEO salvou.'
+  },
+  'Roles are CEO, administrator, member and employee. The CEO can do everything and chooses what each administrator can open. An employee can only record the work done today. Nobody can change their own role, and the organization keeps at least one person who can do everything.':
+    {
+      es: 'Los roles son CEO, administrador, miembro y empleado. El CEO puede hacer todo y elige qué puede abrir cada administrador. Un empleado solo puede registrar el trabajo de hoy. Nadie puede cambiar su propio rol, y la organización conserva al menos una persona que puede hacer todo.',
+      pt: 'Os papéis são CEO, administrador, membro e funcionário. O CEO pode fazer tudo e escolhe o que cada administrador pode abrir. Um funcionário só pode registrar o trabalho de hoje. Ninguém pode mudar o próprio papel, e a organização mantém pelo menos uma pessoa que pode fazer tudo.'
+    },
+  "Log today's work": { es: 'Registrar el trabajo de hoy', pt: 'Registrar o trabalho de hoje' },
+  'Choose a job, describe what was done today, and how many minutes it took.': {
+    es: 'Elige un trabajo, describe lo que se hizo hoy y cuántos minutos tomó.',
+    pt: 'Escolha um trabalho, descreva o que foi feito hoje e quantos minutos levou.'
+  },
+  'Which job?': { es: '¿Qué trabajo?', pt: 'Qual trabalho?' },
+  'Choose a job': { es: 'Elige un trabajo', pt: 'Escolha um trabalho' },
+  Minutes: { es: 'Minutos', pt: 'Minutos' },
+  'What was done': { es: 'Qué se hizo', pt: 'O que foi feito' },
+  'Choose a job, describe the work, and give the minutes.': {
+    es: 'Elige un trabajo, describe el trabajo y escribe los minutos.',
+    pt: 'Escolha um trabalho, descreva o trabalho e informe os minutos.'
+  },
+  'Could not log that work.': {
+    es: 'No se pudo registrar ese trabajo.',
+    pt: 'Não foi possível registrar esse trabalho.'
+  },
+  'Work logged.': { es: 'Trabajo registrado.', pt: 'Trabalho registrado.' },
+  'No jobs yet. An administrator has to open one before work can be recorded against it.': {
+    es: 'Aún no hay trabajos. Un administrador tiene que abrir uno antes de que se pueda registrar trabajo en él.',
+    pt: 'Ainda não há trabalhos. Um administrador precisa abrir um antes que o trabalho possa ser registrado nele.'
+  }
 };
 
 addMessages(messages);

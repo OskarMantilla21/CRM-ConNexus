@@ -310,12 +310,17 @@ export const PAYMENT_TERMS_LABEL = localize({
 });
 
 /**
- * common.Profile.role. Two values, and that is the whole set. ADMIN and USER.
- * Role is server-derived from the profile; nothing the browser sends decides
- * it. This map exists to label a value the API gave us, never to offer one.
+ * common.Profile.role. CEO, ADMIN, USER, EMPLOYEE. The value is the code the
+ * API stored. This map only labels it. Comparisons against a role use the
+ * code, never the translated label.
  */
-export const ROLE_LABEL = localize({ ADMIN: 'Admin', USER: 'Member' });
-export const ROLE_TONE = { ADMIN: 'clay', USER: 'slate' };
+export const ROLE_LABEL = localize({
+  CEO: 'CEO',
+  ADMIN: 'Admin',
+  USER: 'Member',
+  EMPLOYEE: 'Employee'
+});
+export const ROLE_TONE = { CEO: 'clay', ADMIN: 'clay', USER: 'slate', EMPLOYEE: 'moss' };
 
 /* ── ticket handling configuration ──────────────────────────────────────── */
 

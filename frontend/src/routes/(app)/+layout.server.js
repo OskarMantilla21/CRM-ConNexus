@@ -1,4 +1,6 @@
 import { isOrgAdmin } from '$lib/admin.js';
+import { COUNT_PERMISSION, landingPath, pathAllowed, permissionsFromClaims } from '$lib/access.js';
+import { redirect } from '@sveltejs/kit';
 import { listLeads } from '$lib/server/v2/leads.js';
 import { listDeals } from '$lib/server/v2/deals.js';
 import { listTickets, OPEN_STATUSES } from '$lib/server/v2/tickets.js';
@@ -118,6 +120,12 @@ const LIVE_COUNTS = {
  * @type {import('./$types').LayoutServerLoad}
  */
 export async function load(event) {
+  const permissions = permissionsFromClaims(event.locals.profile);
+  if (!pathAllowed(event.url.pathname, permissions)) {
+    const dest = landingPath(permissions);
+    if (dest !== event.url.pathname) throw redirect(303, dest);
+  }
+
   const shell = {
     counts: /** @type {Record<string, number>} */ ({}),
     org: {
@@ -147,7 +155,9 @@ export async function load(event) {
     // destinations a member can only reach to be turned away. The backend
     // still enforces every one of those gates, so this is UX, not a security
     // control. The non-admin view when the claim is absent.
-    is_organization_admin: isOrgAdmin(event.locals.profile)
+    is_organization_admin: isOrgAdmin(event.locals.profile),
+    permissions,
+    role: event.locals.profile?.role || 'USER'
   };
 
   // countKeys' fetches and the terminology fetch are pushed into ONE
@@ -155,7 +165,9 @@ export async function load(event) {
   // terminology lookup is not a second round trip, it rides the wave that was
   // already here for the badges. `results` is indexed by position: the count
   // keys first (in `countKeys` order), terminology last.
-  const countKeys = Object.keys(LIVE_COUNTS);
+  const countKeys = Object.keys(LIVE_COUNTS).filter(
+    (key) => permissions.includes(COUNT_PERMISSION[key])
+  );
   const results = await Promise.allSettled([
     ...countKeys.map((key) => LIVE_COUNTS[/** @type {keyof typeof LIVE_COUNTS} */ (key)](event)),
     getOrgTerminology(event)

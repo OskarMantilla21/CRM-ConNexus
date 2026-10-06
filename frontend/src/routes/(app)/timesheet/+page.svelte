@@ -122,7 +122,9 @@
     </button>
     <!-- This page is one person's week. The report is every window and every
          grouping of the same entries, and where the CSV comes from. -->
-    <a class="v2-btn" href={resolve('/timesheet/report')}>{tx('Report')}</a>
+    {#if data.permissions?.includes('bill')}
+      <a class="v2-btn" href={resolve('/timesheet/report')}>{tx('Report')}</a>
+    {/if}
   {/snippet}
 </PageHeader>
 
@@ -156,6 +158,40 @@
 
 <div class="v2-scroll">
   <div class="v2-pad" style="padding-bottom:32px">
+    <form method="POST" action="?/log" use:enhance={stopping} class="v2-card" style="padding:14px 15px;margin-bottom:16px">
+      <div class="v2-label" style="margin-bottom:8px">{tx("Log today's work")}</div>
+      <p class="v2-sub" style="font-size:12px;margin:0 0 10px">
+        {tx('Choose a job, describe what was done today, and how many minutes it took.')}
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <label style="flex:1;min-width:180px">
+          <span class="v2-label" style="display:block;margin-bottom:4px">{tx('Which job?')}</span>
+          <select name="case_id" class="v2-input" style="width:100%" required>
+            <option value="">{tx('Choose a job')}</option>
+            {#each data.jobs ?? [] as job (job.id)}
+              <option value={job.id}>{job.name}</option>
+            {/each}
+          </select>
+        </label>
+        <label style="width:110px">
+          <span class="v2-label" style="display:block;margin-bottom:4px">{tx('Minutes')}</span>
+          <input name="minutes" type="number" min="1" max="1440" required class="v2-input" style="width:100%" />
+        </label>
+        <label style="flex:2;min-width:220px">
+          <span class="v2-label" style="display:block;margin-bottom:4px">{tx('What was done')}</span>
+          <input name="description" required class="v2-input" style="width:100%" maxlength="2000" />
+        </label>
+        <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Save')}</button>
+      </div>
+      {#if form?.logError}
+        <p class="v2-error" style="margin:8px 0 0">{form.logError}</p>
+      {:else if form?.logged}
+        <p class="v2-sub" style="color:var(--v2-moss);margin:8px 0 0">{tx('Work logged.')}</p>
+      {/if}
+      {#if (data.jobs ?? []).length === 0}
+        <p class="v2-sub" style="font-size:12px;margin:8px 0 0">{tx('No jobs yet. An administrator has to open one before work can be recorded against it.')}</p>
+      {/if}
+    </form>
     {#if week.running_count}
       <!-- The one thing on this page that changes while you look at it. -->
       <div class="v2-next" style="margin-bottom:16px">
@@ -177,9 +213,11 @@
                 <div class="v2-running-row">
                   <span>
                     <span class="v2-num">{hm(liveMinutes(e))}</span> {tx('on')}
-                    <a href={resolve(`/tickets/${e.case.id}`)} style="color:inherit"
-                      >{e.case.name}</a
-                    >
+                    {#if data.permissions?.includes('serve')}
+                      <a href={resolve(`/tickets/${e.case.id}`)} style="color:inherit">{e.case.name}</a>
+                    {:else}
+                      {e.case.name}
+                    {/if}
                   </span>
                   <!-- One form per entry. A single shared button could not say
                        which of several running timers it meant. -->
@@ -220,7 +258,7 @@
                   <Pill tone="clay" dot>{tx('running')}</Pill>
                 {:else if !e.billable}
                   <span class="v2-sub" style="font-size:10.5px">{tx('internal')}</span>
-                {:else if e.invoice}
+                {:else if e.invoice && data.permissions?.includes('bill')}
                   <!-- Already billed. Links out rather than offering to bill
                        it again. Double-billing an hour is a refund, not an
                        edge case. -->
@@ -234,12 +272,18 @@
                   </a>
                 {/if}
               </div>
-              <a
-                href={resolve(`/tickets/${e.case.id}`)}
-                style="color:inherit;text-decoration:none;display:block;margin-top:3px;white-space:normal;line-height:1.35"
-              >
-                {e.case.name}
-              </a>
+              {#if data.permissions?.includes('serve')}
+                <a
+                  href={resolve(`/tickets/${e.case.id}`)}
+                  style="color:inherit;text-decoration:none;display:block;margin-top:3px;white-space:normal;line-height:1.35"
+                >
+                  {e.case.name}
+                </a>
+              {:else}
+                <div style="display:block;margin-top:3px;white-space:normal;line-height:1.35">
+                  {e.case.name}
+                </div>
+              {/if}
               {#if e.description}
                 <div class="v2-sub" style="font-size:11px;margin-top:3px;white-space:normal">
                   {e.description}

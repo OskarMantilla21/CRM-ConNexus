@@ -14,7 +14,13 @@ from cases.models import Case
 from cases.serializer import CaseSerializer, parent_access_context
 from common import swagger_params
 from common.models import Comment, PersonalAccessToken, Profile, Teams, User
-from common.permissions import HasOrgContext, is_org_admin
+from common.permissions import (
+    HasOrgContext,
+    dropping_last_unrestricted_admin,
+    has_unrestricted_admin_access,
+    is_org_admin,
+    other_unrestricted_admin_exists,
+)
 from common.serializer import (
     BillingAddressSerializer,
     CommentSerializer,
@@ -31,6 +37,28 @@ from contacts.models import Contact
 from contacts.serializer import ContactSerializer
 from opportunity.models import Opportunity
 from opportunity.serializer import OpportunitySerializer
+
+
+def _planned_role_and_grants(profile, validated):
+    """The role and grant list a validated profile update would store."""
+    new_role = validated.get("role", profile.role)
+    if "granted_permissions" in validated:
+        new_grants = validated.get("granted_permissions")
+    else:
+        new_grants = profile.granted_permissions
+    if new_role != "ADMIN":
+        new_grants = None
+    return new_role, new_grants
+
+
+def _last_admin_response():
+    return Response(
+        {
+            "error": True,
+            "errors": "The organization must keep at least one active admin.",
+        },
+        status=status.HTTP_400_BAD_REQUEST,
+    )
 
 
 def _valid_token_counts_by_profile(org):
@@ -144,10 +172,15 @@ class UsersListView(APIView, LimitOffsetPagination):
                     # gets a profile in their own org and no say over that
                     # person's account.
 
+                    role = profile_serializer.validated_data["role"]
+                    grants = profile_serializer.validated_data.get("granted_permissions")
+                    if role != "ADMIN":
+                        grants = None
                     Profile.objects.create(
                         user=user,
                         date_of_joining=timezone.localdate(),
-                        role=profile_serializer.validated_data["role"],
+                        role=role,
+                        granted_permissions=grants,
                         address=address_obj,
                         org=request.profile.org,
                     )
@@ -415,6 +448,11 @@ class UserDetailView(APIView):
             address_obj = address_serializer.save(org=request.profile.org)
             serializer.save()
         if profile_serializer.is_valid():
+            new_role, new_grants = _planned_role_and_grants(
+                profile, profile_serializer.validated_data
+            )
+            if dropping_last_unrestricted_admin(profile, new_role, new_grants):
+                return _last_admin_response()
             profile = profile_serializer.save()
             return Response(
                 {"error": False, "message": "User Updated Successfully"},
@@ -487,6 +525,11 @@ class UserDetailView(APIView):
         if serializer.is_valid():
             serializer.save()
         if profile_serializer.is_valid():
+            new_role, new_grants = _planned_role_and_grants(
+                profile, profile_serializer.validated_data
+            )
+            if dropping_last_unrestricted_admin(profile, new_role, new_grants):
+                return _last_admin_response()
             profile = profile_serializer.save()
             return Response(
                 {"error": False, "message": "User Updated Successfully"},
@@ -578,25 +621,14 @@ class UserStatusView(APIView):
             if user_status == "Active":
                 profile.is_active = True
             elif user_status == "Inactive":
-                # Deactivating a profile is the one remaining way to strand an
-                # org with no admin (self role-change is blocked in the
-                # serializer), and an org with no admin can never invite,
-                # promote or reconfigure itself again. Refuse to deactivate the
-                # last active admin, the rule the /v2/team page advertises.
-                target_is_admin = is_org_admin(profile)
-                if target_is_admin and not (
-                    profiles.filter(is_active=True)
-                    .filter(role="ADMIN")
-                    .exclude(pk=profile.pk)
-                    .exists()
-                ):
-                    return Response(
-                        {
-                            "error": True,
-                            "errors": "The organization must keep at least one active admin.",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                # Deactivating a profile is one way to strand an org with
+                # nobody who has every permission. A CEO counts, and so does
+                # a legacy administrator. An administrador limited to a grant
+                # list does not: they cannot hand access back.
+                if has_unrestricted_admin_access(
+                    profile
+                ) and not other_unrestricted_admin_exists(profile):
+                    return _last_admin_response()
                 profile.is_active = False
             else:
                 return Response(

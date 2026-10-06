@@ -1,5 +1,6 @@
 import { tx, choiceLabel } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/sell.js';
+import { ALL_PERMISSIONS } from '$lib/access.js';
 import { fail } from '@sveltejs/kit';
 import { listTeam, inviteUser, setRole, setStatus, ROLES } from '$lib/server/v2/team.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -32,8 +33,17 @@ export const actions = {
     if (!email) return fail(400, { invite: { error: tx('Enter an email address.') } });
     if (!ROLES.includes(role)) return fail(400, { invite: { error: tx('Pick a valid role.') } });
 
+    /** @type {{ email: string, role: string, granted_permissions?: string[] }} */
+    const body = { email, role };
+    if (role === 'ADMIN') {
+      body.granted_permissions = form
+        .getAll('permissions')
+        .map((value) => value.toString())
+        .filter((key) => ALL_PERMISSIONS.includes(key));
+    }
+
     try {
-      await inviteUser({ cookies }, { email, role });
+      await inviteUser({ cookies }, body);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
         invite: {
@@ -60,8 +70,15 @@ export const actions = {
     if (!userId || !role || !ROLES.includes(role)) {
       return fail(400, { error: tx('Which person, and to what role?') });
     }
+    const granted =
+      role === 'ADMIN'
+        ? form
+            .getAll('permissions')
+            .map((value) => value.toString())
+            .filter((key) => ALL_PERMISSIONS.includes(key))
+        : null;
     try {
-      await setRole({ cookies }, userId, role);
+      await setRole({ cookies }, userId, role, granted);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
         error:

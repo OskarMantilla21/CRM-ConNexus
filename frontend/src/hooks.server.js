@@ -32,9 +32,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 /**
  * @typedef {{ default_currency?: string, currency_symbol?: string, default_country?: string|null, timezone?: string }} OrgSettingsPayload
- * @typedef {{ org_id?: string, org_name?: string, role?: string, is_organization_admin?: boolean, user_id?: string, user_name?: string, user_email?: string, user_profile_pic?: string, exp?: number, iat?: number, org_settings?: OrgSettingsPayload }} JWTPayload
+ * @typedef {{ org_id?: string, org_name?: string, role?: string, is_organization_admin?: boolean, permissions?: string[], user_id?: string, user_name?: string, user_email?: string, user_profile_pic?: string, exp?: number, iat?: number, org_settings?: OrgSettingsPayload }} JWTPayload
  * @typedef {{ id: string, name: string }} OrgInfo
- * @typedef {{ org: OrgInfo, role?: string, is_organization_admin?: boolean }} ProfileInfo
+ * @typedef {{ org: OrgInfo, role?: string, is_organization_admin?: boolean, permissions?: string[] }} ProfileInfo
  * @typedef {{ id?: string, organizations?: Array<{ id: string, name: string }> }} UserInfo
  * @typedef {{ access_token: string, refresh_token: string, current_org?: OrgInfo }} SwitchOrgResult
  */
@@ -280,7 +280,12 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
           role: jwtPayload.role || 'USER',
           // The admin fact every admin gate reads (`$lib/admin.js`). Server
           // derived and signed; `role` stays for display only.
-          is_organization_admin: isOrgAdmin(jwtPayload)
+          is_organization_admin: isOrgAdmin(jwtPayload),
+          // Absent on a token minted before grants existed. The layout then
+          // derives the list from the role instead of hiding the nav.
+          ...(Array.isArray(jwtPayload.permissions)
+            ? { permissions: jwtPayload.permissions }
+            : {})
         };
         event.locals.org_name = jwtPayload.org_name || 'Organization';
         // Extract org settings for currency/locale
@@ -319,7 +324,10 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
           /** @type {any} */ (event.locals).profile = {
             org: switchResult.current_org,
             role: newPayload?.role || 'USER',
-            is_organization_admin: isOrgAdmin(newPayload)
+            is_organization_admin: isOrgAdmin(newPayload),
+            ...(Array.isArray(newPayload?.permissions)
+              ? { permissions: newPayload.permissions }
+              : {})
           };
           event.locals.org_name = switchResult.current_org?.name || 'Organization';
           event.locals.org_settings = newPayload?.org_settings || {

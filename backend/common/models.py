@@ -336,6 +336,10 @@ class Profile(BaseModel):
         null=True,
     )
     role = models.CharField(max_length=50, choices=ROLES, default="USER")
+    # None means "no grant list": a legacy ADMIN still has every permission.
+    # A list (possibly empty) is the set a CEO saved for an administrador.
+    # Other roles clear it on save. The codes live in common.permissions.
+    granted_permissions = models.JSONField(null=True, blank=True, default=None)
     has_sales_access = models.BooleanField(default=False)
     has_marketing_access = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -353,14 +357,19 @@ class Profile(BaseModel):
         return f"{self.user.email} <{self.org.name}>"
 
     def save(self, *args, **kwargs):
-        # `role` and `is_organization_admin` are two columns for one binary
-        # fact (`ROLES` is ADMIN/USER and nothing else), and they used to be
-        # settable independently, which let an admin mint a colleague the UI
-        # showed as a plain user and could never demote. `role` is what every
-        # surface displays and what `common.permissions.is_org_admin` reads;
-        # the column is kept because it is in API responses, so it is derived
-        # here rather than left to drift.
-        self.is_organization_admin = self.role == "ADMIN"
+        # `role` is the fact. `is_organization_admin` is derived so a client
+        # cannot grant admin by writing the column alone. A grant list exists
+        # only on an administrador; every other role drops it, so promoting
+        # someone to CEO and later back to member cannot resurrect a list.
+        if self.role != "ADMIN":
+            self.granted_permissions = None
+        elif self.granted_permissions is not None and not isinstance(
+            self.granted_permissions, list
+        ):
+            self.granted_permissions = None
+        from common.permissions import column_is_organization_admin
+
+        self.is_organization_admin = column_is_organization_admin(self)
         super().save(*args, **kwargs)
 
     @property

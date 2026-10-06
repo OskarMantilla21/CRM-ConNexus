@@ -39,11 +39,10 @@
 import { apiRequest } from '$lib/api-helpers.js';
 
 /**
- * Profile.role is ADMIN | USER, the only two the backend recognises. There is
- * no MANAGER despite ApprovalRule offering it; a picker offering a value the
- * server rejects is worse than not offering it.
+ * Profile.role. CEO has every permission. ADMIN has the grant list the CEO
+ * saves. USER is a member. EMPLOYEE can record the day's work and nothing else.
  */
-export const ROLES = ['ADMIN', 'USER'];
+export const ROLES = ['CEO', 'ADMIN', 'USER', 'EMPLOYEE'];
 
 /**
  * The signed-in user's id, read from the `user_id` claim of the access token.
@@ -88,6 +87,7 @@ function toMember(p, teamsByProfile, viewerId) {
     name: details.name || details.email || 'Unnamed',
     email: details.email,
     role: p.role,
+    granted_permissions: Array.isArray(p.granted_permissions) ? p.granted_permissions : null,
     is_active: p.is_active,
     teams: teamsByProfile[p.id] ?? [],
     last_login: details.last_login ?? null,
@@ -144,7 +144,13 @@ export async function listTeam({ cookies }) {
     member_count: (t.users ?? []).length
   }));
 
-  const admins = active.filter((/** @type {any} */ m) => m.role === 'ADMIN');
+  const admins = active.filter(
+    (/** @type {any} */ m) => m.role === 'ADMIN' || m.role === 'CEO'
+  );
+  const fullAdmins = active.filter(
+    (/** @type {any} */ m) =>
+      m.role === 'CEO' || (m.role === 'ADMIN' && m.granted_permissions == null)
+  );
 
   return {
     forbidden: false,
@@ -165,7 +171,7 @@ export async function listTeam({ cookies }) {
     },
     // Whether the org would have a second admin left if one were removed. The
     // page mirrors "keep at least one admin" as a hint; the server enforces it.
-    last_admin_id: admins.length === 1 ? admins[0].user_id : null
+    last_admin_id: fullAdmins.length === 1 ? fullAdmins[0].user_id : null
   };
 }
 
@@ -175,7 +181,7 @@ export async function listTeam({ cookies }) {
  * member's role), unlike a member setting their own.
  *
  * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
- * @param {{ email: string, role: string }} body
+ * @param {{ email: string, role: string, granted_permissions?: string[] }} body
  */
 export function inviteUser({ cookies }, body) {
   return apiRequest('/users/', { method: 'POST', body }, { cookies });
@@ -189,9 +195,14 @@ export function inviteUser({ cookies }, body) {
  * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
  * @param {string} userId  the User id, not the profile id
  * @param {string} role
+ * @param {string[] | null} [granted]
+ *   Sent only for an administrador. Null leaves a legacy full admin untouched.
  */
-export function setRole({ cookies }, userId, role) {
-  return apiRequest(`/user/${userId}/`, { method: 'PATCH', body: { role } }, { cookies });
+export function setRole({ cookies }, userId, role, granted = null) {
+  /** @type {Record<string, unknown>} */
+  const body = { role };
+  if (role === 'ADMIN' && Array.isArray(granted)) body.granted_permissions = granted;
+  return apiRequest(`/user/${userId}/`, { method: 'PATCH', body }, { cookies });
 }
 
 /**

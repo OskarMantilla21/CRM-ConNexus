@@ -24,6 +24,8 @@ Entry-scoped (registered at the project root under ``/api/time-entries/``):
 * ``PUT    /api/time-entries/<pk>/``: owner or admin
 * ``DELETE /api/time-entries/<pk>/``: owner or admin
 * ``GET    /api/time-entries/timesheet/``: week view, grouped by day
+* ``GET    /api/time-entries/jobs/``: tickets an empleado can attach work to
+* ``POST   /api/time-entries/log/``: record minutes of work done today
 * ``GET    /api/time-entries/report/``: totals by agent, ticket or account
 * ``GET    /api/time-entries/report/export/``: the same window as ``text/csv``
 """
@@ -41,7 +43,7 @@ from rest_framework.views import APIView
 
 from cases import time_reports
 from cases.access import assert_case_write_access, get_case_or_404
-from cases.models import TimeEntry
+from cases.models import Case, TimeEntry
 from cases.serializer import (
     TimeEntryCreateSerializer,
     TimeEntrySerializer,
@@ -50,7 +52,7 @@ from cases.serializer import (
 from cases.time_reports import TimeReportParamError
 from common.csv_export import csv_response
 from common.models import Profile
-from common.permissions import HasOrgContext, is_org_admin
+from common.permissions import HasOrgContext, effective_permissions, is_org_admin
 from common.renderers import CSV_RENDERERS
 from common.validators import uuid_param
 
@@ -540,3 +542,86 @@ class TimeReportExportView(APIView):
             f"time-{start.isoformat()}-to-{end.isoformat()}.csv",
             request.profile.org,
         )
+
+
+def _requires_daily_work(profile):
+    return "daily_work" in effective_permissions(profile)
+
+
+class DailyWorkJobsView(APIView):
+    """``GET /api/time-entries/jobs/``: tickets to attach today's work to.
+
+    An empleado cannot open the ticket queue. They still have to say which
+    job the hours belong to, so this returns id, name and status only, newest
+    first, and nothing else about the ticket.
+    """
+
+    permission_classes = (IsAuthenticated, HasOrgContext)
+
+    def get(self, request):
+        if not _requires_daily_work(request.profile):
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        rows = (
+            Case.objects.filter(org=request.profile.org)
+            .exclude(status__in=["Rejected", "Duplicate"])
+            .order_by("-created_at")
+            .values("id", "name", "status")[:80]
+        )
+        return Response(
+            {
+                "jobs": [
+                    {"id": str(row["id"]), "name": row["name"], "status": row["status"]}
+                    for row in rows
+                ]
+            }
+        )
+
+
+class DailyWorkLogView(APIView):
+    """``POST /api/time-entries/log/``: minutes of work finished today.
+
+    Body: ``case_id``, ``minutes`` (1–1440), ``description``. The entry is
+    closed (not a running timer), owned by the caller, and not billable.
+    An empleado uses this instead of opening the ticket.
+    """
+
+    permission_classes = (IsAuthenticated, HasOrgContext)
+
+    def post(self, request):
+        if not _requires_daily_work(request.profile):
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        case_id = request.data.get("case_id")
+        description = (request.data.get("description") or "").strip()
+        try:
+            minutes = int(request.data.get("minutes"))
+        except (TypeError, ValueError):
+            minutes = 0
+        if not case_id or not description or not 1 <= minutes <= 1440:
+            return Response(
+                {
+                    "detail": "Choose a job, describe the work, and give the minutes (1 to 1440)."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        case = Case.objects.filter(org=request.profile.org, pk=case_id).first()
+        if case is None:
+            return Response({"detail": "No such job."}, status=status.HTTP_404_NOT_FOUND)
+        if len(description) > 2000:
+            description = description[:2000]
+        now = timezone.now()
+        entry = TimeEntry.objects.create(
+            org=request.profile.org,
+            case=case,
+            profile=request.profile,
+            started_at=now - timedelta(minutes=minutes),
+            ended_at=now,
+            description=description,
+            billable=False,
+        )
+        return Response(TimeEntrySerializer(entry).data, status=status.HTTP_201_CREATED)

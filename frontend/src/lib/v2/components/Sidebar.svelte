@@ -21,11 +21,11 @@
     Bell,
     SlidersHorizontal,
     Search,
-    Smartphone,
     LogOut
   } from '@lucide/svelte';
   import { t } from '$lib/terminology.js';
   import { tx } from '$lib/i18n/translate.js';
+  import { ALL_PERMISSIONS } from '$lib/access.js';
 
   /**
    * One flat tree, grouped by what the person is doing rather than by which
@@ -36,12 +36,10 @@
    * v1 had /leads listed twice, as "Pipeline" and as "Leads", and a "Deals"
    * entry pointing at /opportunities while /deals 404'd.
    *
-   * `isAdmin` is the server-derived admin fact (`isOrgAdmin` over the app
-   * layout data, which reads the JWT). It only decides which destinations to
-   * *show*. Every hidden one is still enforced
-   * by the backend, so this is UX, not access control. An item marked `admin`
-   * is one where a member gets nothing but a "for administrators" gate, so
-   * showing it would only teach them to bounce off it.
+   * `permissions` is the list the API put on the token. It only decides which
+   * destinations to *show*. Every hidden one is still enforced by the backend.
+   * An item without a permission is personal (profile, help, sign out) and
+   * stays for everyone.
    *
    * `termKey` marks the handful of entity destinations a vertical pack may
    * relabel (see `$lib/terminology.js`). The string in `label` below is only
@@ -52,7 +50,7 @@
    * @type {{
    *   counts?: Record<string, number>,
    *   org?: { name: string },
-   *   isAdmin?: boolean,
+   *   permissions?: string[],
    *   terminology?: Record<string, string> | null,
    *   onsearch?: () => void
    * }}
@@ -60,7 +58,7 @@
   let {
     counts = {},
     org = { name: 'BottleCRM' },
-    isAdmin = false,
+    permissions = ALL_PERMISSIONS,
     terminology = undefined,
     onsearch = () => {}
   } = $props();
@@ -69,30 +67,50 @@
     {
       label: 'Sell',
       items: [
-        { href: '/', label: 'Today', icon: Sun, exact: true },
+        { href: '/', label: 'Today', icon: Sun, exact: true, permission: 'sell' },
         {
           href: '/pipeline',
           label: 'Pipeline',
           icon: Columns3,
           count: 'pipeline',
-          termKey: 'opportunity.plural'
+          termKey: 'opportunity.plural',
+          permission: 'sell'
         },
-        { href: '/leads', label: 'Leads', icon: Target, count: 'leads', termKey: 'lead.plural' },
-        { href: '/accounts', label: 'Accounts', icon: Building2, termKey: 'account.plural' },
-        { href: '/contacts', label: 'Contacts', icon: Users, termKey: 'contact.plural' },
-        { href: '/goals', label: 'Goals', icon: Trophy }
+        {
+          href: '/leads',
+          label: 'Leads',
+          icon: Target,
+          count: 'leads',
+          termKey: 'lead.plural',
+          permission: 'sell'
+        },
+        {
+          href: '/accounts',
+          label: 'Accounts',
+          icon: Building2,
+          termKey: 'account.plural',
+          permission: 'sell'
+        },
+        {
+          href: '/contacts',
+          label: 'Contacts',
+          icon: Users,
+          termKey: 'contact.plural',
+          permission: 'sell'
+        },
+        { href: '/goals', label: 'Goals', icon: Trophy, permission: 'sell' }
       ]
     },
     {
       label: 'Serve',
       items: [
-        { href: '/tasks', label: 'Tasks', icon: CircleCheck, count: 'tasks' },
+        { href: '/tasks', label: 'Tasks', icon: CircleCheck, count: 'tasks', permission: 'serve' },
         // Approvals and Analytics live under Tickets as section tabs. They are
         // not separate destinations, so they do not get separate nav entries,
         // one level of navigation, and the tab strip carries the rest.
-        { href: '/tickets', label: 'Tickets', icon: LifeBuoy, count: 'tickets' },
-        { href: '/solutions', label: 'Knowledge base', icon: BookOpen },
-        { href: '/documents', label: 'Documents', icon: FileText }
+        { href: '/tickets', label: 'Tickets', icon: LifeBuoy, count: 'tickets', permission: 'serve' },
+        { href: '/solutions', label: 'Knowledge base', icon: BookOpen, permission: 'serve' },
+        { href: '/documents', label: 'Documents', icon: FileText, permission: 'serve' }
       ]
     },
     {
@@ -103,22 +121,19 @@
           label: 'Invoices',
           icon: Receipt,
           count: 'invoices',
-          termKey: 'invoice.plural'
+          termKey: 'invoice.plural',
+          permission: 'bill'
         },
-        { href: '/timesheet', label: 'Timesheet', icon: Clock }
+        { href: '/timesheet', label: 'Timesheet', icon: Clock, permission: 'daily_work' }
       ]
     },
     {
       // Administration, kept apart from the work. Someone who never touches
       // these should not read past them four times a day.
-      //
-      // Team is admin-only. A member reaches it only to be told so. Settings
-      // is not: the hub is readable by any member (it just omits admin-only
-      // counts), so it stays for everyone.
       label: 'Run',
       items: [
-        { href: '/team', label: 'Team and access', icon: UserCog, admin: true },
-        { href: '/settings', label: 'Settings', icon: SlidersHorizontal }
+        { href: '/team', label: 'Team and access', icon: UserCog, permission: 'team' },
+        { href: '/settings', label: 'Settings', icon: SlidersHorizontal, permission: 'settings' }
       ]
     }
   ];
@@ -130,7 +145,7 @@
       ...group,
       label: tx(group.label),
       items: group.items
-        .filter((item) => isAdmin || !item.admin)
+        .filter((item) => !item.permission || permissions.includes(item.permission))
         .map((item) => ({
           ...item,
           // A pack's own wording wins. The fallback is the translated label.
@@ -174,24 +189,28 @@
   {/each}
 
   <div class="v2-nav-foot">
-    <button class="v2-link v2-nav-search" type="button" onclick={onsearch}>
-      <Search />
-      {tx('Search')}
-      <span class="v2-count">⌘K</span>
-    </button>
+    {#if permissions.includes('sell') || permissions.includes('serve') || permissions.includes('bill')}
+      <button class="v2-link v2-nav-search" type="button" onclick={onsearch}>
+        <Search />
+        {tx('Search')}
+        <span class="v2-count">⌘K</span>
+      </button>
+    {/if}
     <!-- Personal, not work: your own feed sits with your own profile rather
          than in Serve, where it would read as a queue the team shares. -->
-    <a
-      class="v2-link"
-      href={resolve('/notifications')}
-      aria-current={isActive('/notifications', false) ? 'page' : undefined}
-    >
-      <Bell />
-      {tx('Notifications')}
-      {#if counts.notifications}
-        <span class="v2-count">{counts.notifications}</span>
-      {/if}
-    </a>
+    {#if permissions.includes('serve')}
+      <a
+        class="v2-link"
+        href={resolve('/notifications')}
+        aria-current={isActive('/notifications', false) ? 'page' : undefined}
+      >
+        <Bell />
+        {tx('Notifications')}
+        {#if counts.notifications}
+          <span class="v2-count">{counts.notifications}</span>
+        {/if}
+      </a>
+    {/if}
     <a class="v2-link" href={resolve('/profile')}>
       <CircleUser />
       {tx('Your profile')}
@@ -199,18 +218,6 @@
     <a class="v2-link" href={resolve('/help')}>
       <CircleHelp />
       {tx('Help')}
-    </a>
-    <!-- The phone app for people on the hosted service. No pulsing dot. A
-         download link is not something that needs you right now, and v2 keeps
-         attention for the things that do. -->
-    <a
-      class="v2-link"
-      href="https://play.google.com/store/apps/details?id=io.bottlecrm&hl=en"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <Smartphone />
-      {tx('Download app')}
     </a>
     <!-- Leaving the app. Last in the list, and a plain link. /logout is a
          server load that clears the auth cookies and redirects to /login, so a

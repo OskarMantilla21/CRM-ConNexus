@@ -29,6 +29,7 @@
   import NextAction from '$lib/v2/components/NextAction.svelte';
   import { count, relativeDays } from '$lib/v2/format.js';
   import { ROLE_LABEL, ROLE_TONE } from '$lib/v2/enums.js';
+  import { ALL_PERMISSIONS, PERMISSION_LABEL } from '$lib/access.js';
   import { enhance } from '$app/forms';
   import { UserPlus, KeyRound } from '@lucide/svelte';
 
@@ -37,6 +38,23 @@
 
   let inviting = $state(false);
   let busy = $state(false);
+  let inviteRole = $state('USER');
+  /** @type {Record<string, string>} */
+  let roleDraft = $state({});
+
+  /** The role the row is about to save. The select writes it; the server decides. */
+  function shownRole(/** @type {any} */ m) {
+    return roleDraft[m.user_id] ?? m.role;
+  }
+
+  /**
+   * A legacy administrator has no list, which means every area. A saved list
+   * is exactly the boxes that should start checked.
+   */
+  function hasGrant(/** @type {any} */ m, /** @type {string} */ key) {
+    if (!Array.isArray(m.granted_permissions)) return true;
+    return m.granted_permissions.includes(key);
+  }
 
   /** A submit handler that flips `busy` while the action runs. */
   const working = () => {
@@ -86,7 +104,7 @@
         label={tx('Admins')}
         value={count(data.totals.admins)}
         tone="clay"
-        detail={tx('Can change roles and org settings')}
+        detail={tx('The CEO has every permission. An administrator has the ones the CEO saved.')}
       />
       <StatCard
         label={tx('Never signed in')}
@@ -126,11 +144,38 @@
             <label class="v2-label" for="invite-role" style="display:block;margin-bottom:4px">
               Role
             </label>
-            <select id="invite-role" name="role" class="v2-input" style="width:130px">
-              <option value="USER">{tx('Member')}</option>
+            <select
+              id="invite-role"
+              name="role"
+              class="v2-input"
+              style="width:180px"
+              bind:value={inviteRole}
+            >
+              <option value="CEO">{tx('CEO')}</option>
               <option value="ADMIN">{tx('Admin')}</option>
+              <option value="USER">{tx('Member')}</option>
+              <option value="EMPLOYEE">{tx('Employee')}</option>
             </select>
           </div>
+          {#if inviteRole === 'ADMIN'}
+            <div style="flex-basis:100%;display:flex;gap:12px;flex-wrap:wrap">
+              <span class="v2-label">{tx('Permissions')}</span>
+              {#each ALL_PERMISSIONS as key (key)}
+                <label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">
+                  <input
+                    type="checkbox"
+                    name="permissions"
+                    value={key}
+                    checked={key === 'sell' || key === 'serve' || key === 'daily_work'}
+                  />
+                  {tx(PERMISSION_LABEL[key])}
+                </label>
+              {/each}
+              <span class="v2-sub" style="flex-basis:100%;font-size:11.5px">
+                {tx('The CEO chooses what this administrator can open.')}
+              </span>
+            </div>
+          {/if}
           <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Send invite')}</button>
           <button type="button" class="v2-btn" disabled={busy} onclick={() => (inviting = false)}>
             Cancel
@@ -250,25 +295,53 @@
                     <span
                       style="display:inline-flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"
                     >
-                      <!-- Role toggle. Two roles, so one button naming the
-                           destination is clearer than a picker. The last admin
-                           cannot be demoted; the server enforces it too. -->
-                      <form method="POST" action="?/setRole" use:enhance={working}>
+                      <!-- The last person with every permission cannot be
+                           demoted here. The server enforces that too. -->
+                      <form
+                        method="POST"
+                        action="?/setRole"
+                        use:enhance={working}
+                        style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"
+                      >
                         <input type="hidden" name="userId" value={m.user_id} />
-                        <input
-                          type="hidden"
-                          name="role"
-                          value={m.role === 'ADMIN' ? 'USER' : 'ADMIN'}
-                        />
-                        <button
-                          class="v2-btn v2-btn-sm"
-                          disabled={busy || (m.role === 'ADMIN' && isLastAdmin)}
-                          title={m.role === 'ADMIN' && isLastAdmin
-                            ? tx('The org must keep at least one admin')
-                            : ''}
-                        >
-                          {m.role === 'ADMIN' ? tx('Make member') : tx('Make admin')}
-                        </button>
+                        <span style="display:inline-flex;gap:6px;align-items:center">
+                          <select
+                            name="role"
+                            class="v2-input"
+                            style="width:150px"
+                            disabled={busy || isLastAdmin}
+                            onchange={(e) => (roleDraft[m.user_id] = e.currentTarget.value)}
+                          >
+                            {#each data.roles as role (role)}
+                              <option value={role} selected={role === m.role}>
+                                {ROLE_LABEL[role] ?? role}
+                              </option>
+                            {/each}
+                          </select>
+                          <button class="v2-btn v2-btn-sm" disabled={busy || isLastAdmin}>
+                            {tx('Save role')}
+                          </button>
+                        </span>
+                        {#if shownRole(m) === 'ADMIN'}
+                          <span
+                            style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:280px"
+                          >
+                            {#each ALL_PERMISSIONS as key (key)}
+                              <label
+                                style="display:inline-flex;gap:4px;align-items:center;font-size:11.5px"
+                              >
+                                <input
+                                  type="checkbox"
+                                  name="permissions"
+                                  value={key}
+                                  checked={hasGrant(m, key)}
+                                  disabled={busy || isLastAdmin}
+                                />
+                                {tx(PERMISSION_LABEL[key])}
+                              </label>
+                            {/each}
+                          </span>
+                        {/if}
                       </form>
                       <!-- Activate / deactivate. The last active admin cannot
                            be deactivated; the server refuses it with a 400. -->
@@ -320,9 +393,9 @@
       </div>
 
       <p class="v2-sub" style="font-size:11.5px">
-        Roles are Admin and Member, the only two the API recognises. Admins can invite people,
-        change roles and edit org settings; the server refuses to let anyone change their own role
-        or deactivate the last admin. Editing team membership is not available here yet.
+        {tx(
+          'Roles are CEO, administrator, member and employee. The CEO can do everything and chooses what each administrator can open. An employee can only record the work done today. Nobody can change their own role, and the organization keeps at least one person who can do everything.'
+        )}
       </p>
     </div>
   </div>

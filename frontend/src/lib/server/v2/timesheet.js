@@ -245,3 +245,35 @@ export async function deleteEntry({ cookies }, entryId) {
 
   return await apiRequest(`/time-entries/${entryId}/`, { method: 'DELETE' }, { cookies });
 }
+
+/**
+ * Tickets the caller may attach today's work to. Id, name and status only.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @returns {Promise<Array<{ id: string, name: string, status: string }>>}
+ */
+export async function listJobs({ cookies }) {
+  const data = await apiRequest('/time-entries/jobs/', {}, { cookies });
+  return data?.jobs ?? [];
+}
+
+/**
+ * Record minutes of work finished today, on one job, as this person.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {{ caseId: string, minutes: number, description: string }} entry
+ */
+export async function logDailyWork({ cookies }, entry) {
+  return await apiRequest(
+    '/time-entries/log/',
+    {
+      method: 'POST',
+      body: {
+        case_id: entry.caseId,
+        minutes: entry.minutes,
+        description: entry.description
+      }
+    },
+    { cookies }
+  );
+}
