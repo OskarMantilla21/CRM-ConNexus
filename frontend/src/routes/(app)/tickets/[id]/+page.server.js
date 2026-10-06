@@ -1,4 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import {
   getTicket,
   getTicketTree,
@@ -100,7 +102,7 @@ export async function load({ cookies, params, locals, url }) {
     try {
       merge.targets = await getMergeTargets({ cookies }, params.id, merge.q);
     } catch (/** @type {any} */ err) {
-      merge.error = readableError(err, 'Could not load the tickets to merge into.');
+      merge.error = readableError(err, tx('Could not load the tickets to merge into.'));
     }
   }
 
@@ -152,7 +154,7 @@ export async function load({ cookies, params, locals, url }) {
         parentId: data.ticket.parent?.id ?? null
       });
     } catch (/** @type {any} */ err) {
-      link.error = readableError(err, 'Could not load the tickets to link under.');
+      link.error = readableError(err, tx('Could not load the tickets to link under.'));
     }
   }
 
@@ -196,7 +198,7 @@ async function applyNow(cookies, macroId, caseId) {
     const applied = await applyMacro({ cookies }, macroId, caseId, undefined);
     return { macroApplied: applySummary(applied) };
   } catch (/** @type {any} */ err) {
-    return fail(400, { macroError: readableError(err, 'Could not apply this macro.') });
+    return fail(400, { macroError: readableError(err, tx('Could not apply this macro.')) });
   }
 }
 
@@ -236,14 +238,14 @@ export const actions = {
       return fail(400, {
         body,
         internal,
-        error: 'Write something or attach a file before sending.'
+        error: tx('Write something or attach a file before sending.')
       });
     }
 
     try {
       await replyToTicket({ cookies }, params.id, { body, internal, file });
     } catch (/** @type {any} */ err) {
-      return fail(400, { body, internal, error: readableError(err, 'Could not post this reply.') });
+      return fail(400, { body, internal, error: readableError(err, tx('Could not post this reply.')) });
     }
 
     // The status change and the macro are independent follow-ups: a refused
@@ -255,7 +257,11 @@ export const actions = {
       try {
         await updateTicket({ cookies }, params.id, { status });
       } catch (/** @type {any} */ err) {
-        failed.push(`the status stayed put: ${readableError(err, 'the server gave no reason.')}`);
+        failed.push(
+          tx('the status stayed put: {reason}', {
+            reason: readableError(err, tx('the server gave no reason.'))
+          })
+        );
       }
     }
 
@@ -266,7 +272,9 @@ export const actions = {
         macroNote = applySummary(await applyMacro({ cookies }, macroId, params.id, macroActions));
       } catch (/** @type {any} */ err) {
         failed.push(
-          `the macro's actions were not applied: ${readableError(err, 'the server gave no reason.')}`
+          tx("the macro's actions were not applied: {reason}", {
+            reason: readableError(err, tx('the server gave no reason.'))
+          })
         );
       }
     }
@@ -275,7 +283,7 @@ export const actions = {
       return fail(400, {
         sent: true,
         macroNote,
-        error: `Reply posted, but ${failed.join(' Also, ')}`
+        error: tx('Reply posted, but {detail}', { detail: failed.join(tx(' Also, ')) })
       });
     }
     return macroNote ? { sent: true, internal, macroNote } : { sent: true, internal };
@@ -291,12 +299,12 @@ export const actions = {
   setStatus: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const status = form.get('status')?.toString().trim() ?? '';
-    if (!status) return fail(400, { error: 'No status was chosen.' });
+    if (!status) return fail(400, { error: tx('No status was chosen.') });
 
     try {
       await updateTicket({ cookies }, params.id, { status });
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not change the status.') });
+      return fail(400, { error: readableError(err, tx('Could not change the status.')) });
     }
 
     return { moved: status };
@@ -337,7 +345,7 @@ export const actions = {
         resolution_comment: comment
       });
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not close this ticket.') });
+      return fail(400, { error: readableError(err, tx('Could not close this ticket.')) });
     }
 
     return {
@@ -355,14 +363,14 @@ export const actions = {
   merge: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const into = form.get('into')?.toString() ?? '';
-    if (!into) return fail(400, { error: 'Pick a ticket to merge into.' });
+    if (!into) return fail(400, { error: tx('Pick a ticket to merge into.') });
 
     let result;
     try {
       result = await mergeTicket({ cookies }, params.id, into);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: readableError(err, 'Could not merge this ticket.')
+        error: readableError(err, tx('Could not merge this ticket.'))
       });
     }
 
@@ -378,19 +386,19 @@ export const actions = {
   unmerge: async ({ cookies, request }) => {
     const form = await request.formData();
     const sourceId = form.get('source_id')?.toString() ?? '';
-    if (!sourceId) return fail(400, { error: 'No merged ticket was chosen.' });
+    if (!sourceId) return fail(400, { error: tx('No merged ticket was chosen.') });
 
     let result;
     try {
       result = await unmergeTicket({ cookies }, sourceId);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: readableError(err, 'Could not unmerge this ticket.')
+        error: readableError(err, tx('Could not unmerge this ticket.'))
       });
     }
 
     const name = result?.source_case?.name;
-    return { unmerged: name ? `Unmerged "${name}".` : 'Unmerged.' };
+    return { unmerged: name ? tx('Unmerged "{name}".', { name }) : tx('Unmerged.') };
   },
 
   /**
@@ -402,13 +410,13 @@ export const actions = {
   linkParent: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const parentId = form.get('parent_id')?.toString() ?? '';
-    if (!parentId) return fail(400, { error: 'Pick a ticket to link this one under.' });
+    if (!parentId) return fail(400, { error: tx('Pick a ticket to link this one under.') });
 
     try {
       await linkTicketParent({ cookies }, params.id, parentId);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: linkRefusal(err, 'Could not link this ticket.')
+        error: linkRefusal(err, tx('Could not link this ticket.'))
       });
     }
 
@@ -422,11 +430,11 @@ export const actions = {
       await linkTicketParent({ cookies }, params.id, null);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: linkRefusal(err, 'Could not detach this ticket.')
+        error: linkRefusal(err, tx('Could not detach this ticket.'))
       });
     }
 
-    return { detached: 'Detached from its parent ticket.' };
+    return { detached: tx('Detached from its parent ticket.') };
   },
 
   /*
@@ -450,7 +458,7 @@ export const actions = {
       await startTicketTimer({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 409 ? 409 : 400, {
-        timeError: readableError(err, 'Could not start the timer.'),
+        timeError: readableError(err, tx('Could not start the timer.')),
         runningTicketId: err?.body?.running_case_id ?? null
       });
     }
@@ -468,7 +476,7 @@ export const actions = {
     try {
       await stopTimer({ cookies }, entryId);
     } catch (/** @type {any} */ err) {
-      return fail(400, { timeError: readableError(err, 'Could not stop the timer.') });
+      return fail(400, { timeError: readableError(err, tx('Could not stop the timer.')) });
     }
 
     return { timeStopped: true };
@@ -497,7 +505,7 @@ export const actions = {
         currency: /** @type {any} */ (locals).org_settings?.default_currency ?? null
       });
     } catch (/** @type {any} */ err) {
-      return fail(400, { timeError: readableError(err, 'Could not log this time.') });
+      return fail(400, { timeError: readableError(err, tx('Could not log this time.')) });
     }
 
     return { timeLogged: true };
@@ -514,7 +522,7 @@ export const actions = {
     try {
       await setEntryBillable({ cookies }, entryId, billable);
     } catch (/** @type {any} */ err) {
-      return fail(400, { timeError: readableError(err, 'Could not change this entry.') });
+      return fail(400, { timeError: readableError(err, tx('Could not change this entry.')) });
     }
 
     return { timeUpdated: true };
@@ -529,7 +537,7 @@ export const actions = {
     try {
       await deleteEntry({ cookies }, entryId);
     } catch (/** @type {any} */ err) {
-      return fail(400, { timeError: readableError(err, 'Could not delete this entry.') });
+      return fail(400, { timeError: readableError(err, tx('Could not delete this entry.')) });
     }
 
     return { timeDeleted: true };
@@ -540,7 +548,7 @@ export const actions = {
     try {
       await setWatching({ cookies }, params.id, true);
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not watch this ticket.') });
+      return fail(400, { error: readableError(err, tx('Could not watch this ticket.')) });
     }
     return { watching: true };
   },
@@ -550,7 +558,7 @@ export const actions = {
     try {
       await setWatching({ cookies }, params.id, false);
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not stop watching this ticket.') });
+      return fail(400, { error: readableError(err, tx('Could not stop watching this ticket.')) });
     }
     return { watching: false };
   },
@@ -559,11 +567,11 @@ export const actions = {
   linkArticle: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const articleId = form.get('article_id')?.toString() ?? '';
-    if (!articleId) return fail(400, { articleError: 'Which article? None was given.' });
+    if (!articleId) return fail(400, { articleError: tx('Which article? None was given.') });
     try {
       await setTicketArticle({ cookies }, params.id, articleId, true);
     } catch (/** @type {any} */ err) {
-      return fail(400, { articleError: readableError(err, 'Could not link this article.') });
+      return fail(400, { articleError: readableError(err, tx('Could not link this article.')) });
     }
     return { articleLinked: true };
   },
@@ -572,11 +580,11 @@ export const actions = {
   unlinkArticle: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const articleId = form.get('article_id')?.toString() ?? '';
-    if (!articleId) return fail(400, { articleError: 'Which article? None was given.' });
+    if (!articleId) return fail(400, { articleError: tx('Which article? None was given.') });
     try {
       await setTicketArticle({ cookies }, params.id, articleId, false);
     } catch (/** @type {any} */ err) {
-      return fail(400, { articleError: readableError(err, 'Could not unlink this article.') });
+      return fail(400, { articleError: readableError(err, tx('Could not unlink this article.')) });
     }
     return { articleUnlinked: true };
   },
@@ -595,7 +603,7 @@ export const actions = {
   renderMacro: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const macroId = form.get('macro_id')?.toString() ?? '';
-    if (!macroId) return fail(400, { macroError: 'Pick a saved reply first.' });
+    if (!macroId) return fail(400, { macroError: tx('Pick a saved reply first.') });
     const usable = await listUsableMacros({ cookies }).catch(() => null);
     if (usable?.find((m) => m.id === macroId)?.has_body === false) {
       return applyNow(cookies, macroId, params.id);
@@ -603,7 +611,7 @@ export const actions = {
     try {
       return { macroText: await renderMacro({ cookies }, macroId, params.id), macroId };
     } catch (/** @type {any} */ err) {
-      return fail(400, { macroError: readableError(err, 'Could not insert this saved reply.') });
+      return fail(400, { macroError: readableError(err, tx('Could not insert this saved reply.')) });
     }
   },
 
@@ -615,7 +623,7 @@ export const actions = {
   applyMacro: async ({ cookies, params, request }) => {
     const form = await request.formData();
     const macroId = form.get('macro_id')?.toString() ?? '';
-    if (!macroId) return fail(400, { macroError: 'Pick a saved reply first.' });
+    if (!macroId) return fail(400, { macroError: tx('Pick a saved reply first.') });
     return applyNow(cookies, macroId, params.id);
   },
 
@@ -632,7 +640,7 @@ export const actions = {
     try {
       await requestApproval({ cookies }, params.id, note);
     } catch (/** @type {any} */ err) {
-      return fail(400, { approvalError: readableError(err, 'Could not request approval.') });
+      return fail(400, { approvalError: readableError(err, tx('Could not request approval.')) });
     }
     return { approvalRequested: true };
   },
@@ -642,11 +650,11 @@ export const actions = {
   approveApproval: async ({ cookies, request }) => {
     const form = await request.formData();
     const id = form.get('approval_id')?.toString() ?? '';
-    if (!id) return fail(400, { approvalError: 'Which approval? None was given.' });
+    if (!id) return fail(400, { approvalError: tx('Which approval? None was given.') });
     try {
       await approveApproval({ cookies }, id, '');
     } catch (/** @type {any} */ err) {
-      return fail(400, { approvalError: readableError(err, 'Could not approve this request.') });
+      return fail(400, { approvalError: readableError(err, tx('Could not approve this request.')) });
     }
     return { approvalDecided: 'approved' };
   },
@@ -656,12 +664,12 @@ export const actions = {
     const form = await request.formData();
     const id = form.get('approval_id')?.toString() ?? '';
     const reason = form.get('reason')?.toString().trim() ?? '';
-    if (!id) return fail(400, { approvalError: 'Which approval? None was given.' });
-    if (!reason) return fail(400, { approvalError: 'A rejection needs a reason.' });
+    if (!id) return fail(400, { approvalError: tx('Which approval? None was given.') });
+    if (!reason) return fail(400, { approvalError: tx('A rejection needs a reason.') });
     try {
       await rejectApproval({ cookies }, id, reason);
     } catch (/** @type {any} */ err) {
-      return fail(400, { approvalError: readableError(err, 'Could not reject this request.') });
+      return fail(400, { approvalError: readableError(err, tx('Could not reject this request.')) });
     }
     return { approvalDecided: 'rejected' };
   },
@@ -670,11 +678,11 @@ export const actions = {
   withdrawApproval: async ({ cookies, request }) => {
     const form = await request.formData();
     const id = form.get('approval_id')?.toString() ?? '';
-    if (!id) return fail(400, { approvalError: 'Which approval? None was given.' });
+    if (!id) return fail(400, { approvalError: tx('Which approval? None was given.') });
     try {
       await cancelApproval({ cookies }, id);
     } catch (/** @type {any} */ err) {
-      return fail(400, { approvalError: readableError(err, 'Could not withdraw this request.') });
+      return fail(400, { approvalError: readableError(err, tx('Could not withdraw this request.')) });
     }
     return { approvalDecided: 'cancelled' };
   }

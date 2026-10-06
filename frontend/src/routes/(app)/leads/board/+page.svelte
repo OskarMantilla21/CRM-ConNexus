@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import Pill from '$lib/v2/components/Pill.svelte';
@@ -27,7 +29,7 @@
 
   /* A vertical pack renames the module ("Enquiries"), and the list page
      already follows it; a board headed "Leads" beside it reads as a bug. */
-  let plural = $derived(t(data.org?.terminology, 'lead.plural', 'Leads'));
+  let plural = $derived(t(data.org?.terminology, 'lead.plural', tx('Leads')));
 
   /* `dndzone` reorders the array it is handed, so the board renders from a
      local copy that is rebuilt whenever the server sends new lanes. That
@@ -104,9 +106,9 @@
       }
       moveError =
         (result.type === 'failure' && /** @type {any} */ (result.data)?.error) ||
-        'Could not move the lead, so it went back.';
+        tx('Could not move the lead, so it went back.');
     } catch {
-      moveError = 'Could not move the lead, so it went back.';
+      moveError = tx('Could not move the lead, so it went back.');
     }
     await invalidateAll();
     return false;
@@ -129,13 +131,13 @@
   }
 </script>
 
-<PageHeader title={data.pipeline ? data.pipeline.name : `${plural} board`}>
+<PageHeader title={data.pipeline ? data.pipeline.name : tx('{name} board', { name: plural })}>
   {#snippet sub()}
     {#if data.pipeline}
-      <span class="v2-num">{count(inPipeline)}</span> in this pipeline ·
-      <span class="v2-num">{count(unstagedCount)}</span> in no stage
+      <span class="v2-num">{count(inPipeline)}</span> {tx('in this pipeline ·')}
+      <span class="v2-num">{count(unstagedCount)}</span> {tx('in no stage')}
     {:else}
-      {plural} by pipeline stage
+      {tx('{name} by pipeline stage', { name: plural })}
     {/if}
   {/snippet}
   {#snippet actions()}
@@ -146,7 +148,7 @@
         <select
           name="pipeline"
           class="v2-btn lb-picker"
-          aria-label="Pipeline"
+          aria-label={tx('Pipeline')}
           value={data.pipeline?.id}
           onchange={(e) => e.currentTarget.form?.requestSubmit()}
         >
@@ -156,8 +158,8 @@
         </select>
       </form>
     {/if}
-    <a class="v2-btn v2-btn-quiet" href={resolve('/leads')}><List />List</a>
-    <span class="v2-btn" aria-current="true"><Columns3 />Board</span>
+    <a class="v2-btn v2-btn-quiet" href={resolve('/leads')}><List />{tx('List')}</a>
+    <span class="v2-btn" aria-current="true"><Columns3 />{tx('Board')}</span>
   {/snippet}
 </PageHeader>
 
@@ -173,23 +175,22 @@
 {#if !data.pipeline}
   <div class="v2-scroll">
     <EmptyState
-      title="No pipelines yet"
-      body="A pipeline sorts {plural.toLowerCase()} into stages you move them through. An admin can create one under lead pipelines in settings, or by applying an industry pack."
+      title={tx('No pipelines yet')}
+      body={tx('A pipeline sorts {name} into stages you move them through. An admin can create one under lead pipelines in settings, or by applying an industry pack.', { name: plural.toLowerCase() })}
     >
       {#snippet icon()}<Columns3 size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn" href={resolve('/settings/lead-pipelines')}>Lead pipelines</a>
-        <a class="v2-btn" href={resolve('/leads')}>Back to the list</a>
+        <a class="v2-btn" href={resolve('/settings/lead-pipelines')}>{tx('Lead pipelines')}</a>
+        <a class="v2-btn" href={resolve('/leads')}>{tx('Back to the list')}</a>
       {/snippet}
     </EmptyState>
   </div>
 {:else}
   <p class="v2-sub v2-pad" style="font-size:11.5px;margin:10px 0 0;flex:none">
     {#if stages.length === 0}
-      This pipeline has no stages yet, so there is nowhere to move a lead.
+      {tx('This pipeline has no stages yet, so there is nowhere to move a lead.')}
     {:else}
-      Drag a card, or use "Move to" on it, to change its stage. A lead in no stage joins this
-      pipeline when you move it into one, and leaves it when you move it back to No stage.
+      {tx('Drag a card, or use "Move to" on it, to change its stage. A lead in no stage joins this pipeline when you move it into one, and leaves it when you move it back to No stage.')}
     {/if}
   </p>
   <div class="v2-board" style="padding-top:12px">
@@ -204,7 +205,7 @@
         </div>
         {#if lane.truncated}
           <p class="v2-sub" style="padding:0 2px 6px;font-size:11.5px">
-            Showing the first <span class="v2-num">{lane.rows.length}</span>.
+            {tx('Showing the first {n}.', { n: lane.rows.length })}
           </p>
         {/if}
         <div
@@ -238,18 +239,18 @@
               <div class="v2-deal-card-foot">
                 {#if lead.owner}<Avatar name={lead.owner} size={21} />{/if}
                 {#if lead.rating}
-                  <Pill tone={RATING_TONE[lead.rating] ?? 'slate'}>{lead.rating}</Pill>
+                  <Pill tone={RATING_TONE[lead.rating] ?? 'slate'}>{choiceLabel(lead.rating)}</Pill>
                 {/if}
-                {#if lead.overdue}<Pill tone="rust" dot>Follow-up due</Pill>{/if}
+                {#if lead.overdue}<Pill tone="rust" dot>{tx('Follow-up due')}</Pill>{/if}
               </div>
               {#if stages.length > 0 && lead.canMove}
                 <select
                   class="v2-input lb-move"
-                  aria-label="Move {lead.name} to stage"
+                  aria-label={tx('Move {name} to stage', { name: lead.name })}
                   disabled={busy}
                   onchange={(e) => moveBySelect(lead.id, e)}
                 >
-                  <option value="">Move to…</option>
+                  <option value="">{tx('Move to…')}</option>
                   {#each stages as stage (stage.id)}
                     {#if stage.id !== lane.id}
                       <option value={stage.id}>{stage.name}</option>
@@ -262,7 +263,7 @@
               {/if}
             </div>
           {:else}
-            <p class="v2-sub" style="padding:10px 2px;font-size:12px">Nothing in this stage.</p>
+            <p class="v2-sub" style="padding:10px 2px;font-size:12px">{tx('Nothing in this stage.')}</p>
           {/each}
         </div>
       </section>

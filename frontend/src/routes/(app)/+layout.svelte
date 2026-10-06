@@ -6,12 +6,18 @@
   import { page } from '$app/state';
   import { afterNavigate } from '$app/navigation';
   import Sidebar from '$lib/v2/components/Sidebar.svelte';
-  import { isOrgAdmin } from '$lib/admin.js';
   import CommandPalette from '$lib/v2/components/CommandPalette.svelte';
-  import { Search, Sun, Columns3, LifeBuoy, Receipt, Plus, Menu } from '@lucide/svelte';
+  import { Search, Sun, Columns3, LifeBuoy, Receipt, Clock, Plus, Menu } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import { ALL_PERMISSIONS } from '$lib/access.js';
 
-  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean }, children: import('svelte').Snippet }} */
+  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[] }, children: import('svelte').Snippet }} */
   let { data, children } = $props();
+
+  let permissions = $derived(data.permissions ?? ALL_PERMISSIONS);
+  let canSearch = $derived(
+    permissions.includes('sell') || permissions.includes('serve') || permissions.includes('bill')
+  );
 
   let paletteOpen = $state(false);
 
@@ -32,17 +38,24 @@
    * purpose. A tab bar that scrolls is a menu wearing a tab bar's clothes.
    */
   const TABS = [
-    { href: '/', label: 'Today', icon: Sun, exact: true },
-    { href: '/pipeline', label: 'Pipeline', icon: Columns3 },
-    { href: '/tickets', label: 'Tickets', icon: LifeBuoy },
-    { href: '/invoices', label: 'Invoices', icon: Receipt }
+    { href: '/', label: 'Today', icon: Sun, exact: true, permission: 'sell' },
+    { href: '/pipeline', label: 'Pipeline', icon: Columns3, permission: 'sell' },
+    { href: '/tickets', label: 'Tickets', icon: LifeBuoy, permission: 'serve' },
+    { href: '/invoices', label: 'Invoices', icon: Receipt, permission: 'bill' },
+    { href: '/timesheet', label: 'Timesheet', icon: Clock, permission: 'daily_work' }
   ];
+
+  let tabs = $derived(
+    TABS.filter((tab) => permissions.includes(tab.permission)).filter(
+      (tab) => tab.href !== '/timesheet' || !permissions.includes('sell')
+    )
+  );
 
   const isActive = (href, exact) =>
     exact ? page.url.pathname === href : page.url.pathname.startsWith(href);
 
   function onkeydown(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k' && canSearch) {
       e.preventDefault();
       paletteOpen = !paletteOpen;
     } else if (e.key === 'Escape' && menuOpen) {
@@ -62,7 +75,7 @@
   <Sidebar
     counts={data.counts}
     org={data.org}
-    isAdmin={isOrgAdmin(data)}
+    {permissions}
     terminology={data.org.terminology}
     onsearch={() => (paletteOpen = true)}
   />
@@ -74,34 +87,36 @@
         class="v2-btn v2-btn-quiet"
         type="button"
         onclick={() => (menuOpen = true)}
-        aria-label="Open menu"
+        aria-label={tx('Open menu')}
         aria-expanded={menuOpen}
       >
         <Menu />
       </button>
       <span class="v2-mark">{data.org.name.slice(0, 1)}</span>
       <h2>{data.org.name}</h2>
-      <button
-        class="v2-btn v2-btn-quiet"
-        type="button"
-        style="margin-left:auto"
-        onclick={() => (paletteOpen = true)}
-        aria-label="Search"
-      >
-        <Search />
-      </button>
+      {#if canSearch}
+        <button
+          class="v2-btn v2-btn-quiet"
+          type="button"
+          style="margin-left:auto"
+          onclick={() => (paletteOpen = true)}
+          aria-label={tx('Search')}
+        >
+          <Search />
+        </button>
+      {/if}
     </div>
 
     {@render children()}
 
-    <nav class="v2-tabbar" aria-label="Sections">
-      {#each TABS as tab (tab.href)}
+    <nav class="v2-tabbar" aria-label={tx('Sections')}>
+      {#each tabs as tab (tab.href)}
         <a
           href={resolve(asInternalPath(tab.href))}
           aria-current={isActive(tab.href, tab.exact) ? 'page' : undefined}
         >
           <tab.icon />
-          {tab.label}
+          {tx(tab.label)}
         </a>
       {/each}
     </nav>
@@ -109,7 +124,9 @@
 
   <!-- Both live inside .v2-root so they inherit the scoped tokens; both are
        position:fixed, so the shell's overflow:hidden does not clip them. -->
-  <a class="v2-fab" href={resolve('/pipeline/new')} aria-label="New deal"><Plus size={21} /></a>
+  {#if permissions.includes('sell')}
+    <a class="v2-fab" href={resolve('/pipeline/new')} aria-label={tx('New deal')}><Plus size={21} /></a>
+  {/if}
 
   <!-- Mobile navigation drawer. Only openable from the mobile top bar, so it
        never surfaces on desktop; a backdrop click, Escape, or navigating all
@@ -126,7 +143,7 @@
         class="v2-drawer"
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation"
+        aria-label={tx('Navigation')}
         tabindex="-1"
         use:autofocus
         onkeydown={(e) => {
@@ -139,7 +156,7 @@
         <Sidebar
           counts={data.counts}
           org={data.org}
-          isAdmin={isOrgAdmin(data)}
+          {permissions}
           terminology={data.org.terminology}
           onsearch={() => {
             menuOpen = false;
@@ -150,5 +167,7 @@
     </div>
   {/if}
 
-  <CommandPalette open={paletteOpen} onclose={() => (paletteOpen = false)} />
+  {#if canSearch}
+    <CommandPalette open={paletteOpen} onclose={() => (paletteOpen = false)} />
+  {/if}
 </div>

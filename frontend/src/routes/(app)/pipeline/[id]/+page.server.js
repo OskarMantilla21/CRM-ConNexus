@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { deleteDeal, getDeal } from '$lib/server/v2/deals.js';
 import { invoiceFromDeal } from '$lib/server/v2/invoices.js';
@@ -23,7 +25,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 404 ? 404 : 400, {
         error:
-          err?.body?.message || readableError(err, 'Could not raise an invoice from this deal.')
+          err?.body?.message || readableError(err, tx('Could not raise an invoice from this deal.'))
       });
     }
     redirect(303, created?.id ? `/invoices/${created.id}` : '/invoices');
@@ -38,7 +40,7 @@ export const actions = {
       await deleteDeal({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       const code = err?.status >= 400 && err?.status < 500 ? err.status : 400;
-      return fail(code, { error: readableError(err, 'Could not delete this deal.') });
+      return fail(code, { error: readableError(err, tx('Could not delete this deal.')) });
     }
     redirect(303, '/pipeline');
   }

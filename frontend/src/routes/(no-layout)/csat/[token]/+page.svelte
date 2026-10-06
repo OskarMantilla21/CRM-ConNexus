@@ -24,6 +24,7 @@
   import PortalShell from '$lib/v2/components/PortalShell.svelte';
   import { longDate, relativeDays } from '$lib/v2/format.js';
   import { Star, CheckCircle2, Clock } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -44,7 +45,7 @@
 </script>
 
 <svelte:head>
-  <title>How did we do?, {survey?.orgName ?? 'Feedback'}</title>
+  <title>{tx('How did we do?, {org}', { org: survey?.orgName ?? tx('Feedback') })}</title>
 </svelte:head>
 
 <PortalShell>
@@ -54,43 +55,50 @@
            copy does not apologise; it gives the one route that still works. -->
       <section class="card center">
         <Clock size={22} />
-        <h1>This survey has closed</h1>
+        <h1>{tx('This survey has closed')}</h1>
         <p>
-          Survey links stay open for a limited time after a ticket is closed. If there is still
-          something you want the team to know, reply to the email this link came from and it will
-          reach them.
+          {tx(
+            'Survey links stay open for a limited time after a ticket is closed. If there is still something you want the team to know, reply to the email this link came from and it will reach them.'
+          )}
         </p>
       </section>
     {:else if data.invalid}
       <section class="card center">
         <Clock size={22} />
-        <h1>This link isn't valid</h1>
-        <p>We couldn't verify this link. Please use the most recent one from your email.</p>
+        <h1>{tx("This link isn't valid")}</h1>
+        <p>{tx("We couldn't verify this link. Please use the most recent one from your email.")}</p>
       </section>
     {:else if data.error}
       <section class="card center">
         <Clock size={22} />
-        <h1>Something went wrong</h1>
+        <h1>{tx('Something went wrong')}</h1>
         <p>{data.error}</p>
       </section>
     {:else if form?.success}
       <section class="card center">
         <div class="tick"><CheckCircle2 size={26} /></div>
-        <h1>Thank you</h1>
+        <h1>{tx('Thank you')}</h1>
         <p>
-          Your rating of {form.rating} of 5 went straight to {survey?.agentName ?? 'the team'} and their
-          team lead. You can change it for the next 24 hours by reopening this link.
+          {tx(
+            'Your rating of {rating} of 5 went straight to {who} and their team lead. You can change it for the next 24 hours by reopening this link.',
+            { rating: form.rating, who: survey?.agentName ?? tx('the team') }
+          )}
         </p>
       </section>
     {:else if survey}
       <section class="card">
         <header>
           <div class="org">{survey.orgName}</div>
-          <h1>How did we do?</h1>
+          <h1>{tx('How did we do?')}</h1>
           <p class="ctx">
-            {survey.agentName}
-            {#if survey.closedAt}closed your request {relativeDays(survey.closedAt)}{:else}handled
-              your request{/if},
+            {#if survey.closedAt}
+              {tx('{name} closed your request {when},', {
+                name: survey.agentName,
+                when: relativeDays(survey.closedAt)
+              })}
+            {:else}
+              {tx('{name} handled your request,', { name: survey.agentName })}
+            {/if}
             <span class="subject">“{survey.ticketSubject}”</span>
           </p>
         </header>
@@ -99,10 +107,11 @@
           <!-- Coming back to an answered survey. Say what is on file and by when
                it can change, rather than silently showing a pre-filled form. -->
           <div class="prior">
-            You rated this <b>{survey.rating} of 5</b>
-            {relativeDays(survey.respondedAt)}. You can change it until {longDate(
-              survey.editableUntil
-            )}.
+            {tx('You rated this {rating} of 5 {when}. You can change it until {until}.', {
+              rating: survey.rating,
+              when: relativeDays(survey.respondedAt),
+              until: longDate(survey.editableUntil)
+            })}
           </div>
         {/if}
 
@@ -119,13 +128,15 @@
         >
           <input type="hidden" name="rating" value={rating} />
 
-          <div class="stars" role="radiogroup" aria-label="Rate from 1 to 5">
+          <div class="stars" role="radiogroup" aria-label={tx('Rate from 1 to 5')}>
             {#each [1, 2, 3, 4, 5] as n (n)}
               <button
                 type="button"
                 role="radio"
                 aria-checked={rating === n}
-                aria-label={SCALE_ENDS[n] ? `${n}. ${SCALE_ENDS[n]}` : `${n}`}
+                aria-label={SCALE_ENDS[n]
+                  ? tx('{n}. {label}', { n, label: tx(SCALE_ENDS[n]) })
+                  : `${n}`}
                 class="star"
                 class:on={(hover || rating) >= n}
                 onclick={() => (rating = n)}
@@ -139,8 +150,8 @@
             {/each}
           </div>
           <div class="scale">
-            <span>{SCALE_ENDS[1]}</span>
-            <span>{SCALE_ENDS[5]}</span>
+            <span>{tx(SCALE_ENDS[1])}</span>
+            <span>{tx(SCALE_ENDS[5])}</span>
           </div>
 
           <!-- The comment appears only once a rating exists. Before that it is a
@@ -148,14 +159,14 @@
                matters. -->
           {#if rating}
             <label class="comment">
-              <span>Anything you want to add? <i>Optional</i></span>
+              <span>{tx('Anything you want to add?')} <i>{tx('Optional')}</i></span>
               <textarea
                 name="comment"
                 rows="3"
                 bind:value={comment}
                 placeholder={rating <= 2
-                  ? 'What went wrong? This goes to the team lead, not just the agent.'
-                  : 'What worked well?'}></textarea>
+                  ? tx('What went wrong? This goes to the team lead, not just the agent.')
+                  : tx('What worked well?')}></textarea>
             </label>
 
             {#if form?.error}
@@ -163,13 +174,15 @@
             {/if}
 
             <button class="v2-btn v2-btn-primary submit" type="submit" disabled={submitting}>
-              {submitting ? 'Sending…' : survey.respondedAt ? 'Update my rating' : 'Send'}
+              {submitting ? tx('Sending…') : survey.respondedAt ? tx('Update my rating') : tx('Send')}
             </button>
           {/if}
         </form>
 
         <p class="fine">
-          Your answer goes to {survey.orgName}'s support team. It is not published anywhere.
+          {tx("Your answer goes to {org}'s support team. It is not published anywhere.", {
+            org: survey.orgName
+          })}
         </p>
       </section>
     {/if}

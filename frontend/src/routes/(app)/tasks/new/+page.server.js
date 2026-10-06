@@ -1,4 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { createTask, getTaskFormOptions } from '$lib/server/v2/tasks.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { listTickets } from '$lib/server/v2/tickets.js';
@@ -50,7 +52,7 @@ export async function load(event) {
                 `${l.first_name} ${l.last_name}`.trim() ||
                 l.company_name ||
                 l.email ||
-                '(unnamed lead)'
+                tx('(unnamed lead)')
             }))
           : []
     }
@@ -79,7 +81,7 @@ function readParent(form) {
   const id = form.get(`parent_${kind}`)?.toString() ?? '';
   if (!id) {
     return {
-      error: 'Pick which record this is attached to, or set "Attached to" back to Nothing.'
+      error: tx('Pick which record this is attached to, or set "Attached to" back to Nothing.')
     };
   }
   return { parent: { [kind]: id } };
@@ -116,7 +118,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       return fail(400, {
         values: { ...values, parent_kind: kind },
-        error: readableError(err, 'Could not save this task.')
+        error: readableError(err, tx('Could not save this task.'))
       });
     }
 

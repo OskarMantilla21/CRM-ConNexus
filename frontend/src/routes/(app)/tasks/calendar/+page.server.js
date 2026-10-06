@@ -1,4 +1,6 @@
 import { listTasks } from '$lib/server/v2/tasks.js';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 
 /**
  * The task calendar: the third face of Tasks, after the list and the boards.
@@ -128,8 +130,8 @@ export async function load(event) {
   return {
     year,
     month,
-    monthLabel: `${MONTHS[month]} ${year}`,
-    weekdays: WEEKDAYS,
+    monthLabel: `${tx(MONTHS[month])} ${year}`,
+    weekdays: WEEKDAYS.map((label) => tx(label)),
     weeks,
     agenda,
     today: todayStr,

@@ -10,10 +10,12 @@
  */
 
 import { env as publicEnv } from '$env/dynamic/public';
-import { redirect, fail } from '@sveltejs/kit';
+import { isRedirect, redirect, fail } from '@sveltejs/kit';
 import axios from 'axios';
 import { describeError } from '$lib/server/log-safe.js';
 import { relayHeaders } from '$lib/server/relay.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -60,6 +62,7 @@ export async function load({ cookies, locals }) {
 
     return { orgs };
   } catch (error) {
+    if (isRedirect(error)) throw error;
     // Never log the raw error: its axios `config.headers` carries the JWT.
     console.error('Error fetching organizations:', describeError(error));
     // Return empty array so user can create a new organization
@@ -74,7 +77,7 @@ export const actions = {
     const orgId = formData.get('org_id')?.toString();
 
     if (!orgId || !UUID_RE.test(orgId)) {
-      return fail(400, { error: 'Invalid Organization ID' });
+      return fail(400, { error: tx('Invalid Organization ID') });
     }
 
     const jwtAccess = cookies.get('jwt_access');
@@ -135,7 +138,7 @@ export const actions = {
         throw error; // Re-throw redirect
       }
       console.error('Org switch failed:', describeError(error));
-      return fail(500, { error: 'Failed to switch organization' });
+      return fail(500, { error: tx('Failed to switch organization') });
     }
   }
 };

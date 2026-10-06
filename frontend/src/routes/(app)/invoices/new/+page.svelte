@@ -38,6 +38,8 @@
   import PortalLineItems from '$lib/v2/components/PortalLineItems.svelte';
   import LineItemsEditor from '$lib/v2/components/LineItemsEditor.svelte';
   import { PAYMENT_TERMS_LABEL } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { CURRENCY_CODES } from '$lib/constants/filters.js';
   import { longDate } from '$lib/v2/format.js';
   import { todayIn } from '$lib/v2/dates.js';
@@ -167,19 +169,19 @@
   });
 </script>
 
-<PageHeader title="New invoice">
+<PageHeader title={tx('New invoice')}>
   {#snippet sub()}
-    Nothing is sent until you send it. Saving leaves it as a draft
+    {tx('Nothing is sent until you send it. Saving leaves it as a draft')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve('/invoices')}>Cancel</a>
+    <a class="v2-btn" href={resolve('/invoices')}>{tx('Cancel')}</a>
     <button
       type="submit"
       form="invoice-form"
       class="v2-btn v2-btn-primary"
       disabled={!ready || saving}
     >
-      {saving ? 'Saving…' : 'Save as draft'}
+      {saving ? tx('Saving…') : tx('Save as draft')}
     </button>
   {/snippet}
 </PageHeader>
@@ -216,13 +218,13 @@
       <!-- ── the form ─────────────────────────────────────────────────── -->
       <div>
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:12px">Who and when</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Who and when')}</div>
 
           <div class="grid2">
             <label class="f">
-              <span>Account</span>
+              <span>{tx('Account')}</span>
               <select bind:value={accountId} onchange={() => (contactId = '')}>
-                <option value="">Choose an account</option>
+                <option value="">{tx('Choose an account')}</option>
                 {#each data.accounts as a (a.id)}
                   <option value={a.id}>{a.name}</option>
                 {/each}
@@ -230,9 +232,9 @@
             </label>
 
             <label class="f">
-              <span>Contact</span>
+              <span>{tx('Contact')}</span>
               <select bind:value={contactId} disabled={!accountId}>
-                <option value="">{accountId ? 'Choose a contact' : 'Pick an account first'}</option>
+                <option value="">{accountId ? tx('Choose a contact') : tx('Pick an account first')}</option>
                 {#each contactOptions as c (c.id)}
                   <option value={c.id}
                     >{c.name}{c.account_name ? ` · ${c.account_name}` : ''}</option
@@ -242,26 +244,26 @@
             </label>
 
             <label class="f">
-              <span>Title</span>
-              <input bind:value={title} placeholder="What this invoice covers" required />
+              <span>{tx('Title')}</span>
+              <input bind:value={title} placeholder={tx('What this invoice covers')} required />
             </label>
 
             <label class="f">
-              <span>Issue date</span>
+              <span>{tx('Issue date')}</span>
               <input type="date" bind:value={issueDate} />
             </label>
 
             <label class="f">
-              <span>Currency</span>
+              <span>{tx('Currency')}</span>
               <select bind:value={currency}>
                 {#each CURRENCIES as c (c.value)}
-                  <option value={c.value}>{c.label}</option>
+                  <option value={c.value}>{tx(c.label)}</option>
                 {/each}
               </select>
             </label>
 
             <label class="f">
-              <span>Payment terms</span>
+              <span>{tx('Payment terms')}</span>
               <select bind:value={paymentTerms}>
                 {#each Object.entries(PAYMENT_TERMS_LABEL) as [value, label] (value)}
                   <option {value}>{label}</option>
@@ -271,7 +273,7 @@
 
             {#if paymentTerms === 'CUSTOM'}
               <label class="f">
-                <span>Due date</span>
+                <span>{tx('Due date')}</span>
                 <input type="date" bind:value={customDueDate} />
               </label>
             {/if}
@@ -284,8 +286,7 @@
             <p class="warn">
               <Info size={13} />
               <span>
-                Custom terms with no date set becomes <b>Net 30</b> on save, the server falls back to
-                30 days rather than leaving the date empty.
+                {tx('Custom terms with no date set becomes')} <b>{tx('Net 30')}</b> {tx('on save, the server falls back to 30 days rather than leaving the date empty.')}
               </span>
             </p>
           {/if}
@@ -294,19 +295,19 @@
         <LineItemsEditor bind:items products={data.products} {currency} />
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:12px">Adjustments</div>
+          <div class="v2-label" style="margin-bottom:12px">{tx('Adjustments')}</div>
           <div class="grid2">
             <label class="f">
-              <span>Discount</span>
+              <span>{tx('Discount')}</span>
               <select bind:value={discountType}>
-                <option value="">None</option>
-                <option value="PERCENTAGE">Percentage</option>
-                <option value="FIXED">Fixed amount</option>
+                <option value="">{tx('None')}</option>
+                <option value="PERCENTAGE">{tx('Percentage')}</option>
+                <option value="FIXED">{tx('Fixed amount')}</option>
               </select>
             </label>
             {#if discountType}
               <label class="f">
-                <span>{discountType === 'PERCENTAGE' ? 'Percent off' : 'Amount off'}</span>
+                <span>{discountType === 'PERCENTAGE' ? tx('Percent off') : tx('Amount off')}</span>
                 <input
                   type="number"
                   min="0"
@@ -316,12 +317,12 @@
                   aria-invalid={Boolean(discountError)}
                 />
                 {#if discountError}
-                  <small class="field-err" role="alert">{discountError}</small>
+                  <small class="field-err" role="alert">{tx(discountError)}</small>
                 {/if}
               </label>
             {/if}
             <label class="f">
-              <span>Tax rate %</span>
+              <span>{tx('Tax rate %')}</span>
               <input
                 type="number"
                 min="0"
@@ -331,11 +332,11 @@
                 aria-invalid={Boolean(taxError)}
               />
               {#if taxError}
-                <small class="field-err" role="alert">{taxError}</small>
+                <small class="field-err" role="alert">{tx(taxError)}</small>
               {/if}
             </label>
             <label class="f">
-              <span>Shipping</span>
+              <span>{tx('Shipping')}</span>
               <input
                 type="number"
                 min="0"
@@ -344,19 +345,18 @@
                 aria-invalid={Boolean(shipError)}
               />
               {#if shipError}
-                <small class="field-err" role="alert">{shipError}</small>
+                <small class="field-err" role="alert">{tx(shipError)}</small>
               {/if}
             </label>
           </div>
           <p class="hint">
-            Tax applies to the subtotal after the discount. Shipping is added afterwards and is not
-            taxed.
+            {tx('Tax applies to the subtotal after the discount. Shipping is added afterwards and is not taxed.')}
           </p>
         </div>
 
         <div class="v2-card" style="padding:16px 18px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:8px">Notes to the customer</div>
-          <textarea rows="3" bind:value={notes} placeholder="Appears on the invoice"></textarea>
+          <div class="v2-label" style="margin-bottom:8px">{tx('Notes to the customer')}</div>
+          <textarea rows="3" bind:value={notes} placeholder={tx('Appears on the invoice')}></textarea>
         </div>
       </div>
 
@@ -364,7 +364,7 @@
       <div>
         <div class="v2-card preview">
           <div class="v2-card-head">
-            <span class="v2-label">What the customer will see</span>
+            <span class="v2-label">{tx('What the customer will see')}</span>
           </div>
           <div style="padding:14px 16px 16px">
             {#if usableLines.length}
@@ -382,39 +382,40 @@
               />
             {:else}
               <p class="empty">
-                Add a line with a description and an amount, and the customer's copy appears here.
+                {tx('Add a line with a description and an amount, and the customer\'s copy appears here.')}
               </p>
             {/if}
           </div>
         </div>
 
         <div class="v2-card" style="padding:15px 16px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:9px">When it falls due</div>
+          <div class="v2-label" style="margin-bottom:9px">{tx('When it falls due')}</div>
           {#if derivedDueDate}
             <div class="due">{longDate(derivedDueDate)}</div>
             <p class="hint" style="margin-top:5px">
               {#if paymentTerms === 'CUSTOM'}
-                Set by hand.
+                {tx('Set by hand.')}
               {:else}
-                {PAYMENT_TERMS_LABEL[paymentTerms]} from the issue date. The server recalculates this
-                on save from the same two fields.
+                {tx('{terms} from the issue date. The server recalculates this on save from the same two fields.', {
+                  terms: PAYMENT_TERMS_LABEL[paymentTerms]
+                })}
               {/if}
             </p>
           {:else}
-            <p class="hint" style="margin:0">Set an issue date to see the due date.</p>
+            <p class="hint" style="margin:0">{tx('Set an issue date to see the due date.')}</p>
           {/if}
         </div>
 
         <div class="v2-card" style="padding:15px 16px;margin-top:14px">
-          <div class="v2-label" style="margin-bottom:9px">Assigned on save</div>
+          <div class="v2-label" style="margin-bottom:9px">{tx('Assigned on save')}</div>
           <dl class="derived">
-            <dt>Invoice number</dt>
+            <dt>{tx('Invoice number')}</dt>
             <dd>INV-<span class="v2-num">{issueDate.replace(/-/g, '')}</span>-nnnn</dd>
-            <dt>Customer link</dt>
-            <dd>Generated, and only sent when you send the invoice</dd>
+            <dt>{tx('Customer link')}</dt>
+            <dd>{tx('Generated, and only sent when you send the invoice')}</dd>
           </dl>
           <p class="hint" style="margin-top:9px">
-            Both come from the server so that two people saving at once cannot collide.
+            {tx('Both come from the server so that two people saving at once cannot collide.')}
           </p>
         </div>
       </div>

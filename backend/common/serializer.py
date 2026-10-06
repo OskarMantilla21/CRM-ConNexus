@@ -28,7 +28,7 @@ from common.models import (
     Teams,
     User,
 )
-from common.permissions import is_org_admin
+from common.permissions import ALL_PERMISSIONS, effective_permissions, is_org_admin
 from common.utils import CURRENCY_SYMBOLS
 from common.validators import flexible_phone_validator, validate_help_center_slug
 
@@ -106,6 +106,9 @@ class OrgAwareRefreshToken(RefreshToken):
         if profile:
             token["role"] = profile.role
             token["is_organization_admin"] = is_org_admin(profile)
+            # Areas this membership may open. The web app hides the rest.
+            # The API re-reads the profile; it does not trust this list.
+            token["permissions"] = sorted(effective_permissions(profile))
 
         return token
 
@@ -712,6 +715,7 @@ class CreateProfileSerializer(serializers.ModelSerializer):
             "alternate_phone",
             "has_sales_access",
             "has_marketing_access",
+            "granted_permissions",
         )
 
     # The fields that grant access rather than describe a person. Only an admin
@@ -721,6 +725,7 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         "role",
         "has_sales_access",
         "has_marketing_access",
+        "granted_permissions",
     )
 
     def __init__(self, *args, **kwargs):
@@ -736,6 +741,8 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         self._can_grant_privileges = can_grant
         self.fields["alternate_phone"].required = False
         self.fields["phone"].required = False
+        self.fields["granted_permissions"].required = False
+        self.fields["granted_permissions"].allow_null = True
         if can_grant:
             self.fields["role"].required = True
         else:
@@ -743,6 +750,27 @@ class CreateProfileSerializer(serializers.ModelSerializer):
                 # read_only and required are mutually exclusive in DRF, so this
                 # also drops role's requirement for the self-edit path.
                 self.fields[name].read_only = True
+
+    def validate_granted_permissions(self, value):
+        """A list of known area keys, or null for "no list saved".
+
+        Unknown keys are refused rather than stored and ignored, so a typo
+        does not look like a grant that simply failed to show up.
+        """
+        if value is None:
+            return None
+        if not isinstance(value, list) or any(not isinstance(key, str) for key in value):
+            raise serializers.ValidationError("Permissions must be a list of names.")
+        unknown = [key for key in value if key not in ALL_PERMISSIONS]
+        if unknown:
+            raise serializers.ValidationError("Unknown permission.")
+        chosen = [key for key in ALL_PERMISSIONS if key in value]
+        # Every area is the same access a legacy administrator already has,
+        # including API routes the area list does not name. Store that as
+        # "no list" so the restriction middleware stays out of their way.
+        if len(chosen) == len(ALL_PERMISSIONS):
+            return None
+        return chosen
 
     def validate(self, attrs):
         """Say no out loud when a privileged field was actually being changed.
@@ -759,6 +787,9 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         gets none, the same as before.
         """
         if self._can_grant_privileges or self.instance is None:
+            role = attrs.get("role", getattr(self.instance, "role", None))
+            if role != "ADMIN":
+                attrs["granted_permissions"] = None
             return attrs
         submitted = self.initial_data if isinstance(self.initial_data, dict) else {}
         errors = {
@@ -817,6 +848,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "date_of_joining",
             "is_active",
             "created_at",
+            "granted_permissions",
         )
 
 

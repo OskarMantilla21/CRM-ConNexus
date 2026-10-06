@@ -14,6 +14,8 @@
   import SettingsFormPanel from '$lib/v2/components/SettingsFormPanel.svelte';
   import Pill from '$lib/v2/components/Pill.svelte';
   import { ExternalLink, Globe } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -27,14 +29,14 @@
   let draft = $derived(form?.update?.values ?? null);
 </script>
 
-<PageHeader title="Help center">
+<PageHeader title={tx('Help center')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    {live ? 'Public, and open to search engines' : 'Off. Nothing is published'}
+    {live ? tx('Public, and open to search engines') : tx('Off. Nothing is published')}
   {/snippet}
   {#snippet actions()}
     {#if s.can_edit && !editing}
-      <button class="v2-btn v2-btn-primary" onclick={() => (editing = true)}>Edit</button>
+      <button class="v2-btn v2-btn-primary" onclick={() => (editing = true)}>{tx('Edit')}</button>
     {/if}
   {/snippet}
 </PageHeader>
@@ -43,16 +45,16 @@
   <div class="v2-pad" style="padding-top:16px;padding-bottom:32px">
     {#if editing}
       <SettingsFormPanel
-        title="Help center"
+        title={tx('Help center')}
         action="?/update"
-        error={form?.update?.error}
-        submitLabel="Save"
+        error={form?.update?.error ? tx(form.update.error) : undefined}
+        submitLabel={tx('Save')}
         oncancel={() => (editing = false)}
         ondone={() => (editing = false)}
       >
         {#snippet fields()}
           <div class="v2-field v2-sfp-wide">
-            <label for="hc-enabled">Public help center</label>
+            <label for="hc-enabled">{tx('Public help center')}</label>
             <label class="hc-check">
               <input
                 id="hc-enabled"
@@ -61,12 +63,12 @@
                 value="true"
                 checked={draft ? draft.enabled : s.help_center_enabled}
               />
-              Publish approved, published articles for anyone to read.
+              {tx('Publish approved, published articles for anyone to read.')}
             </label>
           </div>
 
           <div class="v2-field v2-sfp-wide">
-            <label for="hc-slug">Address</label>
+            <label for="hc-slug">{tx('Address')}</label>
             <div class="hc-slug">
               <span class="v2-sub">/help-center/</span>
               <input
@@ -78,36 +80,37 @@
                 autocomplete="off"
                 autocapitalize="none"
                 spellcheck="false"
-                placeholder="your-company"
+                placeholder={tx('your-company')}
               />
             </div>
             <p class="v2-hint">
-              3 to 50 lowercase letters, numbers and single hyphens. Required before the help center
-              can be switched on.
+              {tx(
+                '3 to 50 lowercase letters, numbers and single hyphens. Required before the help center can be switched on.'
+              )}
             </p>
           </div>
         {/snippet}
       </SettingsFormPanel>
     {/if}
 
-    <div class="v2-label" style="margin-bottom:10px">Current setting</div>
+    <div class="v2-label" style="margin-bottom:10px">{tx('Current setting')}</div>
     <div class="v2-card" style="overflow:hidden;margin-bottom:22px">
       <div class="v2-setting">
         <div class="v2-setting-body">
-          <b>Public help center</b>
+          <b>{tx('Public help center')}</b>
           <span class="v2-sub" style="font-size:11.5px">
-            Off means every public page answers "not found".
+            {tx('Off means every public page answers "not found".')}
           </span>
         </div>
         <Pill tone={s.help_center_enabled ? 'moss' : 'slate'}>
-          {s.help_center_enabled ? 'On' : 'Off'}
+          {s.help_center_enabled ? tx('On') : tx('Off')}
         </Pill>
       </div>
       <div class="v2-setting">
         <div class="v2-setting-body">
-          <b>Address</b>
+          <b>{tx('Address')}</b>
           <span class="v2-sub hc-wrap" style="font-size:11.5px">
-            {s.public_url ?? 'Not chosen yet'}
+            {s.public_url ?? tx('Not chosen yet')}
           </span>
         </div>
       </div>
@@ -116,8 +119,8 @@
              the API builds from FRONTEND_URL, opened in a new tab -->
         <a class="v2-setting hc-open" href={s.public_url} target="_blank" rel="noopener noreferrer">
           <div class="v2-setting-body">
-            <b>Open the public page</b>
-            <span class="v2-sub" style="font-size:11.5px">See it as a customer does.</span>
+            <b>{tx('Open the public page')}</b>
+            <span class="v2-sub" style="font-size:11.5px">{tx('See it as a customer does.')}</span>
           </div>
           <ExternalLink size={15} style="color:var(--v2-slate);flex:none" />
         </a>
@@ -125,15 +128,15 @@
       {/if}
     </div>
 
-    <div class="v2-label" style="margin-bottom:10px">What this publishes</div>
+    <div class="v2-label" style="margin-bottom:10px">{tx('What this publishes')}</div>
     <div class="v2-card" style="padding:15px 16px">
       <div style="display:flex;gap:10px;align-items:flex-start">
         <Globe size={16} style="color:var(--v2-slate);flex:none;margin-top:2px" />
         <p class="v2-sub" style="font-size:12.5px;margin:0;line-height:1.5">
-          Only articles that are both approved and published, the same ones customers see in the
-          portal. Drafts, reviewed articles, tags, linked tickets and who wrote an article are never
-          shown. Search engines can list these pages, and a sitemap is served at the address
-          followed by <span class="v2-num">/sitemap.xml</span>.
+          {tx(
+            'Only articles that are both approved and published, the same ones customers see in the portal. Drafts, reviewed articles, tags, linked tickets and who wrote an article are never shown. Search engines can list these pages, and a sitemap is served at the address followed by'
+          )}
+          <span class="v2-num">/sitemap.xml</span>.
         </p>
       </div>
     </div>

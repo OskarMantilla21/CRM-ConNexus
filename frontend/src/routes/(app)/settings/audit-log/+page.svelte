@@ -22,6 +22,8 @@
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import { count, relativeTime } from '$lib/v2/format.js';
   import { auditActor, auditDetail, auditWebhookId } from '$lib/v2/audit-log.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -47,12 +49,12 @@
   );
 </script>
 
-<PageHeader title="Audit log">
+<PageHeader title={tx('Audit log')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
     {#if !data.forbidden}
       <span class="v2-num">{count(data.count)}</span>
-      {data.count === 1 ? 'entry' : 'entries'}{filtered ? ' match' : ''}
+      {data.count === 1 ? tx('entry') : tx('entries')}{filtered ? ` ${tx('match')}` : ''}
     {/if}
   {/snippet}
 </PageHeader>
@@ -60,8 +62,8 @@
 {#if data.forbidden}
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
-      text="The audit log records who signed in, from where, and what was refused, so only admins can read it."
+      label={tx('Admins only')}
+      text={tx('The audit log records who signed in, from where, and what was refused, so only admins can read it.')}
     />
   </div>
 {:else}
@@ -72,9 +74,9 @@
           <input type="hidden" name="actor" value={data.filters.actor} />
         {/if}
         <div class="v2-field">
-          <label for="al-type">Event</label>
+          <label for="al-type">{tx('Event')}</label>
           <select id="al-type" name="event_type" class="v2-input al-tap">
-            <option value="">All events</option>
+            <option value="">{tx('All events')}</option>
             {#each data.eventTypes as t (t.value)}
               <option value={t.value} selected={data.filters.event_type === t.value}>
                 {t.label}
@@ -83,7 +85,7 @@
           </select>
         </div>
         <div class="v2-field">
-          <label for="al-from">From</label>
+          <label for="al-from">{tx('From')}</label>
           <input
             id="al-from"
             name="from"
@@ -93,7 +95,7 @@
           />
         </div>
         <div class="v2-field">
-          <label for="al-to">To</label>
+          <label for="al-to">{tx('To')}</label>
           <input
             id="al-to"
             name="to"
@@ -109,36 +111,36 @@
             value="true"
             checked={data.filters.include_token_refresh === 'true'}
           />
-          Show token refreshes
+          {tx('Show token refreshes')}
         </label>
         <div class="al-buttons">
-          <button class="v2-btn v2-btn-primary al-tap">Apply</button>
+          <button class="v2-btn v2-btn-primary al-tap">{tx('Apply')}</button>
           {#if filtered}
-            <a class="v2-btn al-tap" href={resolve('/settings/audit-log')}>Clear</a>
+            <a class="v2-btn al-tap" href={resolve('/settings/audit-log')}>{tx('Clear')}</a>
           {/if}
         </div>
       </form>
 
       {#if data.filters.actor}
         <p class="v2-sub" style="font-size:12.5px;margin:0 0 12px">
-          Showing one person's entries.
-          <a href={resolve(`/settings/audit-log?${pageQuery({ actor: null })}`)}>Show everyone</a>
+          {tx("Showing one person's entries.")}
+          <a href={resolve(`/settings/audit-log?${pageQuery({ actor: null })}`)}>{tx('Show everyone')}</a>
         </p>
       {/if}
 
       {#if data.error}
         <div style="margin-bottom:16px">
-          <NextAction label="That filter did not work" text={data.error} tone="rust" />
+          <NextAction label={tx('That filter did not work')} text={data.error} tone="rust" />
         </div>
       {/if}
 
       {#if !data.entries.length}
         {#if !data.error}
           <EmptyState
-            title={filtered ? 'Nothing matches' : 'Nothing recorded yet'}
+            title={filtered ? tx('Nothing matches') : tx('Nothing recorded yet')}
             body={filtered
-              ? 'No entry matches these filters. Widen the dates or clear them.'
-              : 'Sign-ins, org switches, refused requests, webhook pauses and API token or calendar feed changes appear here as they happen.'}
+              ? tx('No entry matches these filters. Widen the dates or clear them.')
+              : tx('Sign-ins, org switches, refused requests, webhook pauses and API token or calendar feed changes appear here as they happen.')}
           />
         {/if}
       {:else}
@@ -146,11 +148,11 @@
           <table class="v2-table">
             <thead>
               <tr>
-                <th>Event</th>
-                <th>Result</th>
-                <th>Person</th>
-                <th>When</th>
-                <th data-m="hide">From</th>
+                <th>{tx('Event')}</th>
+                <th>{tx('Result')}</th>
+                <th>{tx('Person')}</th>
+                <th>{tx('When')}</th>
+                <th data-m="hide">{tx('From')}</th>
               </tr>
             </thead>
             <tbody>
@@ -164,13 +166,13 @@
                       <div class="v2-table-secondary">
                         {detail}
                         {#if webhookId}
-                          <a href={resolve(`/settings/webhooks/${webhookId}`)}>Open webhook</a>
+                          <a href={resolve(`/settings/webhooks/${webhookId}`)}>{tx('Open webhook')}</a>
                         {/if}
                       </div>
                     {/if}
                   </td>
                   <td data-m="tag">
-                    <Pill tone={e.success ? 'moss' : 'rust'}>{e.success ? 'OK' : 'Refused'}</Pill>
+                    <Pill tone={e.success ? 'moss' : 'rust'}>{e.success ? tx('OK') : tx('Refused')}</Pill>
                   </td>
                   <td data-m="meta">
                     {#if e.actor}
@@ -196,7 +198,7 @@
               class="v2-btn v2-btn-sm al-tap"
               href={resolve(
                 `/settings/audit-log?${pageQuery({ offset: Math.max(0, data.offset - data.pageSize) })}`
-              )}>Newer</a
+              )}>{tx('Newer')}</a
             >
           {/if}
           {#if data.offset + data.pageSize < data.count}
@@ -204,7 +206,7 @@
               class="v2-btn v2-btn-sm al-tap"
               href={resolve(
                 `/settings/audit-log?${pageQuery({ offset: data.offset + data.pageSize })}`
-              )}>Older</a
+              )}>{tx('Older')}</a
             >
           {/if}
         </div>

@@ -46,6 +46,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { apiRequest } from '$lib/api-helpers.js';
 import { attachmentHref } from '$lib/server/v2/files.js';
+import { tx } from '$lib/i18n/translate.js';
 import { RESTRICTED_TICKET_NAME } from '$lib/v2/enums.js';
 
 /** Statuses where somebody still owes the customer something. Mirrors `cases.views.OPEN_STATUSES`. */
@@ -78,7 +79,7 @@ function accountLink(account) {
 function parentLink(parent) {
   if (!parent) return null;
   if (parent.restricted) {
-    return { id: parent.id, name: RESTRICTED_TICKET_NAME, status: null, restricted: true };
+    return { id: parent.id, name: tx(RESTRICTED_TICKET_NAME), status: null, restricted: true };
   }
   return {
     id: parent.id,
@@ -336,7 +337,7 @@ export async function getTicket({ cookies }, id) {
     // hidden parent does, and is never a link.
     mergedFrom: (response.merged_from_cases ?? []).map((/** @type {any} */ src) => ({
       id: src.id,
-      name: src.restricted ? RESTRICTED_TICKET_NAME : (src.name ?? ''),
+      name: src.restricted ? tx(RESTRICTED_TICKET_NAME) : (src.name ?? ''),
       merged_at: src.merged_at ?? null,
       restricted: Boolean(src.restricted),
       can_unmerge: src.can_unmerge === true

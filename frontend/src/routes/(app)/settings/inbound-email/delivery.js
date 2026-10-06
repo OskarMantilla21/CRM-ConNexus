@@ -28,6 +28,9 @@
  * `mobile/lib/data/models/mailbox.dart` carries the same rules.
  */
 
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
+
 /** The providers the webhook actually handles. Everything else 501s. */
 export const SUPPORTED_PROVIDERS = ['ses'];
 
@@ -60,7 +63,7 @@ const TONE = {
 
 /** @param {string} state */
 export function deliveryLabel(state) {
-  return LABEL[state] ?? LABEL.off;
+  return tx(LABEL[state] ?? LABEL.off);
 }
 
 /** @param {string} state */
@@ -79,13 +82,20 @@ export function deliveryTone(state) {
  */
 export function deliveryExplanation(state, providerLabel) {
   if (state === 'off') {
-    return 'Mail still arrives here and no ticket is opened. Nothing bounces, so whoever wrote gets silence rather than an error.';
+    return tx(
+      'Mail still arrives here and no ticket is opened. Nothing bounces, so whoever wrote gets silence rather than an error.'
+    );
   }
   if (state === 'unsupported') {
-    return `${providerLabel} deliveries are not implemented. The webhook refuses them, so mail to this address becomes nothing whatever else is set here. Only AWS SES is wired up.`;
+    return tx(
+      '{provider} deliveries are not implemented. The webhook refuses them, so mail to this address becomes nothing whatever else is set here. Only AWS SES is wired up.',
+      { provider: providerLabel }
+    );
   }
   if (state === 'unconfirmed') {
-    return 'Waiting for its SNS topic. Every message is refused until this address has a Topic ARN: an admin can enter it here, or it is set when AWS confirms a subscription from an AWS account this server allows.';
+    return tx(
+      'Waiting for its SNS topic. Every message is refused until this address has a Topic ARN: an admin can enter it here, or it is set when AWS confirms a subscription from an AWS account this server allows.'
+    );
   }
   return null;
 }
@@ -130,5 +140,5 @@ export function silentMailboxes(mailboxes) {
  * @param {string} label
  */
 export function providerChoiceLabel(value, label) {
-  return SUPPORTED_PROVIDERS.includes(value) ? label : `${label} (not wired up yet)`;
+  return SUPPORTED_PROVIDERS.includes(value) ? label : tx('{label} (not wired up yet)', { label });
 }

@@ -1,6 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { apiRequest } from '$lib/api-helpers.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 import { getProfile } from '$lib/server/v2/profile.js';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -31,7 +33,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 400 ? 400 : 500, {
         values: body,
-        message: readableError(err, 'Could not save your profile.')
+        message: readableError(err, tx('Could not save your profile.'))
       });
     }
 
@@ -50,7 +52,7 @@ export const actions = {
     const orgId = form.get('org_id')?.toString() ?? '';
 
     if (!UUID_RE.test(orgId)) {
-      return fail(400, { scope: 'switch', message: 'Invalid organisation.' });
+      return fail(400, { scope: 'switch', message: tx('Invalid organisation.') });
     }
 
     // Sent so the backend retires the token we are replacing; it belongs to the
@@ -72,8 +74,8 @@ export const actions = {
       // 403 is the honest one: you asked for an org you are not a member of.
       const message =
         err?.status === 403
-          ? 'You are not a member of that organisation.'
-          : readableError(err, 'Could not switch organisation.');
+          ? tx('You are not a member of that organisation.')
+          : readableError(err, tx('Could not switch organisation.'));
       return fail(err?.status === 403 ? 403 : 500, { scope: 'switch', message });
     }
 

@@ -16,6 +16,8 @@ import {
   loginPath,
   postReply
 } from '$lib/server/portal';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 /**
  * This page is what the "support has replied" email links to, so it is reached
@@ -45,7 +47,7 @@ export async function load({ cookies, params, url }) {
       if (err.status === 401 || err.status === 403) toLogin(cookies, url);
       // The API answers 404 both for "no such case" and "not yours", so that
       // an id cannot be probed to learn whether it belongs to a colleague.
-      if (err.status === 404) throw error(404, 'Request not found');
+      if (err.status === 404) throw error(404, tx('Request not found'));
     }
     throw err;
   }
@@ -59,7 +61,7 @@ export const actions = {
 
     const form = await request.formData();
     const comment = String(form.get('comment') || '').trim();
-    if (!comment) return fail(400, { error: 'Write a message before sending.' });
+    if (!comment) return fail(400, { error: tx('Write a message before sending.') });
 
     try {
       await postReply(token, params.id, comment);
@@ -67,7 +69,7 @@ export const actions = {
       if (err instanceof PortalError) {
         if (err.status === 401 || err.status === 403) toLogin(cookies, url);
         return fail(err.status, {
-          error: err.data?.comment?.[0] || 'Could not send that reply.'
+          error: tx(err.data?.comment?.[0] || 'Could not send that reply.')
         });
       }
       throw err;

@@ -52,6 +52,8 @@
   import { enhance } from '$app/forms';
   import { Plus, ShieldAlert, Copy, Check } from '@lucide/svelte';
   import { tokenStatus, staleness, scopeSummary, EXPIRY_CHOICES } from '$lib/v2/token-rules.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -95,44 +97,44 @@
 </script>
 
 {#if data.forbidden}
-  <PageHeader title="API tokens">
+  <PageHeader title={tx('API tokens')}>
     {#snippet crumb()}<SettingsCrumb />{/snippet}
   </PageHeader>
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
-      label="Admins only"
-      text="Reviewing every token in the organization is limited to admins, because a token authenticates as its owner. Ask an admin if one needs issuing or revoking."
+      label={tx('Admins only')}
+      text={tx('Reviewing every token in the organization is limited to admins, because a token authenticates as its owner. Ask an admin if one needs issuing or revoking.')}
     />
   </div>
 {:else}
-  <PageHeader title="API tokens">
+  <PageHeader title={tx('API tokens')}>
     {#snippet crumb()}<SettingsCrumb />{/snippet}
     {#snippet sub()}
-      <span class="v2-num">{count(totals.live)}</span> live of
-      <span class="v2-num">{count(totals.count)}</span> ever issued
+      <span class="v2-num">{count(totals.live)}</span> {tx('live of')}
+      <span class="v2-num">{count(totals.count)}</span> {tx('ever issued')}
     {/snippet}
     {#snippet actions()}
       <button class="v2-btn v2-btn-primary" onclick={() => (creating = !creating)}>
-        <Plus />New token
+        <Plus />{tx('New token')}
       </button>
     {/snippet}
   </PageHeader>
 
   <div class="v2-pad" style="padding-top:16px;flex:none">
     <div class="v2-stats">
-      <StatCard label="Live tokens" value={count(totals.live)} tone="ink" />
+      <StatCard label={tx('Live tokens')} value={count(totals.live)} tone="ink" />
       <StatCard
-        label="Owner deactivated"
+        label={tx('Owner deactivated')}
         value={count(totals.orphaned)}
         tone={totals.orphaned ? 'clay' : 'slate'}
-        detail={totals.orphaned ? 'Rejected at login, not revoked' : 'None'}
+        detail={totals.orphaned ? tx('Rejected at login, not revoked') : tx('None')}
       />
       <StatCard
-        label="Unused 90+ days"
+        label={tx('Unused 90+ days')}
         value={count(totals.unused_90d)}
         tone={totals.unused_90d ? 'clay' : 'slate'}
       />
-      <StatCard label="Issued in total" value={count(totals.count)} tone="slate" />
+      <StatCard label={tx('Issued in total')} value={count(totals.count)} tone="slate" />
     </div>
   </div>
 
@@ -146,11 +148,10 @@
           style="padding:15px 16px;margin-bottom:18px;border-color:color-mix(in srgb, var(--v2-moss) 40%, var(--v2-line))"
         >
           <div style="font-weight:650;font-size:13px">
-            “{form.created.name}” created, copy it now
+            {tx('“{name}” created, copy it now', { name: form.created.name })}
           </div>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 10px">
-            This is the only time the full token is shown. Store it somewhere safe; it cannot be
-            retrieved again.
+            {tx('This is the only time the full token is shown. Store it somewhere safe; it cannot be retrieved again.')}
           </p>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <code
@@ -160,7 +161,7 @@
               {form.created.token}
             </code>
             <button class="v2-btn v2-btn-sm" onclick={() => copyToken(form.created.token)}>
-              {#if copied}<Check size={13} />Copied{:else}<Copy size={13} />Copy{/if}
+              {#if copied}<Check size={13} />{tx('Copied')}{:else}<Copy size={13} />{tx('Copy')}{/if}
             </button>
           </div>
         </div>
@@ -171,12 +172,13 @@
           class="v2-sub"
           style="color:var(--v2-moss);font-size:12.5px;margin:0 0 16px;font-weight:550"
         >
-          Revoked {form.revokedOrphaned}
-          {form.revokedOrphaned === 1 ? 'token' : 'tokens'} on deactivated accounts.
+          {form.revokedOrphaned === 1
+            ? tx('Revoked {n} token on deactivated accounts.', { n: form.revokedOrphaned })
+            : tx('Revoked {n} tokens on deactivated accounts.', { n: form.revokedOrphaned })}
         </p>
       {:else if form?.error}
         <div style="margin-bottom:16px">
-          <NextAction label="That did not work" text={form.error} tone="rust" />
+          <NextAction label={tx('That did not work')} text={form.error} tone="rust" />
         </div>
       {/if}
 
@@ -190,7 +192,7 @@
         >
           <div style="flex:1;min-width:220px">
             <label class="v2-label" for="token-name" style="display:block;margin-bottom:4px">
-              What is this token for?
+              {tx('What is this token for?')}
             </label>
             <input
               id="token-name"
@@ -199,31 +201,31 @@
               maxlength="255"
               class="v2-input"
               style="width:100%"
-              placeholder="e.g. Nightly export job"
+              placeholder={tx('e.g. Nightly export job')}
             />
           </div>
           <div>
             <label class="v2-label" for="token-access" style="display:block;margin-bottom:4px">
-              Access
+              {tx('Access')}
             </label>
             <select id="token-access" name="access" class="v2-input" style="width:180px">
-              <option value="read" selected>Read only</option>
-              <option value="full">Everything the owner can</option>
+              <option value="read" selected>{tx('Read only')}</option>
+              <option value="full">{tx('Everything the owner can')}</option>
             </select>
           </div>
           <div>
             <label class="v2-label" for="token-expiry" style="display:block;margin-bottom:4px">
-              Expires
+              {tx('Expires')}
             </label>
             <select id="token-expiry" name="expiry" class="v2-input" style="width:150px">
               {#each EXPIRY_CHOICES as choice (choice.value)}
-                <option value={choice.value}>{choice.label}</option>
+                <option value={choice.value}>{tx(choice.label)}</option>
               {/each}
             </select>
           </div>
-          <button class="v2-btn v2-btn-primary" disabled={busy}>Create token</button>
+          <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Create token')}</button>
           <button type="button" class="v2-btn" disabled={busy} onclick={() => (creating = false)}>
-            Cancel
+            {tx('Cancel')}
           </button>
           {#if form?.create?.error}
             <p
@@ -239,8 +241,10 @@
       {#if totals.orphaned}
         <div style="margin-bottom:18px">
           <NextAction
-            label="Loose end"
-            text={`${totals.orphaned} live ${totals.orphaned === 1 ? 'token belongs' : 'tokens belong'} to a deactivated account. Deactivating already stops them at login, but they are not revoked. Reactivating the account would bring them back.`}
+            label={tx('Loose end')}
+            text={totals.orphaned === 1
+              ? tx('{n} live token belongs to a deactivated account. Deactivating already stops them at login, but they are not revoked. Reactivating the account would bring them back.', { n: totals.orphaned })
+              : tx('{n} live tokens belong to a deactivated account. Deactivating already stops them at login, but they are not revoked. Reactivating the account would bring them back.', { n: totals.orphaned })}
           />
           <form
             method="POST"
@@ -249,7 +253,7 @@
             style="margin-top:10px"
           >
             <button class="v2-btn v2-btn-primary" disabled={busy}>
-              Revoke {totals.orphaned === 1 ? 'it' : 'them all'}
+              {totals.orphaned === 1 ? tx('Revoke it') : tx('Revoke them all')}
             </button>
           </form>
         </div>
@@ -259,12 +263,12 @@
         <table class="v2-table">
           <thead>
             <tr>
-              <th>Token</th>
-              <th>Owner</th>
-              <th data-m="hide">Can do</th>
-              <th data-m="hide">Last used</th>
-              <th data-m="hide">Expires</th>
-              <th class="v2-r">State</th>
+              <th>{tx('Token')}</th>
+              <th>{tx('Owner')}</th>
+              <th data-m="hide">{tx('Can do')}</th>
+              <th data-m="hide">{tx('Last used')}</th>
+              <th data-m="hide">{tx('Expires')}</th>
+              <th class="v2-r">{tx('State')}</th>
             </tr>
           </thead>
           <tbody>
@@ -285,7 +289,7 @@
                   {owner.name}
                   <span class="v2-table-secondary" style="display:block">
                     {ROLE_LABEL[owner.role] ?? owner.role}{owner.is_active === false
-                      ? ' · deactivated'
+                      ? ` · ${tx('deactivated')}`
                       : ''}
                   </span>
                 </td>
@@ -296,7 +300,7 @@
                   {#if t.last_used_at}
                     {relativeDays(t.last_used_at)}
                   {:else}
-                    <span class="v2-muted">never</span>
+                    <span class="v2-muted">{tx('never')}</span>
                   {/if}
                   {#if stale}
                     <span
@@ -311,7 +315,7 @@
                   {#if t.expires_at}
                     {shortDate(t.expires_at)}
                   {:else}
-                    <span class="v2-sub">never expires</span>
+                    <span class="v2-sub">{tx('never expires')}</span>
                   {/if}
                 </td>
                 <td class="v2-r">
@@ -320,7 +324,7 @@
                     {#if t.is_live}
                       <form method="POST" action="?/revoke" use:enhance={working}>
                         <input type="hidden" name="id" value={t.id} />
-                        <button class="v2-btn v2-btn-sm" disabled={busy}>Revoke</button>
+                        <button class="v2-btn v2-btn-sm" disabled={busy}>{tx('Revoke')}</button>
                       </form>
                     {/if}
                   </span>
@@ -336,12 +340,9 @@
       >
         <ShieldAlert size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
         <div>
-          <div style="font-weight:600;font-size:13px">A token is the whole account</div>
+          <div style="font-weight:600;font-size:13px">{tx('A token is the whole account')}</div>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 0">
-            A token authenticates as its owner and inherits their role and organisation. There is no
-            narrower permission to give it. Issue one per integration so a single revocation stops a
-            single thing, set an expiry, and revoke anything you cannot name a use for. The value is
-            shown once when the token is created and cannot be recovered afterwards.
+            {tx('A token authenticates as its owner and inherits their role and organisation. There is no narrower permission to give it. Issue one per integration so a single revocation stops a single thing, set an expiry, and revoke anything you cannot name a use for. The value is shown once when the token is created and cannot be recovered afterwards.')}
           </p>
         </div>
       </div>

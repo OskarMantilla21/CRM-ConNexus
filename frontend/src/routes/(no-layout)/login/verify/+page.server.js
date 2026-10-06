@@ -18,13 +18,14 @@ import { fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { env as publicEnv } from '$env/dynamic/public';
 import { relayHeaders } from '$lib/server/relay.js';
+import { tx } from '$lib/i18n/translate.js';
 
 const MISSING = 'Missing verification token.';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {
   if (!url.searchParams.get('token')) {
-    return { error: MISSING };
+    return { error: tx(MISSING) };
   }
   return {};
 }
@@ -36,7 +37,7 @@ export const actions = {
   default: async ({ url, cookies, getClientAddress, request }) => {
     const token = url.searchParams.get('token');
     if (!token) {
-      return fail(400, { error: MISSING });
+      return fail(400, { error: tx(MISSING) });
     }
 
     try {
@@ -72,7 +73,9 @@ export const actions = {
         maxAge: 60 * 60 * 24 * 365 // 1 year
       });
     } catch (/** @type {any} */ error) {
-      return fail(400, { error: error.response?.data?.error || 'Verification failed' });
+      return fail(400, {
+        error: tx(error.response?.data?.error || 'Verification failed')
+      });
     }
 
     // Success - redirect to org selection (same as Google OAuth)

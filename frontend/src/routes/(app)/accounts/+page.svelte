@@ -8,6 +8,9 @@
   import { moneyEach, count } from '$lib/v2/format.js';
   import { activeChips, activePresetKey } from '$lib/v2/filters.js';
   import { Download, Plus, Building2 } from '@lucide/svelte';
+  import { industryLabel } from '$lib/v2/enums.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -28,10 +31,10 @@
   );
 </script>
 
-<PageHeader title="Accounts">
+<PageHeader title={tx('Accounts')}>
   {#snippet sub()}
     <!-- The count is the size of the whole result set, not of this page. -->
-    <span class="v2-num">{count(totals.count)}</span> accounts
+    <span class="v2-num">{count(totals.count)}</span> {tx('accounts')}
     <!-- `customers` is counted from the rows actually loaded, because the
          accounts endpoint returns no aggregate for it (see the note in
          `lib/server/v2/accounts.js`). Printing it beside a whole-set count
@@ -39,7 +42,7 @@
          covered everything, so it is shown only when this page IS the whole
          set. A figure that disappears beats a figure that is wrong. -->
     {#if (totals.shown ?? 0) >= (totals.count ?? 0)}
-      · <span class="v2-num">{count(totals.customers)}</span> with a deal won
+      · <span class="v2-num">{count(totals.customers)}</span> {tx('with a deal won')}
     {/if}
   {/snippet}
   {#snippet actions()}
@@ -50,15 +53,15 @@
       href="{resolve('/api/accounts/export')}?{page.url.searchParams}"
       data-sveltekit-reload
     >
-      <Download />Export
+      <Download />{tx('Export')}
     </a>
-    <a class="v2-btn v2-btn-primary" href={resolve('/accounts/new')}><Plus />New account</a>
+    <a class="v2-btn v2-btn-primary" href={resolve('/accounts/new')}><Plus />{tx('New account')}</a>
   {/snippet}
 </PageHeader>
 
 {#if isFiltered}
   <p class="v2-sub" style="font-size:11.5px;margin:8px 0 0">
-    These numbers describe the filtered list.
+    {tx('These numbers describe the filtered list.')}
   </p>
 {/if}
 
@@ -69,19 +72,21 @@
   tags={data.tags}
   meId={data.meId}
   saved={data.savedViews}
-  meta="Sorted by revenue won"
+  meta={tx('Sorted by revenue won')}
 />
 
 <div class="v2-scroll">
   {#if accounts.length === 0}
     <EmptyState
-      title="No accounts yet"
-      body="An account is a company you sell to. One appears automatically the first time you convert a lead, or you can add one directly."
+      title={tx('No accounts yet')}
+      body={tx(
+        'An account is a company you sell to. One appears automatically the first time you convert a lead, or you can add one directly.'
+      )}
     >
       {#snippet icon()}<Building2 size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/accounts/new')}>New account</a>
-        <a class="v2-btn" href={resolve('/leads')}>Go to leads</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/accounts/new')}>{tx('New account')}</a>
+        <a class="v2-btn" href={resolve('/leads')}>{tx('Go to leads')}</a>
       {/snippet}
     </EmptyState>
   {:else}
@@ -89,12 +94,12 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Account</th>
-            <th>Industry</th>
-            <th class="v2-r">Won</th>
-            <th class="v2-r">Open pipeline</th>
-            <th class="v2-r">Past due</th>
-            <th>Tickets</th>
+            <th>{tx('Account')}</th>
+            <th>{tx('Industry')}</th>
+            <th class="v2-r">{tx('Won')}</th>
+            <th class="v2-r">{tx('Open pipeline')}</th>
+            <th class="v2-r">{tx('Past due')}</th>
+            <th>{tx('Tickets')}</th>
           </tr>
         </thead>
         <tbody>
@@ -104,12 +109,12 @@
                 <a class="v2-row-link" href={resolve(`/accounts/${a.id}`)}>
                   <div class="v2-table-primary">{a.name}</div>
                   <div class="v2-table-secondary">
-                    {[a.city, a.country_display].filter(Boolean).join(', ') || 'No address'}
+                    {[a.city, a.country_display].filter(Boolean).join(', ') || tx('No address')}
                   </div>
                 </a>
               </td>
               <td class="v2-muted" data-m="hide" style="font-size:12.5px">
-                {a.industry || '—'}
+                {industryLabel(a.industry_value) || '—'}
               </td>
               <!-- All four figures are computed by the API over the whole
                    related set, never derived from the rows on screen. Money is
@@ -119,19 +124,19 @@
               </td>
               <!-- Labelled on a phone: without the header row, two money
                    columns side by side are two unattributed numbers. -->
-              <td class="v2-r v2-num" data-l="Pipeline">
+              <td class="v2-r v2-num" data-l={tx('Pipeline')}>
                 {a.pipeline_by_currency?.length ? moneyEach(a.pipeline_by_currency) : '—'}
               </td>
               <td
                 class="v2-r v2-num"
-                data-l="Past due"
+                data-l={tx('Past due')}
                 style={a.overdue_by_currency?.length ? 'color:var(--v2-rust);font-weight:600' : ''}
               >
                 {a.overdue_by_currency?.length ? moneyEach(a.overdue_by_currency) : '—'}
               </td>
               <td>
                 {#if a.open_tickets}
-                  <Pill tone="slate">{a.open_tickets} open</Pill>
+                  <Pill tone="slate">{tx('{n} open', { n: a.open_tickets })}</Pill>
                 {:else}
                   <span class="v2-muted">—</span>
                 {/if}
@@ -143,13 +148,13 @@
     </div>
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
       {#if totals.shown < totals.count}
-        Showing <span class="v2-num">{totals.shown}</span> of
+        {tx('Showing')} <span class="v2-num">{totals.shown}</span> {tx('of')}
         <span class="v2-num">{count(totals.count)}</span>
       {:else}
-        Showing all <span class="v2-num">{count(totals.count)}</span>
+        {tx('Showing all')} <span class="v2-num">{count(totals.count)}</span>
       {/if}
       {#if totals.inactive}
-        · <span class="v2-num">{totals.inactive}</span> inactive not shown
+        · <span class="v2-num">{totals.inactive}</span> {tx('inactive not shown')}
       {/if}
     </p>
   {/if}

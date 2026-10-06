@@ -2,6 +2,8 @@ import { fail } from '@sveltejs/kit';
 import { listInvoiceTemplates, setDefaultTemplate } from '$lib/server/v2/templates.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { isOrgAdmin } from '$lib/admin.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * The template catalogue. `load` returns `{ templates, totals }`. The names the
@@ -28,7 +30,7 @@ export const actions = {
   setDefault: async ({ cookies, request }) => {
     const form = await request.formData();
     const id = form.get('id')?.toString();
-    if (!id) return fail(400, { error: 'Which template? None was given.' });
+    if (!id) return fail(400, { error: tx('Which template? None was given.') });
 
     try {
       await setDefaultTemplate({ cookies }, id);
@@ -36,8 +38,8 @@ export const actions = {
       return fail(err?.status === 403 ? 403 : 400, {
         error:
           err?.status === 403
-            ? 'Only an administrator can change invoice templates.'
-            : readableError(err, 'Could not change the default template.')
+            ? tx('Only an administrator can change invoice templates.')
+            : readableError(err, tx('Could not change the default template.'))
       });
     }
     return { defaulted: true };

@@ -10,6 +10,8 @@
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import { money, count, shortDate, daysSince } from '$lib/v2/format.js';
   import { INVOICE_STATUS_TONE, invoiceStatusLabel } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { enhance } from '$app/forms';
   import { Download, Plus, Receipt } from '@lucide/svelte';
 
@@ -50,23 +52,23 @@
     if (SETTLED.includes(inv.status)) return '—';
     if (!inv.due_date) return '—';
     const n = daysSince(inv.due_date);
-    if (n > 0) return `${n}d late`;
-    if (n === 0) return 'due today';
-    return `${Math.abs(n)}d left`;
+    if (n > 0) return tx('{n}d late', { n });
+    if (n === 0) return tx('due today');
+    return tx('{n}d left', { n: Math.abs(n) });
   }
 
   const isLate = (inv) =>
     !SETTLED.includes(inv.status) && inv.due_date && daysSince(inv.due_date) > 0;
 </script>
 
-<PageHeader title="Invoices">
+<PageHeader title={tx('Invoices')}>
   {#snippet sub()}
     <!--
       These aggregates come from the API over the whole result set. v1 summed
       the loaded page, so a 50-row list showed pills adding up to 10.
     -->
-    <span class="v2-num">{count(totals.count)}</span> invoices ·
-    <span class="v2-num">{money(m.outstanding, cur)}</span> outstanding
+    <span class="v2-num">{count(totals.count)}</span> {tx('invoices')} ·
+    <span class="v2-num">{money(m.outstanding, cur)}</span> {tx('outstanding')}
   {/snippet}
   {#snippet actions()}
     <!-- The page's own query string: the export rebuilds the same API query
@@ -76,9 +78,9 @@
       href="{resolve('/api/invoices/export')}?{page.url.searchParams}"
       data-sveltekit-reload
     >
-      <Download />Export
+      <Download />{tx('Export')}
     </a>
-    <a class="v2-btn v2-btn-primary" href={resolve('/invoices/new')}><Plus />New invoice</a>
+    <a class="v2-btn v2-btn-primary" href={resolve('/invoices/new')}><Plus />{tx('New invoice')}</a>
   {/snippet}
 </PageHeader>
 
@@ -91,14 +93,14 @@
   <CurrencySwitch currencies={totals.currencies} current={cur} onpick={(c) => (picked = c)} />
   <div class="v2-stats">
     <StatCard
-      label="Overdue"
+      label={tx('Overdue')}
       value={money(m.overdue, cur)}
       tone="rust"
-      detail="Chase these first"
+      detail={tx('Chase these first')}
     />
-    <StatCard label="Due this month" value={money(m.due_this_month, cur)} tone="clay" />
-    <StatCard label="Paid this quarter" value={money(m.paid_this_quarter, cur)} tone="moss" />
-    <StatCard label="Draft" value={money(m.draft, cur)} tone="slate" detail="Not sent yet" />
+    <StatCard label={tx('Due this month')} value={money(m.due_this_month, cur)} tone="clay" />
+    <StatCard label={tx('Paid this quarter')} value={money(m.paid_this_quarter, cur)} tone="moss" />
+    <StatCard label={tx('Draft')} value={money(m.draft, cur)} tone="slate" detail={tx('Not sent yet')} />
   </div>
 </div>
 
@@ -114,7 +116,7 @@
   accounts={data.accounts}
   meId={data.meId}
   saved={data.savedViews}
-  meta="Oldest due first"
+  meta={tx('Oldest due first')}
 />
 
 {#if form?.error}
@@ -126,13 +128,13 @@
 <div class="v2-scroll">
   {#if invoices.length === 0}
     <EmptyState
-      title="Nothing billed yet"
-      body="Invoices show up here once you raise one. A won deal is usually the place to start. The amount and the account are already there."
+      title={tx('Nothing billed yet')}
+      body={tx('Invoices show up here once you raise one. A won deal is usually the place to start. The amount and the account are already there.')}
     >
       {#snippet icon()}<Receipt size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/invoices/new')}>New invoice</a>
-        <a class="v2-btn" href={resolve('/pipeline')}>Go to pipeline</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/invoices/new')}>{tx('New invoice')}</a>
+        <a class="v2-btn" href={resolve('/pipeline')}>{tx('Go to pipeline')}</a>
       {/snippet}
     </EmptyState>
   {:else}
@@ -140,12 +142,12 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Invoice</th>
-            <th>Account</th>
-            <th>Status</th>
-            <th class="v2-r">Amount</th>
-            <th>Due</th>
-            <th class="v2-r">Age</th>
+            <th>{tx('Invoice')}</th>
+            <th>{tx('Account')}</th>
+            <th>{tx('Status')}</th>
+            <th class="v2-r">{tx('Amount')}</th>
+            <th>{tx('Due')}</th>
+            <th class="v2-r">{tx('Age')}</th>
             <th style="width:130px"></th>
           </tr>
         </thead>
@@ -190,8 +192,7 @@
                   >
                     <input type="hidden" name="id" value={inv.id} />
                     <button class="v2-btn v2-btn-sm" disabled={sending[inv.id]}>
-                      {#if sending[inv.id]}Sending…{:else if inv.status === 'Overdue'}Send a
-                        reminder{:else}Send{/if}
+                      {#if sending[inv.id]}{tx('Sending…')}{:else if inv.status === 'Overdue'}{tx('Send a reminder')}{:else}{tx('Send')}{/if}
                     </button>
                   </form>
                 {/if}
@@ -202,7 +203,7 @@
       </table>
     </div>
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
-      Showing <span class="v2-num">{invoices.length}</span> of
+      {tx('Showing')} <span class="v2-num">{invoices.length}</span> {tx('of')}
       <span class="v2-num">{count(totals.count)}</span>
     </p>
   {/if}

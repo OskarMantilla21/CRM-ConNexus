@@ -33,7 +33,9 @@
   import ConfirmAction from '$lib/v2/components/ConfirmAction.svelte';
   import { count, relativeDays } from '$lib/v2/format.js';
   import { MAILBOX_PROVIDER_LABEL, PRIORITY_TONE } from '$lib/v2/enums.js';
-  import { missingOption, inactiveOptionLabel } from '$lib/v2/pickers.js';
+  import { missingOption } from '$lib/v2/pickers.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
   import {
     deliveryState,
     deliveryLabel,
@@ -86,16 +88,16 @@
   );
 </script>
 
-<PageHeader title="Inbound email">
+<PageHeader title={tx('Inbound email')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    <span class="v2-num">{count(delivering)}</span> of
-    <span class="v2-num">{count(totals.count)}</span> addresses creating tickets ·
-    <span class="v2-num">{count(totals.cases_last_30d)}</span> in the last 30 days
+    <span class="v2-num">{count(delivering)}</span> {tx('of')}
+    <span class="v2-num">{count(totals.count)}</span> {tx('addresses creating tickets ·')}
+    <span class="v2-num">{count(totals.cases_last_30d)}</span> {tx('in the last 30 days')}
   {/snippet}
   {#snippet actions()}
     {#if data.can_edit && !editing}
-      <button class="v2-btn v2-btn-primary" onclick={openCreate}><Plus />Add address</button>
+      <button class="v2-btn v2-btn-primary" onclick={openCreate}><Plus />{tx('Add address')}</button>
     {/if}
   {/snippet}
 </PageHeader>
@@ -104,10 +106,10 @@
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     {#if editing}
       <SettingsFormPanel
-        title={editing === 'new' ? 'New address' : `Edit ${editing.address}`}
+        title={editing === 'new' ? tx('New address') : tx('Edit {name}', { name: editing.address })}
         action={editing === 'new' ? '?/create' : '?/update'}
         error={editing === 'new' ? form?.create?.error : form?.update?.error}
-        submitLabel={editing === 'new' ? 'Add address' : 'Save address'}
+        submitLabel={editing === 'new' ? tx('Add address') : tx('Save address')}
         oncancel={() => (editing = null)}
         ondone={() => (editing = null)}
       >
@@ -117,7 +119,7 @@
           {/if}
 
           <div class="v2-field">
-            <label for="m-address">Address</label>
+            <label for="m-address">{tx('Address')}</label>
             <input
               id="m-address"
               class="v2-input"
@@ -127,12 +129,12 @@
               value={editing === 'new' ? '' : editing.address}
             />
             {#if editing !== 'new'}
-              <p class="v2-hint">Mail to the old address stops becoming tickets.</p>
+              <p class="v2-hint">{tx('Mail to the old address stops becoming tickets.')}</p>
             {/if}
           </div>
 
           <div class="v2-field">
-            <label for="m-provider">Provider</label>
+            <label for="m-provider">{tx('Provider')}</label>
             <select id="m-provider" class="v2-input" name="provider">
               {#each PROVIDERS as p (p)}
                 <option
@@ -144,13 +146,12 @@
               {/each}
             </select>
             <p class="v2-hint">
-              Only AWS SES is implemented. The other three are stored and accepted, and mail sent to
-              an address using one becomes nothing until that integration exists.
+              {tx('Only AWS SES is implemented. The other three are stored and accepted, and mail sent to an address using one becomes nothing until that integration exists.')}
             </p>
           </div>
 
           <div class="v2-field">
-            <label for="m-topic">SNS Topic ARN</label>
+            <label for="m-topic">{tx('SNS Topic ARN')}</label>
             <input
               id="m-topic"
               class="v2-input"
@@ -167,49 +168,47 @@
               value={editing === 'new' ? '' : (editing.topic_arn ?? '')}
             />
             <p class="v2-hint">
-              Mail is accepted only from this exact topic. Left blank, it is set by the first
-              subscription AWS confirms from an AWS account this server allows. Clearing it stops
-              mail until it is set again.
+              {tx('Mail is accepted only from this exact topic. Left blank, it is set by the first subscription AWS confirms from an AWS account this server allows. Clearing it stops mail until it is set again.')}
             </p>
           </div>
 
           <div class="v2-field">
-            <label for="m-priority">Opens as priority</label>
+            <label for="m-priority">{tx('Opens as priority')}</label>
             <select id="m-priority" class="v2-input" name="default_priority">
               {#each PRIORITIES as p (p)}
                 <option
                   value={p}
                   selected={editing === 'new' ? p === 'Normal' : editing.default_priority === p}
                 >
-                  {p}
+                  {choiceLabel(p)}
                 </option>
               {/each}
             </select>
           </div>
 
           <div class="v2-field">
-            <label for="m-type">Opens as type</label>
+            <label for="m-type">{tx('Opens as type')}</label>
             <select id="m-type" class="v2-input" name="default_case_type">
               <option value="" selected={editing === 'new' || !editing.default_case_type}>
-                None
+                {tx('None')}
               </option>
               {#each CASE_TYPES as t (t)}
                 <option value={t} selected={editing !== 'new' && editing.default_case_type === t}>
-                  {t}
+                  {choiceLabel(t)}
                 </option>
               {/each}
             </select>
           </div>
 
           <div class="v2-field">
-            <label for="m-assignee">Default assignee</label>
+            <label for="m-assignee">{tx('Default assignee')}</label>
             <select id="m-assignee" class="v2-input" name="default_assignee_id">
               <option value="" selected={editing === 'new' || !editing.default_assignee}>
-                Unassigned
+                {tx('Unassigned')}
               </option>
               {#if missingAssignee}
                 <option value={missingAssignee.id} selected>
-                  {inactiveOptionLabel(missingAssignee.name)}
+                  {tx('{name} (no longer active)', { name: missingAssignee.name || tx('Unnamed') })}
                 </option>
               {/if}
               {#each data.people as p (p.id)}
@@ -223,18 +222,17 @@
             </select>
             {#if missingAssignee}
               <p class="v2-hint">
-                Deactivated users are not assigned. New tickets from this address go to routing
-                until you choose someone else.
+                {tx('Deactivated users are not assigned. New tickets from this address go to routing until you choose someone else.')}
               </p>
             {/if}
           </div>
 
           {#if editing === 'new'}
             <div class="v2-field">
-              <label for="m-active">Active</label>
+              <label for="m-active">{tx('Active')}</label>
               <label style="display:flex;gap:8px;align-items:center;font-weight:400">
                 <input id="m-active" type="checkbox" name="is_active" value="true" checked />
-                Starts creating tickets from mail to this address as soon as it is saved.
+                {tx('Starts creating tickets from mail to this address as soon as it is saved.')}
               </label>
             </div>
           {/if}
@@ -262,18 +260,17 @@
           <div style="font-weight:600;font-size:13px">
             {silent.map((m) => m.address).join(', ')}
             {silent.length === 1
-              ? 'is switched on and creates nothing'
-              : 'are switched on and create nothing'}
+              ? tx('is switched on and creates nothing')
+              : tx('are switched on and create nothing')}
           </div>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 0;line-height:1.5">
-            Mail keeps arriving and nothing bounces, so anyone writing there gets no ticket and no
-            error, just silence. Each address says below what is stopping it.
+            {tx('Mail keeps arriving and nothing bounces, so anyone writing there gets no ticket and no error, just silence. Each address says below what is stopping it.')}
           </p>
         </div>
       </div>
     {/if}
 
-    <div class="v2-label" style="margin-bottom:10px">Addresses</div>
+    <div class="v2-label" style="margin-bottom:10px">{tx('Addresses')}</div>
     <div style="display:flex;flex-direction:column;gap:9px">
       {#each mailboxes as m (m.id)}
         {@const state = deliveryState(m)}
@@ -287,10 +284,10 @@
             <div class="v2-sub" style="font-size:11.5px;margin-top:4px">
               {MAILBOX_PROVIDER_LABEL[m.provider]} ·
               {#if m.cases_last_30d}
-                <span class="v2-num">{count(m.cases_last_30d)}</span> tickets in 30 days · last mail
+                <span class="v2-num">{count(m.cases_last_30d)}</span> {tx('tickets in 30 days · last mail')}
                 {relativeDays(m.last_received_at)}
               {:else}
-                no tickets in 30 days · last mail {relativeDays(m.last_received_at)}
+                {tx('no tickets in 30 days · last mail')} {relativeDays(m.last_received_at)}
               {/if}
             </div>
             {#if why}
@@ -301,13 +298,13 @@
                  a routing rule then reads, so they are worth stating next to
                  the address rather than behind an edit dialog. -->
             <div class="v2-mbx-defaults">
-              <span class="v2-sub">Opens as</span>
-              <Pill tone={PRIORITY_TONE[m.default_priority]}>{m.default_priority}</Pill>
+              <span class="v2-sub">{tx('Opens as')}</span>
+              <Pill tone={PRIORITY_TONE[m.default_priority]}>{choiceLabel(m.default_priority)}</Pill>
               {#if m.default_case_type}
-                <Pill tone="slate">{m.default_case_type}</Pill>
+                <Pill tone="slate">{choiceLabel(m.default_case_type)}</Pill>
               {/if}
               <span class="v2-sub">
-                {m.default_assignee ? `assigned to ${m.default_assignee.name}` : 'then routed'}
+                {m.default_assignee ? tx('assigned to {name}', { name: m.default_assignee.name }) : tx('then routed')}
               </span>
             </div>
           </div>
@@ -315,27 +312,27 @@
           {#if data.can_edit}
             <div style="display:flex;gap:6px;align-items:center;flex:none">
               <button class="v2-btn v2-btn-sm" type="button" onclick={() => openEdit(m)}>
-                Edit
+                {tx('Edit')}
               </button>
               {#if m.is_active}
                 <ConfirmAction
                   action="?/deactivate"
-                  label="Turn off"
-                  confirmLabel="Turn off"
-                  explain="Stops opening tickets from this address. It stays in the list, off, until turned back on."
+                  label={tx('Turn off')}
+                  confirmLabel={tx('Turn off')}
+                  explain={tx('Stops opening tickets from this address. It stays in the list, off, until turned back on.')}
                   hidden={{ id: m.id }}
                 />
               {:else}
                 <form method="POST" action="?/activate" use:enhance>
                   <input type="hidden" name="id" value={m.id} />
-                  <button class="v2-btn v2-btn-sm" type="submit">Turn on</button>
+                  <button class="v2-btn v2-btn-sm" type="submit">{tx('Turn on')}</button>
                 </form>
               {/if}
               <ConfirmAction
                 action="?/remove"
-                label="Delete"
-                confirmLabel="Delete"
-                explain="Deleted permanently. Mail to this address stops becoming tickets, and its topic pin goes with it."
+                label={tx('Delete')}
+                confirmLabel={tx('Delete')}
+                explain={tx('Deleted permanently. Mail to this address stops becoming tickets, and its topic pin goes with it.')}
                 hidden={{ id: m.id }}
               />
             </div>
@@ -356,29 +353,20 @@
       <div style="display:flex;gap:10px;align-items:flex-start">
         <KeyRound size={16} style="color:var(--v2-slate);flex:none;margin-top:2px" />
         <div>
-          <div style="font-weight:600;font-size:13px">How a delivery is proved genuine</div>
+          <div style="font-weight:600;font-size:13px">{tx('How a delivery is proved genuine')}</div>
           <p class="v2-sub" style="font-size:12.5px;margin:5px 0 0;line-height:1.5">
-            Two checks, and mail has to clear both: AWS signs each notification, and the address has
-            to be pinned to the exact SNS topic it was subscribed to. The signature alone proves
-            only that some AWS account sent it, so without the pin anyone who learned an address's
-            id could have AWS sign forged mail into this organisation. An admin can enter the pin as
-            the address's Topic ARN. Left blank, it is set by the first subscription AWS confirms
-            from an AWS account this server allows; a subscription from any other account is
-            refused. Only admins can see the ARN, because it carries the AWS account id.
+            {tx("Two checks, and mail has to clear both: AWS signs each notification, and the address has to be pinned to the exact SNS topic it was subscribed to. The signature alone proves only that some AWS account sent it, so without the pin anyone who learned an address's id could have AWS sign forged mail into this organisation. An admin can enter the pin as the address's Topic ARN. Left blank, it is set by the first subscription AWS confirms from an AWS account this server allows; a subscription from any other account is refused. Only admins can see the ARN, because it carries the AWS account id.")}
           </p>
           <p class="v2-sub" style="font-size:12.5px;margin:8px 0 0;line-height:1.5">
-            There is also a signing-secret field on each address, reserved for providers that sign
-            deliveries that way. None of those are implemented, so nothing compares it today. It can
-            be set through the API and is never readable back, here or anywhere.
+            {tx('There is also a signing-secret field on each address, reserved for providers that sign deliveries that way. None of those are implemented, so nothing compares it today. It can be set through the API and is never readable back, here or anywhere.')}
           </p>
         </div>
       </div>
     </div>
 
     <p class="v2-sub" style="font-size:11.5px;margin-top:14px">
-      Where a new ticket goes after it is created is decided by
-      <a href={resolve('/settings/routing')} style="color:inherit">ticket routing</a>, not by these
-      defaults.
+      {tx('Where a new ticket goes after it is created is decided by')}
+      <a href={resolve('/settings/routing')} style="color:inherit">{tx('ticket routing')}</a>{tx(', not by these defaults.')}
     </p>
   </div>
 </div>

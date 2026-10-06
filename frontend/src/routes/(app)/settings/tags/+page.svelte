@@ -20,6 +20,8 @@
   import ConfirmAction from '$lib/v2/components/ConfirmAction.svelte';
   import { count } from '$lib/v2/format.js';
   import { Plus, Merge, Tags as TagsIcon } from '@lucide/svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -106,10 +108,11 @@
   });
 </script>
 
-<PageHeader title="Tags">
+<PageHeader title={tx('Tags')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    <span class="v2-num">{count(totals.active)}</span> in use across accounts, leads, deals and tickets
+    <span class="v2-num">{count(totals.active)}</span>
+    {tx('in use across accounts, leads, deals and tickets')}
   {/snippet}
   {#snippet actions()}
     {#if data.can_edit}
@@ -138,19 +141,19 @@
           <input
             class="v2-input"
             name="name"
-            placeholder="Tag name"
+            placeholder={tx('Tag name')}
             required
             autofocus
             disabled={busy}
           />
-          <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>Create</button>
+          <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>{tx('Create')}</button>
           <button class="v2-btn" type="button" disabled={busy} onclick={() => (adding = false)}>
-            Cancel
+            {tx('Cancel')}
           </button>
         </form>
       {:else}
         <button class="v2-btn v2-btn-primary" onclick={() => (adding = true)}
-          ><Plus />New tag</button
+          ><Plus />{tx('New tag')}</button>
         >
       {/if}
     {/if}
@@ -159,14 +162,14 @@
 
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <div class="v2-stats">
-    <StatCard label="Active" value={count(totals.active)} tone="ink" />
+    <StatCard label={tx('Active')} value={count(totals.active)} tone="ink" />
     <StatCard
-      label="Applied to nothing"
+      label={tx('Applied to nothing')}
       value={count(totals.unused)}
       tone={totals.unused > 0 ? 'clay' : 'slate'}
-      detail="Counts accounts, leads, deals and tickets only"
+      detail={tx('Counts accounts, leads, deals and tickets only')}
     />
-    <StatCard label="Turned off" value={count(totals.count - totals.active)} tone="slate" />
+    <StatCard label={tx('Turned off')} value={count(totals.count - totals.active)} tone="slate" />
   </div>
 </div>
 
@@ -177,11 +180,15 @@
         <Merge size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
         <div>
           <div style="font-weight:600;font-size:13px">
-            {group.all.map((t) => t.name).join(' and ')} look like the same tag
+            {tx('{names} look like the same tag', {
+              names: group.all.map((t) => t.name).join(` ${tx('and')} `)
+            })}
           </div>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 0;line-height:1.5">
-            {group.all.map((t) => `${t.name} is on ${used(t)} records`).join('; ')}. Anyone
-            filtering by one of them misses the other.
+            {group.all
+              .map((t) => tx('{name} is on {n} records', { name: t.name, n: used(t) }))
+              .join('; ')}.
+            {tx('Anyone filtering by one of them misses the other.')}
           </p>
         </div>
         {#if data.can_edit}
@@ -195,9 +202,17 @@
             {#each group.merge as loser (loser.id)}
               <ConfirmAction
                 action="?/merge"
-                label={group.merge.length > 1 ? `Merge ${loser.name}` : 'Merge'}
-                confirmLabel="Merge"
-                explain={`${used(loser)} ${used(loser) === 1 ? 'record moves' : 'records move'} from ${loser.name} to ${group.keep.name}, and ${loser.name} is turned off. Records already on ${group.keep.name} are untouched. This cannot be undone by merging back.`}
+                label={group.merge.length > 1 ? tx('Merge {name}', { name: loser.name }) : tx('Merge')}
+                confirmLabel={tx('Merge')}
+                explain={used(loser) === 1
+                  ? tx(
+                      '{n} record moves from {from} to {to}, and {from} is turned off. Records already on {to} are untouched. This cannot be undone by merging back.',
+                      { n: used(loser), from: loser.name, to: group.keep.name }
+                    )
+                  : tx(
+                      '{n} records move from {from} to {to}, and {from} is turned off. Records already on {to} are untouched. This cannot be undone by merging back.',
+                      { n: used(loser), from: loser.name, to: group.keep.name }
+                    )}
                 hidden={{ id: loser.id, into: group.keep.id }}
               />
             {/each}
@@ -211,8 +226,10 @@
     {/if}
     {#if form?.merged}
       <p class="v2-sub" style="margin-bottom:12px">
-        Merged into {form.merged.name}. {count(form.merged.moved)}
-        {form.merged.moved === 1 ? 'record' : 'records'} moved.
+        {tx('Merged into {name}.', { name: form.merged.name })}
+        {form.merged.moved === 1
+          ? tx('{n} record moved.', { n: count(form.merged.moved) })
+          : tx('{n} records moved.', { n: count(form.merged.moved) })}
       </p>
     {/if}
 
@@ -223,19 +240,19 @@
       <p class="v2-error" style="margin-bottom:12px">{form.restore.error}</p>
     {/if}
 
-    <div class="v2-label" style="margin-bottom:10px">All tags</div>
+    <div class="v2-label" style="margin-bottom:10px">{tx('All tags')}</div>
     <div class="v2-table-wrap">
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Tag</th>
-            <th style="text-align:right">Accounts</th>
-            <th style="text-align:right">Contacts</th>
-            <th style="text-align:right">Leads</th>
-            <th style="text-align:right">Deals</th>
-            <th style="text-align:right">Tickets</th>
-            <th style="text-align:right">Tasks</th>
-            <th style="text-align:right">Total</th>
+            <th>{tx('Tag')}</th>
+            <th style="text-align:right">{tx('Accounts')}</th>
+            <th style="text-align:right">{tx('Contacts')}</th>
+            <th style="text-align:right">{tx('Leads')}</th>
+            <th style="text-align:right">{tx('Deals')}</th>
+            <th style="text-align:right">{tx('Tickets')}</th>
+            <th style="text-align:right">{tx('Tasks')}</th>
+            <th style="text-align:right">{tx('Total')}</th>
             <th></th>
             {#if data.can_edit}<th></th>{/if}
           </tr>
@@ -249,7 +266,7 @@
                      offers eighteen named hues; v2's palette has six tones and
                      renders every tag in them, so a swatch here would be the
                      only place in the product those eighteen exist. -->
-                <span class="v2-sub" style="font-size:11px;margin-left:7px">{t.color}</span>
+                <span class="v2-sub" style="font-size:11px;margin-left:7px">{choiceLabel(t.color)}</span>
               </td>
               <td class="v2-num" style="text-align:right">{t.usage.accounts || '—'}</td>
               <td class="v2-num" style="text-align:right">{t.usage.contacts || '—'}</td>
@@ -260,9 +277,9 @@
               <td class="v2-num" style="text-align:right;font-weight:600">{used(t) || '—'}</td>
               <td style="text-align:right">
                 {#if !t.is_active}
-                  <Pill tone="slate">Off</Pill>
+                  <Pill tone="slate">{tx('Off')}</Pill>
                 {:else if used(t) === 0}
-                  <Pill tone="clay">Unused</Pill>
+                  <Pill tone="clay">{tx('Unused')}</Pill>
                 {/if}
               </td>
               {#if data.can_edit}
@@ -276,11 +293,21 @@
                          not a vague warning. -->
                     <ConfirmAction
                       action="?/archive"
-                      label="Turn off"
-                      confirmLabel="Turn off"
-                      explain={used(t) > 0
-                        ? `${used(t)} ${used(t) === 1 ? 'record keeps' : 'records keep'} this tag. Turning it off stops it being offered on new records, and keeps it on the ones that have it. You can turn it back on.`
-                        : 'Nothing carries this tag. Turning it off stops it being offered on new records. You can turn it back on.'}
+                      label={tx('Turn off')}
+                      confirmLabel={tx('Turn off')}
+                      explain={used(t) === 0
+                        ? tx(
+                            'Nothing carries this tag. Turning it off stops it being offered on new records. You can turn it back on.'
+                          )
+                        : used(t) === 1
+                          ? tx(
+                              '{n} record keeps this tag. Turning it off stops it being offered on new records, and keeps it on the ones that have it. You can turn it back on.',
+                              { n: used(t) }
+                            )
+                          : tx(
+                              '{n} records keep this tag. Turning it off stops it being offered on new records, and keeps it on the ones that have it. You can turn it back on.',
+                              { n: used(t) }
+                            )}
                       hidden={{ id: t.id }}
                     />
                   {:else}
@@ -289,7 +316,7 @@
                          two-click confirm. -->
                     <form method="POST" action="?/restore" use:enhance>
                       <input type="hidden" name="id" value={t.id} />
-                      <button class="v2-btn v2-btn-sm" type="submit">Turn back on</button>
+                      <button class="v2-btn v2-btn-sm" type="submit">{tx('Turn back on')}</button>
                     </form>
                   {/if}
                 </td>
@@ -299,8 +326,8 @@
             <tr>
               <td colspan={data.can_edit ? 8 : 7}>
                 <EmptyState
-                  title="No tags yet"
-                  body="Tags are shared across every record type, so the first one is worth naming carefully."
+                  title={tx('No tags yet')}
+                  body={tx('Tags are shared across every record type, so the first one is worth naming carefully.')}
                 >
                   {#snippet icon()}<TagsIcon size={21} />{/snippet}
                 </EmptyState>
@@ -312,8 +339,9 @@
     </div>
 
     <p class="v2-sub" style="font-size:11.5px;margin-top:14px;max-width:64ch">
-      Turning a tag off hides it from the pickers and leaves it on the records that already carry
-      it. Nothing is removed, and you can turn a tag back on at any time.
+      {tx(
+        'Turning a tag off hides it from the pickers and leaves it on the records that already carry it. Nothing is removed, and you can turn a tag back on at any time.'
+      )}
     </p>
   </div>
 </div>

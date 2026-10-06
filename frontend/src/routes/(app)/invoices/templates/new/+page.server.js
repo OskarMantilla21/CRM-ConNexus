@@ -1,6 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { createInvoiceTemplate } from '$lib/server/v2/templates.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 import { isOrgAdmin } from '$lib/admin.js';
 
 /**
@@ -52,8 +54,8 @@ export const actions = {
         values,
         error:
           err?.status === 403
-            ? 'Only an admin can create an invoice template.'
-            : readableError(err, 'Could not create the template.')
+            ? tx('Only an admin can create an invoice template.')
+            : readableError(err, tx('Could not create the template.'))
       });
     }
 

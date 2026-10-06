@@ -27,6 +27,8 @@
   } from '$lib/v2/enums.js';
   import { enhance } from '$app/forms';
   import { ChevronRight, Eye, EyeOff } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -49,9 +51,9 @@
         // hunting for a control that is not theirs. Naming who does it is the
         // whole value of the sentence for everybody else.
         text: canRelease
-          ? 'Approved, but not suggested on tickets yet. Publishing is the last step.'
-          : 'Approved, but not suggested on tickets yet. An admin has to publish it.',
-        action: canRelease ? 'Publish' : null,
+          ? tx('Approved, but not suggested on tickets yet. Publishing is the last step.')
+          : tx('Approved, but not suggested on tickets yet. An admin has to publish it.'),
+        action: canRelease ? tx('Publish') : null,
         form: 'setPublished',
         value: 'true'
       };
@@ -59,16 +61,18 @@
     if (article.status === 'reviewed') {
       return {
         text: canRelease
-          ? 'Someone has read this. Approving it is what lets it be published.'
-          : 'Waiting on an admin to approve it. Until then it stays internal.',
-        action: canRelease ? 'Approve' : null,
+          ? tx('Someone has read this. Approving it is what lets it be published.')
+          : tx('Waiting on an admin to approve it. Until then it stays internal.'),
+        action: canRelease ? tx('Approve') : null,
         form: 'setStatus',
         value: 'approved'
       };
     }
     return {
-      text: 'This is a draft. Send it for review when the answer is right: somebody other than you has to approve it before it can be published.',
-      action: canEdit ? 'Send for review' : null,
+      text: tx(
+        'This is a draft. Send it for review when the answer is right: somebody other than you has to approve it before it can be published.'
+      ),
+      action: canEdit ? tx('Send for review') : null,
       form: 'setStatus',
       value: 'reviewed'
     };
@@ -77,27 +81,27 @@
 
 <PageHeader title={article.title} record>
   {#snippet crumb()}
-    <a href={resolve('/solutions')}>Knowledge base</a>
+    <a href={resolve('/solutions')}>{tx('Knowledge base')}</a>
     <ChevronRight size={12} />
     <span>{SOLUTION_STATUS_LABEL[article.status]}</span>
   {/snippet}
   {#snippet sub()}
-    {[
-      article.author || 'Unknown author',
-      `edited ${relativeDays(article.updated_at)}`,
-      article.use_count
-        ? `filed on ${article.use_count} ticket${article.use_count === 1 ? '' : 's'}`
-        : 'not linked to a ticket yet'
-    ].join(' · ')}
+    {article.author || tx('Unknown author')} · {tx('edited {when}', {
+      when: relativeDays(article.updated_at)
+    })} · {article.use_count
+      ? article.use_count === 1
+        ? tx('filed on {n} ticket', { n: article.use_count })
+        : tx('filed on {n} tickets', { n: article.use_count })
+      : tx('not linked to a ticket yet')}
   {/snippet}
   {#snippet actions()}
     {#if canEdit}
-      <a class="v2-btn" href={resolve(`/solutions/${article.id}/edit`)}>Edit</a>
+      <a class="v2-btn" href={resolve(`/solutions/${article.id}/edit`)}>{tx('Edit')}</a>
     {/if}
     {#if article.is_published && canRelease}
       <form method="POST" action="?/setPublished" use:enhance>
         <input type="hidden" name="published" value="false" />
-        <button class="v2-btn" type="submit">Unpublish</button>
+        <button class="v2-btn" type="submit">{tx('Unpublish')}</button>
       </form>
     {/if}
     {#if canDelete}
@@ -105,9 +109,9 @@
            DELETE asks the same rule again. -->
       <ConfirmAction
         action="?/delete"
-        label="Delete"
-        confirmLabel="Delete for good"
-        explain="Deletes {article.title} permanently. This cannot be undone."
+        label={tx('Delete')}
+        confirmLabel={tx('Delete for good')}
+        explain={tx('Deletes {title} permanently. This cannot be undone.', { title: article.title })}
       />
     {/if}
   {/snippet}
@@ -135,10 +139,10 @@
                   name={gate.form === 'setPublished' ? 'published' : 'status'}
                   value={gate.value}
                 />
-                <NextAction label="Not visible yet" text={gate.text} action={gate.action} />
+                <NextAction label={tx('Not visible yet')} text={gate.text} action={gate.action} />
               </form>
             {:else}
-              <NextAction label="Not visible yet" text={gate.text} />
+              <NextAction label={tx('Not visible yet')} text={gate.text} />
             {/if}
           </div>
         {/if}
@@ -153,7 +157,7 @@
         <!-- The tickets this article was filed against. Real rows, and the
              other direction of the link the ticket page already draws. -->
         <div class="v2-label" style="margin:26px 0 10px">
-          {tickets.length || hidden_ticket_count ? 'Filed against' : 'Not used yet'}
+          {tickets.length || hidden_ticket_count ? tx('Filed against') : tx('Not used yet')}
         </div>
         {#if tickets.length}
           <div class="v2-card" style="overflow:hidden;max-width:70ch">
@@ -163,15 +167,16 @@
                 style="display:flex;gap:12px;align-items:center;padding:11px 15px;border-bottom:1px solid var(--v2-line-soft);color:inherit;text-decoration:none"
               >
                 <span style="flex:1;font-size:13px;min-width:0">{t.name}</span>
-                <Pill tone={CASE_STATUS_TONE[t.status]}>{t.status}</Pill>
-                <Pill tone={PRIORITY_TONE[t.priority]}>{t.priority}</Pill>
+                <Pill tone={CASE_STATUS_TONE[t.status]}>{choiceLabel(t.status)}</Pill>
+                <Pill tone={PRIORITY_TONE[t.priority]}>{choiceLabel(t.priority)}</Pill>
               </a>
             {/each}
           </div>
         {:else if !hidden_ticket_count}
           <p class="v2-sub" style="font-size:12.5px;max-width:70ch">
-            Nobody has attached this to a ticket. Either the question has stopped being asked, or
-            the article is hard to find while somebody is typing a reply.
+            {tx(
+              'Nobody has attached this to a ticket. Either the question has stopped being asked, or the article is hard to find while somebody is typing a reply.'
+            )}
           </p>
         {/if}
 
@@ -181,9 +186,13 @@
                than a number that quietly means something different per
                reader. -->
           <p class="v2-sub" style="font-size:12px;margin-top:10px;max-width:70ch">
-            {hidden_ticket_count}
-            {hidden_ticket_count === 1 ? 'other ticket uses' : 'other tickets use'} this article and
-            {hidden_ticket_count === 1 ? 'is' : 'are'} not yours to open.
+            {hidden_ticket_count === 1
+              ? tx('{n} other ticket uses this article and is not yours to open.', {
+                  n: hidden_ticket_count
+                })
+              : tx('{n} other tickets use this article and are not yours to open.', {
+                  n: hidden_ticket_count
+                })}
           </p>
         {/if}
       </div>
@@ -191,43 +200,44 @@
   </div>
 
   <aside class="v2-rail">
-    <div class="v2-label v2-rail-head">Article</div>
+    <div class="v2-label v2-rail-head">{tx('Article')}</div>
     <dl class="v2-kv">
-      <dt>Status</dt>
+      <dt>{tx('Status')}</dt>
       <dd>
         <Pill tone={SOLUTION_STATUS_TONE[article.status]}>
           {SOLUTION_STATUS_LABEL[article.status]}
         </Pill>
       </dd>
-      <dt>Visibility</dt>
+      <dt>{tx('Visibility')}</dt>
       <dd>
         {#if article.is_published}
           <span style="display:inline-flex;gap:5px;align-items:center">
-            <Eye size={13} />Published
+            <Eye size={13} />{tx('Published')}
           </span>
         {:else}
           <span
             style="display:inline-flex;gap:5px;align-items:center"
             style:color={article.awaiting_release ? 'var(--v2-clay)' : 'inherit'}
           >
-            <EyeOff size={13} />Internal only
+            <EyeOff size={13} />{tx('Internal only')}
           </span>
         {/if}
       </dd>
-      <dt>Author</dt>
+      <dt>{tx('Author')}</dt>
       <dd>{article.author || '—'}</dd>
-      <dt>Used on</dt>
-      <dd class="v2-num">{article.use_count} tickets</dd>
-      <dt>Written</dt>
+      <dt>{tx('Used on')}</dt>
+      <dd class="v2-num">{tx('{n} tickets', { n: article.use_count })}</dd>
+      <dt>{tx('Written')}</dt>
       <dd>{longDate(article.created_at)}</dd>
-      <dt>Edited</dt>
+      <dt>{tx('Edited')}</dt>
       <dd>{longDate(article.updated_at)}</dd>
     </dl>
 
-    <div class="v2-label v2-rail-head">How this gets used</div>
+    <div class="v2-label v2-rail-head">{tx('How this gets used')}</div>
     <div class="v2-card" style="padding:11px 12px;font-size:12px;line-height:1.55">
-      Published articles are offered on the ticket screen while somebody is typing a reply. An
-      article nobody has linked to a ticket is usually one that answers a question nobody asked.
+      {tx(
+        'Published articles are offered on the ticket screen while somebody is typing a reply. An article nobody has linked to a ticket is usually one that answers a question nobody asked.'
+      )}
     </div>
   </aside>
 </div>

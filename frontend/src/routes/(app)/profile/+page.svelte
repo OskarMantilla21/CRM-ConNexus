@@ -1,5 +1,6 @@
 <script>
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   /**
    * Your own account.
    *
@@ -21,9 +22,15 @@
   import { relativeDays, shortDate, count } from '$lib/v2/format.js';
   import { ROLE_LABEL, ROLE_TONE } from '$lib/v2/enums.js';
   import { KeyRound, Lock, ArrowLeftRight, CalendarDays } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import { DEFAULT_LOCALE, LOCALES } from '$lib/i18n/locale.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
+
+  let currentLocale = $derived(page.data.locale || DEFAULT_LOCALE);
+  let localeNext = $derived(`${page.url.pathname}${page.url.search}`);
 
   let p = $derived(data.profile);
   let name = $derived(`${p.user_details.first_name} ${p.user_details.last_name}`.trim());
@@ -66,11 +73,11 @@
 
 <PageHeader title={name} record>
   {#snippet sub()}
-    {ROLE_LABEL[p.role]} · {data.org.name} · joined {shortDate(p.joined_at)}
+    {ROLE_LABEL[p.role]} · {data.org.name} · {tx('joined {date}', { date: shortDate(p.joined_at) })}
   {/snippet}
   {#snippet actions()}
     {#if !editing}
-      <button class="v2-btn v2-btn-primary" onclick={openEdit}>Edit details</button>
+      <button class="v2-btn v2-btn-primary" onclick={openEdit}>{tx('Edit details')}</button>
     {/if}
   {/snippet}
 </PageHeader>
@@ -79,7 +86,7 @@
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     <div class="v2-split">
       <div>
-        <div class="v2-label" style="margin-bottom:10px">You</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('You')}</div>
 
         {#if editing}
           <form
@@ -90,7 +97,7 @@
             style="padding:17px 18px;margin-bottom:20px"
           >
             <div class="v2-field">
-              <label for="f-name">Full name</label>
+              <label for="f-name">{tx('Full name')}</label>
               <input
                 id="f-name"
                 name="name"
@@ -100,7 +107,7 @@
               />
             </div>
             <div class="v2-field" style="margin-top:12px">
-              <label for="f-phone">Phone</label>
+              <label for="f-phone">{tx('Phone')}</label>
               <input
                 id="f-phone"
                 name="phone"
@@ -108,14 +115,14 @@
                 bind:value={editPhone}
                 placeholder="+44 20 7946 0100"
               />
-              <p class="v2-hint">Digits and separators only. Leave blank to remove it.</p>
+              <p class="v2-hint">{tx('Digits and separators only. Leave blank to remove it.')}</p>
             </div>
             {#if editError}
               <p class="v2-error" style="margin-top:10px">{editError}</p>
             {/if}
             <div style="display:flex;gap:8px;margin-top:16px">
-              <button class="v2-btn v2-btn-primary" type="submit">Save</button>
-              <button class="v2-btn" type="button" onclick={() => (editing = false)}>Cancel</button>
+              <button class="v2-btn v2-btn-primary" type="submit">{tx('Save')}</button>
+              <button class="v2-btn" type="button" onclick={() => (editing = false)}>{tx('Cancel')}</button>
             </div>
           </form>
         {:else}
@@ -128,37 +135,64 @@
               </div>
             </div>
             <dl class="v2-kv">
-              <dt>Phone</dt>
+              <dt>{tx('Phone')}</dt>
               <dd class="v2-num" style="font-size:12px">{p.phone || '—'}</dd>
-              <dt>Teams</dt>
+              <dt>{tx('Teams')}</dt>
               <dd>{p.teams.join(', ') || '—'}</dd>
-              <dt>Joined</dt>
+              <dt>{tx('Joined')}</dt>
               <dd>{shortDate(p.joined_at)}</dd>
-              <dt>Last signed in</dt>
+              <dt>{tx('Last signed in')}</dt>
               <dd>{relativeDays(p.last_login)}</dd>
             </dl>
           </div>
         {/if}
 
-        <div class="v2-label" style="margin-bottom:10px">Organisations</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Language')}</div>
+        <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
+          <p class="v2-sub" style="font-size:11.5px;margin:0;padding:12px 16px 4px">
+            {tx('Choose the language for this browser.')}
+          </p>
+          {#each LOCALES as item (item.id)}
+            <form class="v2-lang-form" method="POST" action="/locale">
+              <input type="hidden" name="locale" value={item.id} />
+              <input type="hidden" name="next" value={localeNext} />
+              <button
+                class="v2-setting"
+                type="submit"
+                aria-current={currentLocale === item.id ? 'true' : undefined}
+              >
+                <div class="v2-setting-body">
+                  <b>{item.label}</b>
+                </div>
+                {#if currentLocale === item.id}
+                  <Pill tone="ink" dot>{tx('Current')}</Pill>
+                {/if}
+              </button>
+            </form>
+          {/each}
+        </div>
+
+        <div class="v2-label" style="margin-bottom:10px">{tx('Organisations')}</div>
         <div class="v2-card" style="overflow:hidden">
           {#each p.orgs as o (o.id)}
             <div class="v2-setting">
               <div class="v2-setting-body">
                 <b>{o.name}</b>
                 <span class="v2-sub" style="font-size:11.5px">
-                  You are {ROLE_LABEL[o.role] === 'Admin' ? 'an admin' : 'a member'} here
+                  {tx('You are {role} here', {
+                    role: o.role === 'ADMIN' ? tx('an admin') : tx('a member')
+                  })}
                 </span>
               </div>
               {#if o.is_current}
-                <Pill tone="ink" dot>Current</Pill>
+                <Pill tone="ink" dot>{tx('Current')}</Pill>
               {:else}
                 <!-- Switching org re-issues the token; it does not edit a field
                      on this page. The action swaps the cookies and reloads. -->
                 <form method="POST" action="?/switchOrg" use:enhance class="v2-inline-form">
                   <input type="hidden" name="org_id" value={o.id} />
                   <button class="v2-btn v2-btn-sm" type="submit">
-                    <ArrowLeftRight size={12} />Switch
+                    <ArrowLeftRight size={12} />{tx('Switch')}
                   </button>
                 </form>
               {/if}
@@ -169,20 +203,19 @@
           <p class="v2-error" style="margin-top:9px">{switchError}</p>
         {/if}
         <p class="v2-sub" style="font-size:11.5px;margin-top:11px">
-          Switching organisation signs you in again with a new token. Which org you are in decides
-          which records exist for you at all, so it is not a filter you can toggle.
+          {tx('Switching organisation signs you in again with a new token. Which org you are in decides which records exist for you at all, so it is not a filter you can toggle.')}
         </p>
       </div>
 
       <div>
-        <div class="v2-label" style="margin-bottom:10px">Access</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Access')}</div>
         <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Role</b>
+              <b>{tx('Role')}</b>
               <!-- Displayed, never editable from here. -->
               <span class="v2-sub" style="font-size:11.5px">
-                Set by an admin. You cannot change your own role.
+                {tx('Set by an admin. You cannot change your own role.')}
               </span>
             </div>
             <Lock size={14} style="color:var(--v2-slate);flex:none" />
@@ -193,9 +226,9 @@
                to lead most of the people who clicked it to "Admins only". -->
           <a class="v2-setting" href={resolve('/profile/tokens')}>
             <div class="v2-setting-body">
-              <b>API tokens</b>
+              <b>{tx('API tokens')}</b>
               <span class="v2-sub" style="font-size:11.5px">
-                Each one signs in as you, with your role.
+                {tx('Each one signs in as you, with your role.')}
               </span>
             </div>
             <KeyRound size={14} style="color:var(--v2-slate);flex:none" />
@@ -205,46 +238,47 @@
           </a>
           <a class="v2-setting" href={resolve('/profile/calendar-feed')}>
             <div class="v2-setting-body">
-              <b>Calendar feed</b>
+              <b>{tx('Calendar feed')}</b>
               <span class="v2-sub" style="font-size:11.5px">
-                Your open tasks in Google Calendar, Outlook or Apple Calendar.
+                {tx('Your open tasks in Google Calendar, Outlook or Apple Calendar.')}
               </span>
             </div>
             <CalendarDays size={14} style="color:var(--v2-slate);flex:none" />
           </a>
           <div class="v2-setting">
             <div class="v2-setting-body">
-              <b>Sign-in method</b>
+              <b>{tx('Sign-in method')}</b>
               <!-- It used to say "Google, on <email>", which is false for
                    anyone who signed in with an emailed code. Nothing in the
                    payload says which was used, so this states what holds for
                    both rather than guessing. -->
               <span class="v2-sub" style="font-size:11.5px">
-                {p.user_details.email}, by Google or an emailed code. There is no password to
-                change.
+                {tx('{email}, by Google or an emailed code. There is no password to change.', {
+                  email: p.user_details.email
+                })}
               </span>
             </div>
           </div>
         </div>
 
-        <div class="v2-label" style="margin-bottom:10px">Where your work shows up</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Where your work shows up')}</div>
         <div class="v2-card" style="overflow:hidden">
           <a class="v2-setting" href={resolve('/goals')}>
             <div class="v2-setting-body">
-              <b>Goals</b>
-              <span class="v2-sub" style="font-size:11.5px">Your quota and how it is pacing</span>
+              <b>{tx('Goals')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('Your quota and how it is pacing')}</span>
             </div>
           </a>
           <a class="v2-setting" href={resolve('/timesheet')}>
             <div class="v2-setting-body">
-              <b>Timesheet</b>
-              <span class="v2-sub" style="font-size:11.5px">Hours you have logged this week</span>
+              <b>{tx('Timesheet')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('Hours you have logged this week')}</span>
             </div>
           </a>
           <a class="v2-setting" href={resolve('/tasks')}>
             <div class="v2-setting-body">
-              <b>Tasks</b>
-              <span class="v2-sub" style="font-size:11.5px">What is assigned to you</span>
+              <b>{tx('Tasks')}</b>
+              <span class="v2-sub" style="font-size:11.5px">{tx('What is assigned to you')}</span>
             </div>
           </a>
         </div>
@@ -258,5 +292,24 @@
      as the bare button was (the row uses flex; the form must not add a box). */
   .v2-inline-form {
     display: contents;
+  }
+
+  .v2-lang-form {
+    margin: 0;
+  }
+  .v2-lang-form .v2-setting {
+    width: 100%;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--v2-line-soft);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .v2-lang-form:last-child .v2-setting {
+    border-bottom: 0;
+  }
+  .v2-lang-form .v2-setting:hover {
+    background: var(--v2-hover);
   }
 </style>

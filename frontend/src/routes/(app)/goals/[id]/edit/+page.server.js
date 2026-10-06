@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { error, fail, redirect } from '@sveltejs/kit';
 import {
   getGoalForEdit,
@@ -23,7 +25,7 @@ export async function load(event) {
     return await getGoalForEdit(event, event.params.id);
   } catch (/** @type {any} */ err) {
     if (err?.status === 404) {
-      error(404, 'That goal does not exist, or you cannot see it.');
+      error(404, tx('That goal does not exist, or you cannot see it.'));
     }
     throw err;
   }
@@ -51,11 +53,11 @@ export const actions = {
       await updateGoal(event, event.params.id, values);
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { values, error: 'Only an admin can change goals.' });
+        return fail(403, { values, error: tx('Only an admin can change goals.') });
       }
       return fail(400, {
         values,
-        error: readableError(err, 'Could not save this goal.')
+        error: readableError(err, tx('Could not save this goal.'))
       });
     }
 
@@ -67,11 +69,11 @@ export const actions = {
       await deleteGoal(event, event.params.id);
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { error: 'Only an admin can delete goals.' });
+        return fail(403, { error: tx('Only an admin can delete goals.') });
       }
       // Already gone is the outcome the caller wanted; treat 404 as done.
       if (err?.status === 404) redirect(303, '/goals');
-      return fail(400, { error: readableError(err, 'Could not delete this goal.') });
+      return fail(400, { error: readableError(err, tx('Could not delete this goal.')) });
     }
 
     redirect(303, '/goals');

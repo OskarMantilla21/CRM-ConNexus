@@ -1,6 +1,8 @@
 import { fail, redirect, error } from '@sveltejs/kit';
 import { getInvoiceTemplateForEdit, updateInvoiceTemplate } from '$lib/server/v2/templates.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * Editing an invoice template.
@@ -20,7 +22,7 @@ export async function load(event) {
   try {
     return await getInvoiceTemplateForEdit(event, event.params.id);
   } catch (/** @type {any} */ err) {
-    if (err?.status === 404) error(404, 'Template not found');
+    if (err?.status === 404) error(404, tx('Template not found'));
     throw err;
   }
 }
@@ -57,7 +59,7 @@ export const actions = {
     const values = readValues(form);
 
     if (!values.name.trim()) {
-      return fail(400, { values, error: 'Give the template a name.' });
+      return fail(400, { values, error: tx('Give the template a name.') });
     }
 
     try {
@@ -66,11 +68,11 @@ export const actions = {
       if (err?.status === 403) {
         return fail(403, {
           values,
-          error: 'Only an administrator can change invoice templates.'
+          error: tx('Only an administrator can change invoice templates.')
         });
       }
-      if (err?.status === 404) error(404, 'Template not found');
-      return fail(400, { values, error: readableError(err, 'Could not save this template.') });
+      if (err?.status === 404) error(404, tx('Template not found'));
+      return fail(400, { values, error: readableError(err, tx('Could not save this template.')) });
     }
 
     redirect(303, '/invoices/templates');

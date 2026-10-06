@@ -1,4 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { createSupportTicket, SUPPORT_CATEGORIES } from '$lib/server/v2/support.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 
@@ -22,7 +24,7 @@ export const actions = {
         subject,
         category,
         body,
-        error: 'Add a subject, choose a category, and describe what you need help with.'
+        error: tx('Add a subject, choose a category, and describe what you need help with.')
       });
     }
 
@@ -39,8 +41,10 @@ export const actions = {
         body,
         error:
           error?.status === 404
-            ? 'This deployment has no BottleCRM support queue. The help page lists the ways to reach us.'
-            : readableError(error, 'Could not open this support ticket.')
+            ? tx(
+                'This deployment has no BottleCRM support queue. The help page lists the ways to reach us.'
+              )
+            : readableError(error, tx('Could not open this support ticket.'))
       });
     }
     redirect(303, `/help/${ticket.id}`);

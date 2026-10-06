@@ -1,4 +1,6 @@
 <script>
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/sell.js';
   /**
    * How did we do, one finished period at a time.
    *
@@ -49,11 +51,11 @@
 
   /** The owner of a goal, in the words the list page uses. */
   const owner = (g) =>
-    g.assigned_to ? g.assigned_to.name : g.team ? `${g.team.name} (team)` : 'Whole org';
+    g.assigned_to ? g.assigned_to.name : g.team ? `${g.team.name} (team)` : tx('Whole org');
 </script>
 
-<PageHeader title="Goal history">
-  {#snippet crumb()}<a href={resolve('/goals')}>Goals</a> ›{/snippet}
+<PageHeader title={tx('Goal history')}>
+  {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
   {#snippet sub()}
     Finished periods, newest first. A closed period is settled, so these are results rather than
     pace.
@@ -67,12 +69,12 @@
            goals and their teams', so "nothing has finished yet" would be a
            claim about the org that a member cannot actually see. -->
       <EmptyState
-        title="No finished periods yet"
-        body="Once a goal's period ends it moves here with what it attained. Goals still running are on the goals page."
+        title={tx('No finished periods yet')}
+        body={tx('Once a goal\'s period ends it moves here with what it attained. Goals still running are on the goals page.')}
       >
         {#snippet icon()}<History size={21} />{/snippet}
         {#snippet actions()}
-          <a class="v2-btn" href={resolve('/goals')}>Back to goals</a>
+          <a class="v2-btn" href={resolve('/goals')}>{tx('Back to goals')}</a>
         {/snippet}
       </EmptyState>
     {:else}
@@ -106,7 +108,7 @@
             </div>
             <div class="v2-bar-legend">
               <span class="v2-num">{unit(period, period.achieved)}</span>
-              <span>of <span class="v2-num">{unit(period, period.target)}</span></span>
+              <span>{tx('of')} <span class="v2-num">{unit(period, period.target)}</span></span>
             </div>
 
             <ul class="goals">
@@ -117,7 +119,7 @@
                   <span class="v2-num figures">
                     {unit(g, g.progress_value)} / {unit(g, g.target_value)}
                   </span>
-                  <Pill tone={met(g) ? 'moss' : 'slate'}>{met(g) ? 'Met' : 'Missed'}</Pill>
+                  <Pill tone={met(g) ? 'moss' : 'slate'}>{met(g) ? tx('Met') : tx('Missed')}</Pill>
                 </li>
               {/each}
             </ul>

@@ -15,6 +15,7 @@
    * bounce) are untouched.
    */
   import '$lib/v2/styles/v2.css';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /** @type {{ children: import('svelte').Snippet }} */
   let { children } = $props();
@@ -26,6 +27,9 @@
 </svelte:head>
 
 <div class="v2-root v2-public">
+  <div class="v2-public-lang">
+    <LanguageSelect />
+  </div>
   <main class="v2-public-main">
     {@render children()}
   </main>
@@ -39,6 +43,13 @@
     font-family: var(--v2-sans);
     font-size: var(--v2-fs);
   }
+  .v2-public-lang {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 20px 0;
+    display: flex;
+    justify-content: flex-end;
+  }
   .v2-public-main {
     /* A document, not an application: one column, capped, centred, and it
        does not grow to fill a 27-inch monitor. */
@@ -47,6 +58,9 @@
     padding: 40px 20px 64px;
   }
   @media (max-width: 640px) {
+    .v2-public-lang {
+      padding: 12px 16px 0;
+    }
     .v2-public-main {
       padding: 24px 16px 48px;
     }

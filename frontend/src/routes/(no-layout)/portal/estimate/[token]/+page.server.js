@@ -8,6 +8,8 @@
 import { error, fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import { relayHeaders } from '$lib/server/relay.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 // The Django API, reached server-to-server. Absolute (not a relative `/api/...`
 // that only resolves behind a production reverse proxy) so the anonymous portal
@@ -19,7 +21,7 @@ export async function load({ params, fetch }) {
   const { token } = params;
 
   if (!token) {
-    throw error(400, 'Estimate token is required');
+    throw error(400, tx('Estimate token is required'));
   }
 
   try {
@@ -30,9 +32,9 @@ export async function load({ params, fetch }) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw error(404, 'Estimate not found or link has expired');
+        throw error(404, tx('Estimate not found or link has expired'));
       }
-      throw error(response.status, 'Failed to load estimate');
+      throw error(response.status, tx('Failed to load estimate'));
     }
 
     const estimate = await response.json();
@@ -41,7 +43,7 @@ export async function load({ params, fetch }) {
   } catch (err) {
     if (err.status) throw err;
     console.error('Error loading public estimate:', err);
-    throw error(500, 'Failed to load estimate');
+    throw error(500, tx('Failed to load estimate'));
   }
 }
 
@@ -60,7 +62,7 @@ export const actions = {
 
     if (!name || !email) {
       return fail(400, {
-        error: 'Please enter your name and email to accept this estimate.',
+        error: tx('Please enter your name and email to accept this estimate.'),
         values: { name, email }
       });
     }
@@ -79,7 +81,7 @@ export const actions = {
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         return fail(response.status, {
-          error: data.message || 'Failed to accept estimate',
+          error: tx(data.message || 'Failed to accept estimate'),
           values: { name, email }
         });
       }
@@ -87,7 +89,7 @@ export const actions = {
       return { success: true, action: 'accepted' };
     } catch (err) {
       console.error('Error accepting estimate:', err);
-      return fail(500, { error: 'Failed to accept estimate' });
+      return fail(500, { error: tx('Failed to accept estimate') });
     }
   },
 
@@ -104,13 +106,13 @@ export const actions = {
 
       if (!response.ok) {
         const data = await response.json();
-        return fail(response.status, { error: data.message || 'Failed to decline estimate' });
+        return fail(response.status, { error: tx(data.message || 'Failed to decline estimate') });
       }
 
       return { success: true, action: 'declined' };
     } catch (err) {
       console.error('Error declining estimate:', err);
-      return fail(500, { error: 'Failed to decline estimate' });
+      return fail(500, { error: tx('Failed to decline estimate') });
     }
   }
 };

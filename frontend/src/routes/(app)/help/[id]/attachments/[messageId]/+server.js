@@ -1,20 +1,22 @@
 import { error } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { env } from '$env/dynamic/public';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ cookies, params, fetch }) {
-  if (!UUID.test(params.id) || !UUID.test(params.messageId)) error(404, 'Attachment not found');
+  if (!UUID.test(params.id) || !UUID.test(params.messageId)) error(404, tx('Attachment not found'));
   const token = cookies.get('jwt_access');
-  if (!token) error(401, 'Sign in to download this attachment');
+  if (!token) error(401, tx('Sign in to download this attachment'));
 
   const response = await fetch(
     `${env.PUBLIC_DJANGO_API_URL}/api/support/messages/${params.messageId}/attachment/`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!response.ok || !response.body) {
-    error(response.status === 404 ? 404 : 502, 'Could not download this attachment');
+    error(response.status === 404 ? 404 : 502, tx('Could not download this attachment'));
   }
 
   const headers = new Headers({

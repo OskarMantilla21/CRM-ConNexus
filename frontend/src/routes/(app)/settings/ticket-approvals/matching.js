@@ -33,6 +33,9 @@
  * so today it matches nobody, which is why a MANAGER rule with no named
  * approvers gates tickets that no one can close.
  */
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
+
 export const ROLES_THAT_EXIST = ['ADMIN'];
 
 /** @param {any} rule */
@@ -50,12 +53,20 @@ function namedApprovers(rule) {
  *
  * @param {any} rule
  */
+/** @param {string[]} parts */
+function joinOr(parts) {
+  if (parts.length <= 1) return parts[0] ?? '';
+  return parts
+    .slice(1)
+    .reduce((left, right) => tx('{left} or {right}', { left, right }), parts[0]);
+}
+
 export function approverSentence(rule) {
   const named = namedApprovers(rule);
   if (roleClears(rule)) {
-    return named.length ? `any admin, or ${named.join(' or ')}` : 'any admin';
+    return named.length ? tx('any admin, or {names}', { names: joinOr(named) }) : tx('any admin');
   }
-  return named.length ? named.join(' or ') : 'nobody';
+  return named.length ? joinOr(named) : tx('nobody');
 }
 
 /**
@@ -77,11 +88,13 @@ export function clearableByNobody(rule) {
  */
 export function ruleMatchSentence(rule) {
   const parts = [
-    rule?.match_priority ? `${rule.match_priority} priority` : null,
-    rule?.match_case_type ? rule.match_case_type.toLowerCase() : null,
-    rule?.match_team ? `${rule.match_team.name} team` : null
+    rule?.match_priority
+      ? tx('{priority} priority', { priority: choiceLabel(rule.match_priority) })
+      : null,
+    rule?.match_case_type ? tx(rule.match_case_type.toLowerCase()) : null,
+    rule?.match_team ? tx('{name} team', { name: rule.match_team.name }) : null
   ].filter(Boolean);
-  return parts.length ? parts.join(' · ') : 'Every ticket';
+  return parts.length ? parts.join(' · ') : tx('Every ticket');
 }
 
 /**

@@ -10,10 +10,13 @@
    */
   import { resolve } from '$app/paths';
   import HelpCenterShell from '$lib/v2/components/HelpCenterShell.svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   let { data } = $props();
 
-  let title = $derived(`${data.article.title} | ${data.name} help center`);
+  let title = $derived(
+    tx('{title} | {name} help center', { title: data.article.title, name: data.name })
+  );
 
   /** A one-line summary for search results: the body's opening, whitespace folded. */
   let description = $derived.by(() => {
@@ -46,22 +49,22 @@
 </svelte:head>
 
 <HelpCenterShell name={data.name} slug={data.slug}>
-  <a class="back" href={resolve(`/help-center/${data.slug}`)}>All help articles</a>
+  <a class="back" href={resolve(`/help-center/${data.slug}`)}>{tx('All help articles')}</a>
 
   <article>
     <h1>{data.article.title}</h1>
     {#if data.article.updated_at}
       <p class="when">
-        Updated <time datetime={data.article.updated_at}>{formatDate(data.article.updated_at)}</time
-        >
+        {tx('Updated')}
+        <time datetime={data.article.updated_at}>{formatDate(data.article.updated_at)}</time>
       </p>
     {/if}
     <div class="body">{data.article.description}</div>
   </article>
 
   {#if data.related.length > 0}
-    <nav class="related" aria-label="Related articles">
-      <h2>Related articles</h2>
+    <nav class="related" aria-label={tx('Related articles')}>
+      <h2>{tx('Related articles')}</h2>
       <ul>
         {#each data.related as item (item.id)}
           <li>

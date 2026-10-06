@@ -18,6 +18,8 @@
   import ConfirmAction from '$lib/v2/components/ConfirmAction.svelte';
   import { relativeDays, shortDate } from '$lib/v2/format.js';
   import { resolve } from '$app/paths';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { enhance } from '$app/forms';
   import { CalendarDays, Copy, Check, ShieldAlert } from '@lucide/svelte';
 
@@ -41,13 +43,13 @@
   }
 </script>
 
-<PageHeader title="Calendar feed">
-  {#snippet crumb()}<a href={resolve('/profile')}>Profile</a> ›{/snippet}
+<PageHeader title={tx('Calendar feed')}>
+  {#snippet crumb()}<a href={resolve('/profile')}>{tx('Profile')}</a> ›{/snippet}
   {#snippet sub()}
     {#if feed.enabled}
-      On, URL created {shortDate(feed.created_at)}
+      {tx('On, URL created {date}', { date: shortDate(feed.created_at) })}
     {:else}
-      Off
+      {tx('Off')}
     {/if}
   {/snippet}
 </PageHeader>
@@ -60,10 +62,9 @@
         class="v2-card"
         style="padding:15px 16px;margin-bottom:18px;border-color:color-mix(in srgb, var(--v2-moss) 40%, var(--v2-line))"
       >
-        <div style="font-weight:650;font-size:13px">Your feed URL, copy it now</div>
+        <div style="font-weight:650;font-size:13px">{tx('Your feed URL, copy it now')}</div>
         <p class="v2-sub" style="font-size:12px;margin:4px 0 10px">
-          This is the only time it is shown. Paste it into your calendar app below. If you lose it,
-          regenerate it.
+          {tx('This is the only time it is shown. Paste it into your calendar app below. If you lose it, regenerate it.')}
         </p>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <code
@@ -73,7 +74,7 @@
             {form.url}
           </code>
           <button class="v2-btn" type="button" onclick={() => copyUrl(form.url)}>
-            {#if copied}<Check size={13} />Copied{:else}<Copy size={13} />Copy{/if}
+            {#if copied}<Check size={13} />{tx('Copied')}{:else}<Copy size={13} />{tx('Copy')}{/if}
           </button>
         </div>
       </div>
@@ -81,7 +82,7 @@
 
     {#if form?.error}
       <div style="margin-bottom:16px">
-        <NextAction label="That did not work" text={form.error} tone="rust" />
+        <NextAction label={tx('That did not work')} text={form.error} tone="rust" />
       </div>
     {/if}
 
@@ -89,50 +90,48 @@
       <div class="v2-setting">
         <CalendarDays size={16} style="color:var(--v2-slate);flex:none" />
         <div class="v2-setting-body">
-          <b>Your open tasks, in your calendar</b>
+          <b>{tx('Your open tasks, in your calendar')}</b>
           <span class="v2-sub" style="font-size:11.5px">
-            Tasks that are New or In progress and have a due date, from 90 days ago to a year ahead,
-            as all-day events. Each shows the title, the priority and a link back here.
+            {tx('Tasks that are New or In progress and have a due date, from 90 days ago to a year ahead, as all-day events. Each shows the title, the priority and a link back here.')}
           </span>
         </div>
         {#if feed.enabled}
-          <Pill tone="moss" dot>On</Pill>
+          <Pill tone="moss" dot>{tx('On')}</Pill>
         {:else}
-          <Pill>Off</Pill>
+          <Pill>{tx('Off')}</Pill>
         {/if}
       </div>
       {#if feed.enabled}
         <div class="v2-setting">
           <div class="v2-setting-body">
-            <b>Last fetched</b>
+            <b>{tx('Last fetched')}</b>
             <span class="v2-sub" style="font-size:11.5px">
               {#if feed.last_used_at}
-                A calendar app read the feed {relativeDays(feed.last_used_at)}.
+                {tx('A calendar app read the feed {when}.', { when: relativeDays(feed.last_used_at) })}
               {:else}
-                No calendar app has read it yet.
+                {tx('No calendar app has read it yet.')}
               {/if}
             </span>
           </div>
         </div>
         <div class="v2-setting feed-actions">
           <div class="v2-setting-body">
-            <b>Regenerate or turn off</b>
+            <b>{tx('Regenerate or turn off')}</b>
             <span class="v2-sub" style="font-size:11.5px">
-              Either one stops the current URL at once, and calendars subscribed to it stop
-              updating.
+              {tx('Either one stops the current URL at once, and calendars subscribed to it stop updating.')}
             </span>
           </div>
           <ConfirmAction
             action="?/issue"
-            label="Regenerate URL"
-            confirmLabel="Regenerate"
-            explain="The old URL stops working. Subscribe again with the new one."
+            label={tx('Regenerate URL')}
+            confirmLabel={tx('Regenerate')}
+            explain={tx('The old URL stops working. Subscribe again with the new one.')}
           />
           <ConfirmAction
             action="?/disable"
-            label="Turn off"
-            confirmLabel="Turn off"
-            explain="The URL stops working and subscribed calendars stop updating."
+            label={tx('Turn off')}
+            confirmLabel={tx('Turn off')}
+            explain={tx('The URL stops working and subscribed calendars stop updating.')}
           />
         </div>
       {:else}
@@ -149,27 +148,25 @@
           }}
         >
           <div class="v2-setting-body">
-            <b>Turn on</b>
+            <b>{tx('Turn on')}</b>
             <span class="v2-sub" style="font-size:11.5px">
-              Creates your private feed URL and shows it once.
+              {tx('Creates your private feed URL and shows it once.')}
             </span>
           </div>
           <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>
-            Turn on calendar feed
+            {tx('Turn on calendar feed')}
           </button>
         </form>
       {/if}
     </div>
 
-    <div class="v2-label" style="margin-bottom:10px">Subscribe to it</div>
+    <div class="v2-label" style="margin-bottom:10px">{tx('Subscribe to it')}</div>
     <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
       <div class="v2-setting">
         <div class="v2-setting-body">
           <b>Google Calendar</b>
           <span class="v2-sub" style="font-size:11.5px">
-            On a computer, open Google Calendar. Beside Other calendars choose +, then From URL,
-            paste the feed URL and choose Add calendar. Google refreshes it every few hours, so
-            changes take a while to appear.
+            {tx('On a computer, open Google Calendar. Beside Other calendars choose +, then From URL, paste the feed URL and choose Add calendar. Google refreshes it every few hours, so changes take a while to appear.')}
           </span>
         </div>
       </div>
@@ -177,8 +174,7 @@
         <div class="v2-setting-body">
           <b>Outlook</b>
           <span class="v2-sub" style="font-size:11.5px">
-            In Outlook on the web choose Add calendar, then Subscribe from web, paste the feed URL
-            and choose Import.
+            {tx('In Outlook on the web choose Add calendar, then Subscribe from web, paste the feed URL and choose Import.')}
           </span>
         </div>
       </div>
@@ -186,7 +182,7 @@
         <div class="v2-setting-body">
           <b>Apple Calendar</b>
           <span class="v2-sub" style="font-size:11.5px">
-            Choose File, then New Calendar Subscription, and paste the feed URL.
+            {tx('Choose File, then New Calendar Subscription, and paste the feed URL.')}
           </span>
         </div>
       </div>
@@ -197,11 +193,9 @@
     >
       <ShieldAlert size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
       <div>
-        <div style="font-weight:600;font-size:13px">The URL is the key</div>
+        <div style="font-weight:600;font-size:13px">{tx('The URL is the key')}</div>
         <p class="v2-sub" style="font-size:12px;margin:4px 0 0">
-          Anyone who has it can see the titles and priorities of your open tasks, without signing
-          in. Share it with nobody but your calendar app, and regenerate it if it leaks. It stops
-          working on its own if you leave the organisation or your account is deactivated.
+          {tx('Anyone who has it can see the titles and priorities of your open tasks, without signing in. Share it with nobody but your calendar app, and regenerate it if it leaks. It stops working on its own if you leave the organisation or your account is deactivated.')}
         </p>
       </div>
     </div>

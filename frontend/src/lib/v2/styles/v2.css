@@ -226,6 +226,23 @@
   padding-top: 9px;
   border-top: 1px solid var(--v2-line);
 }
+.v2-lang {
+  padding: 2px 2px 8px;
+}
+.v2-lang select {
+  width: 100%;
+  border: 1px solid var(--v2-line);
+  border-radius: 8px;
+  background: var(--v2-card);
+  color: var(--v2-ink);
+  font: inherit;
+  font-size: 12.5px;
+  padding: 6px 8px;
+}
+.v2-lang select:focus {
+  outline: 2px solid var(--v2-ember);
+  outline-offset: -1px;
+}
 
 /* ── page header ──────────────────────────────────────────────────────── */
 .v2-header {

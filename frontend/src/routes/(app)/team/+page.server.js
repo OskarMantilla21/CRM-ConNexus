@@ -1,3 +1,6 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
+import { ALL_PERMISSIONS } from '$lib/access.js';
 import { fail } from '@sveltejs/kit';
 import { listTeam, inviteUser, setRole, setStatus, ROLES } from '$lib/server/v2/team.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -27,18 +30,27 @@ export const actions = {
     const form = await request.formData();
     const email = form.get('email')?.toString().trim();
     const role = form.get('role')?.toString() || 'USER';
-    if (!email) return fail(400, { invite: { error: 'Enter an email address.' } });
-    if (!ROLES.includes(role)) return fail(400, { invite: { error: 'Pick a valid role.' } });
+    if (!email) return fail(400, { invite: { error: tx('Enter an email address.') } });
+    if (!ROLES.includes(role)) return fail(400, { invite: { error: tx('Pick a valid role.') } });
+
+    /** @type {{ email: string, role: string, granted_permissions?: string[] }} */
+    const body = { email, role };
+    if (role === 'ADMIN') {
+      body.granted_permissions = form
+        .getAll('permissions')
+        .map((value) => value.toString())
+        .filter((key) => ALL_PERMISSIONS.includes(key));
+    }
 
     try {
-      await inviteUser({ cookies }, { email, role });
+      await inviteUser({ cookies }, body);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
         invite: {
           error:
             err?.status === 403
-              ? 'Only an admin can invite people.'
-              : readableError(err, 'Could not send that invite.')
+              ? tx('Only an admin can invite people.')
+              : readableError(err, tx('Could not send that invite.'))
         }
       });
     }
@@ -56,16 +68,23 @@ export const actions = {
     const userId = form.get('userId')?.toString();
     const role = form.get('role')?.toString();
     if (!userId || !role || !ROLES.includes(role)) {
-      return fail(400, { error: 'Which person, and to what role?' });
+      return fail(400, { error: tx('Which person, and to what role?') });
     }
+    const granted =
+      role === 'ADMIN'
+        ? form
+            .getAll('permissions')
+            .map((value) => value.toString())
+            .filter((key) => ALL_PERMISSIONS.includes(key))
+        : null;
     try {
-      await setRole({ cookies }, userId, role);
+      await setRole({ cookies }, userId, role, granted);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
         error:
           err?.status === 403
-            ? 'That is not yours to change.'
-            : readableError(err, 'Could not change that role.')
+            ? tx('That is not yours to change.')
+            : readableError(err, tx('Could not change that role.'))
       });
     }
     return { roleChanged: userId };
@@ -80,7 +99,7 @@ export const actions = {
     const userId = form.get('userId')?.toString();
     const status = form.get('status')?.toString();
     if (!userId || (status !== 'Active' && status !== 'Inactive')) {
-      return fail(400, { error: 'Which person, and active or not?' });
+      return fail(400, { error: tx('Which person, and active or not?') });
     }
     try {
       await setStatus({ cookies }, userId, status);
@@ -88,8 +107,8 @@ export const actions = {
       return fail(err?.status === 403 ? 403 : 400, {
         error:
           err?.status === 403
-            ? 'Only an admin can change who is active.'
-            : readableError(err, 'Could not change that status.')
+            ? tx('Only an admin can change who is active.')
+            : readableError(err, tx('Could not change that status.'))
       });
     }
     return { statusChanged: userId };

@@ -5,6 +5,8 @@ import { listDeals } from '$lib/server/v2/deals.js';
 import { listProducts } from '$lib/server/v2/products.js';
 import { createEstimate, estimateFromDeal } from '$lib/server/v2/estimates.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * The estimate builder's pickers, the same list layers the invoice builder
@@ -28,10 +30,10 @@ export async function load({ cookies, url }) {
   ]);
 
   return {
-    accounts: accounts.results.map((a) => ({ id: a.id, name: a.name || 'Unnamed account' })),
+    accounts: accounts.results.map((a) => ({ id: a.id, name: a.name || tx('Unnamed account') })),
     contacts: contacts.results.map((c) => ({
       id: c.id,
-      name: c.name || c.email || 'Unnamed contact',
+      name: c.name || c.email || tx('Unnamed contact'),
       account_id: c.account?.id ?? null,
       account_name: c.account?.name ?? ''
     })),
@@ -56,21 +58,21 @@ export const actions = {
     try {
       body = JSON.parse(form.get('payload')?.toString() || '{}');
     } catch {
-      return fail(400, { error: 'The estimate form could not be read. Please try again.' });
+      return fail(400, { error: tx('The estimate form could not be read. Please try again.') });
     }
 
-    if (!body.account_id) return fail(400, { error: 'Choose an account.' });
-    if (!body.contact_id) return fail(400, { error: 'Choose a contact.' });
-    if (!body.title) return fail(400, { error: 'Give the estimate a title.' });
+    if (!body.account_id) return fail(400, { error: tx('Choose an account.') });
+    if (!body.contact_id) return fail(400, { error: tx('Choose a contact.') });
+    if (!body.title) return fail(400, { error: tx('Give the estimate a title.') });
     if (!Array.isArray(body.line_items) || body.line_items.length === 0) {
-      return fail(400, { error: 'Add at least one line with a description and an amount.' });
+      return fail(400, { error: tx('Add at least one line with a description and an amount.') });
     }
 
     try {
       await createEstimate({ cookies }, body);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: readableError(err, 'Could not create the estimate.')
+        error: readableError(err, tx('Could not create the estimate.'))
       });
     }
 

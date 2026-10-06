@@ -97,6 +97,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "crum.CurrentRequestUserMiddleware",
     "common.middleware.get_company.GetProfileAndOrg",
+    "common.middleware.role_access.RoleAccessMiddleware",
     "common.middleware.platform_admin.PlatformAdminScope",
     "common.middleware.rls_context.RequireOrgContext",  # RLS: Enforce org context + set PostgreSQL session variable
     # Last, so it queues the request's webhook events while crum still holds

@@ -30,6 +30,8 @@
   import { enhance } from '$app/forms';
   import { Plus, KeyRound, ShieldAlert, Copy, Check } from '@lucide/svelte';
   import { tokenStatus, staleness, scopeSummary, EXPIRY_CHOICES } from '$lib/v2/token-rules.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -68,15 +70,15 @@
   }
 </script>
 
-<PageHeader title="Your API tokens">
-  {#snippet crumb()}<a href={resolve('/profile')}>Profile</a> ›{/snippet}
+<PageHeader title={tx('Your API tokens')}>
+  {#snippet crumb()}<a href={resolve('/profile')}>{tx('Profile')}</a> ›{/snippet}
   {#snippet sub()}
     <span class="v2-num">{count(data.live)}</span>
-    live of <span class="v2-num">{count(data.tokens.length)}</span> you have issued
+    {tx('live of')} <span class="v2-num">{count(data.tokens.length)}</span> {tx('you have issued')}
   {/snippet}
   {#snippet actions()}
     <button class="v2-btn v2-btn-primary" onclick={() => (creating = !creating)}>
-      <Plus />New token
+      <Plus />{tx('New token')}
     </button>
   {/snippet}
 </PageHeader>
@@ -90,11 +92,10 @@
         style="padding:15px 16px;margin-bottom:18px;border-color:color-mix(in srgb, var(--v2-moss) 40%, var(--v2-line))"
       >
         <div style="font-weight:650;font-size:13px">
-          “{form.created.name}” created, copy it now
+          {tx('“{name}” created, copy it now', { name: form.created.name })}
         </div>
         <p class="v2-sub" style="font-size:12px;margin:4px 0 10px">
-          This is the only time the full token is shown. Store it somewhere safe; it cannot be
-          retrieved again.
+          {tx('This is the only time the full token is shown. Store it somewhere safe; it cannot be retrieved again.')}
         </p>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <code
@@ -104,7 +105,7 @@
             {form.created.token}
           </code>
           <button class="v2-btn v2-btn-sm" onclick={() => copyToken(form.created.token)}>
-            {#if copied}<Check size={13} />Copied{:else}<Copy size={13} />Copy{/if}
+            {#if copied}<Check size={13} />{tx('Copied')}{:else}<Copy size={13} />{tx('Copy')}{/if}
           </button>
         </div>
       </div>
@@ -112,7 +113,7 @@
 
     {#if form?.error}
       <div style="margin-bottom:16px">
-        <NextAction label="That did not work" text={form.error} tone="rust" />
+        <NextAction label={tx('That did not work')} text={form.error} tone="rust" />
       </div>
     {/if}
 
@@ -126,7 +127,7 @@
       >
         <div style="flex:1;min-width:200px">
           <label class="v2-label" for="token-name" style="display:block;margin-bottom:4px">
-            What is this token for?
+            {tx('What is this token for?')}
           </label>
           <input
             id="token-name"
@@ -135,33 +136,33 @@
             maxlength="255"
             class="v2-input"
             style="width:100%"
-            placeholder="e.g. My export script"
+            placeholder={tx('e.g. My export script')}
           />
         </div>
         <div style="flex:1;min-width:160px">
           <label class="v2-label" for="token-access" style="display:block;margin-bottom:4px">
-            Access
+            {tx('Access')}
           </label>
           <select id="token-access" name="access" class="v2-input" style="width:100%">
-            <option value="read" selected>Read only</option>
+            <option value="read" selected>{tx('Read only')}</option>
             <!-- "Everything you can", not "everything": a token acts as you and
                  inherits your role, so it can never reach past what you can. -->
-            <option value="full">Everything you can</option>
+            <option value="full">{tx('Everything you can')}</option>
           </select>
         </div>
         <div style="flex:1;min-width:140px">
           <label class="v2-label" for="token-expiry" style="display:block;margin-bottom:4px">
-            Expires
+            {tx('Expires')}
           </label>
           <select id="token-expiry" name="expiry" class="v2-input" style="width:100%">
             {#each EXPIRY_CHOICES as choice (choice.value)}
-              <option value={choice.value}>{choice.label}</option>
+              <option value={choice.value}>{tx(choice.label)}</option>
             {/each}
           </select>
         </div>
-        <button class="v2-btn v2-btn-primary" disabled={busy}>Create token</button>
+        <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Create token')}</button>
         <button type="button" class="v2-btn" disabled={busy} onclick={() => (creating = false)}>
-          Cancel
+          {tx('Cancel')}
         </button>
         {#if form?.create?.error}
           <p
@@ -176,13 +177,13 @@
 
     {#if data.tokens.length === 0}
       <EmptyState
-        title="No tokens yet"
-        body="A token lets a script, an integration or an agent call the API as you, with your role and your org. Create one when you need it, and revoke it the moment you do not."
+        title={tx('No tokens yet')}
+        body={tx('A token lets a script, an integration or an agent call the API as you, with your role and your org. Create one when you need it, and revoke it the moment you do not.')}
       >
         {#snippet icon()}<KeyRound size={21} />{/snippet}
         {#snippet actions()}
           <button class="v2-btn v2-btn-primary" onclick={() => (creating = true)}>
-            Create your first token
+            {tx('Create your first token')}
           </button>
         {/snippet}
       </EmptyState>
@@ -191,11 +192,11 @@
         <table class="v2-table">
           <thead>
             <tr>
-              <th>Token</th>
-              <th data-m="hide">Can do</th>
-              <th data-m="hide">Last used</th>
-              <th data-m="hide">Expires</th>
-              <th class="v2-r">State</th>
+              <th>{tx('Token')}</th>
+              <th data-m="hide">{tx('Can do')}</th>
+              <th data-m="hide">{tx('Last used')}</th>
+              <th data-m="hide">{tx('Expires')}</th>
+              <th class="v2-r">{tx('State')}</th>
             </tr>
           </thead>
           <tbody>
@@ -212,14 +213,16 @@
                 </td>
                 <td data-m="meta">
                   <span class="v2-sub" style="font-size:12px">
-                    {scopeSummary(t, { ownerLabel: 'you' })}
+                    {(t.scopes ?? []).length
+                      ? scopeSummary(t)
+                      : tx('Everything you can')}
                   </span>
                 </td>
                 <td data-m="meta">
                   {#if t.last_used_at}
                     {relativeDays(t.last_used_at)}
                   {:else}
-                    <span class="v2-muted">never used</span>
+                    <span class="v2-muted">{tx('never used')}</span>
                   {/if}
                   {#if stale}
                     <span
@@ -234,7 +237,7 @@
                   {#if t.expires_at}
                     {shortDate(t.expires_at)}
                   {:else}
-                    <span class="v2-sub">never expires</span>
+                    <span class="v2-sub">{tx('never expires')}</span>
                   {/if}
                 </td>
                 <td class="v2-r" data-m="tag">
@@ -243,7 +246,7 @@
                     {#if t.is_live}
                       <form method="POST" action="?/revoke" use:enhance={working}>
                         <input type="hidden" name="id" value={t.id} />
-                        <button class="v2-btn v2-btn-sm" disabled={busy}>Revoke</button>
+                        <button class="v2-btn v2-btn-sm" disabled={busy}>{tx('Revoke')}</button>
                       </form>
                     {/if}
                   </span>
@@ -260,11 +263,9 @@
     >
       <ShieldAlert size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
       <div>
-        <div style="font-weight:600;font-size:13px">A token is you</div>
+        <div style="font-weight:600;font-size:13px">{tx('A token is you')}</div>
         <p class="v2-sub" style="font-size:12px;margin:4px 0 0">
-          It authenticates as your profile and inherits your role and your org, so anyone holding it
-          can do what you can. Keep it out of shared repositories and screenshots, and revoke it
-          here the moment it is not needed. An admin can see and revoke it too.
+          {tx('It authenticates as your profile and inherits your role and your org, so anyone holding it can do what you can. Keep it out of shared repositories and screenshots, and revoke it here the moment it is not needed. An admin can see and revoke it too.')}
         </p>
       </div>
     </div>

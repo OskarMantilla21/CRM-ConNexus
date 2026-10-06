@@ -13,6 +13,7 @@
     Plus,
     CornerDownLeft
   } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
 
   /**
    * One search across every record type, opened with ⌘K.
@@ -164,7 +165,7 @@
       class="v2-palette"
       role="dialog"
       aria-modal="true"
-      aria-label="Search"
+      aria-label={tx('Search')}
       tabindex="-1"
       {onkeydown}
     >
@@ -174,8 +175,8 @@
           bind:this={input}
           bind:value={query}
           type="text"
-          placeholder="Search deals, accounts, people, tickets, invoices…"
-          aria-label="Search"
+          placeholder={tx('Search deals, accounts, people, tickets, invoices…')}
+          aria-label={tx('Search')}
           aria-autocomplete="list"
           autocomplete="off"
           spellcheck="false"
@@ -183,9 +184,9 @@
         <kbd class="v2-kbd">esc</kbd>
       </div>
 
-      <div class="v2-palette-list" role="listbox" aria-label="Results">
+      <div class="v2-palette-list" role="listbox" aria-label={tx('Results')}>
         {#each groups as group (group.kind)}
-          <div class="v2-palette-group v2-label">{group.kind}</div>
+          <div class="v2-palette-group v2-label">{tx(group.kind)}</div>
           {#each group.rows as row (row.id)}
             {@const i = rows.indexOf(row)}
             {@const Icon = row.icon ?? ICON[row.kind] ?? Search}
@@ -199,24 +200,28 @@
             >
               <Icon />
               <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                >{row.title}</span
+                >{row.kind === 'Actions' ? tx(row.title) : row.title}</span
               >
-              {#if row.meta}<span class="v2-palette-meta">{row.meta}</span>{/if}
+              {#if row.meta}<span class="v2-palette-meta"
+                >{row.kind === 'Actions' ? tx(row.meta) : row.meta}</span
+              >{/if}
             </button>
           {/each}
         {:else}
           <p class="v2-sub" style="padding:22px 15px;text-align:center;margin:0">
-            Nothing matches “{query}”. Try an account name, a deal, or an invoice number.
+            {tx('Nothing matches “{query}”. Try an account name, a deal, or an invoice number.', {
+              query
+            })}
           </p>
         {/each}
       </div>
 
       <div class="v2-palette-foot">
-        <span><kbd class="v2-kbd">↑</kbd> <kbd class="v2-kbd">↓</kbd> move</span>
-        <span><CornerDownLeft size={11} style="vertical-align:-1px" /> open</span>
-        <span><kbd class="v2-kbd">esc</kbd> close</span>
+        <span><kbd class="v2-kbd">↑</kbd> <kbd class="v2-kbd">↓</kbd> {tx('move')}</span>
+        <span><CornerDownLeft size={11} style="vertical-align:-1px" /> {tx('open')}</span>
+        <span><kbd class="v2-kbd">esc</kbd> {tx('close')}</span>
         {#if query.trim()}
-          <span style="margin-left:auto" class="v2-num">{hits.length} found</span>
+          <span style="margin-left:auto" class="v2-num">{tx('{n} found', { n: hits.length })}</span>
         {/if}
       </div>
     </div>

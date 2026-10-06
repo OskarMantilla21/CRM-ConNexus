@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { addContactNote, deleteContact, getContact } from '$lib/server/v2/contacts.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -34,13 +36,13 @@ export const actions = {
       picked && typeof picked === 'object' && 'size' in picked && picked.size > 0 ? picked : null;
 
     if (!comment && !file) {
-      return fail(400, { message: 'Write a note or attach a file before you save.' });
+      return fail(400, { message: tx('Write a note or attach a file before you save.') });
     }
 
     try {
       await addContactNote({ cookies }, params.id, comment, file);
     } catch (/** @type {any} */ err) {
-      return fail(400, { message: String(err?.message ?? 'Could not save that note.') });
+      return fail(400, { message: String(err?.message ?? tx('Could not save that note.')) });
     }
 
     return { noted: true };
@@ -55,7 +57,7 @@ export const actions = {
       await deleteContact({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       const code = err?.status >= 400 && err?.status < 500 ? err.status : 400;
-      return fail(code, { deleteError: readableError(err, 'Could not delete this contact.') });
+      return fail(code, { deleteError: readableError(err, tx('Could not delete this contact.')) });
     }
     redirect(303, '/contacts');
   }

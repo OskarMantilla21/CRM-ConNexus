@@ -5,6 +5,8 @@
   import imgLogo from '$lib/assets/images/logo.png';
   import { Building2, LogOut, Plus, ChevronRight } from '@lucide/svelte';
   import { enhance } from '$app/forms';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   let { data = { orgs: [] } } = $props();
   let orgs = $derived(data?.orgs ?? []);
@@ -14,7 +16,7 @@
 </script>
 
 <svelte:head>
-  <title>Choose organisation · BottleCRM</title>
+  <title>{tx('Choose organisation · BottleCRM')}</title>
 </svelte:head>
 
 <div class="v2-root v2-auth">
@@ -26,11 +28,11 @@
 
     <div class="v2-auth-card">
       <div class="v2-auth-head">
-        <h1>Choose an organisation</h1>
+        <h1>{tx('Choose an organisation')}</h1>
         <p>
           {orgs.length
-            ? "Pick the workspace you'd like to open."
-            : 'Create your first workspace to get started.'}
+            ? tx("Pick the workspace you'd like to open.")
+            : tx('Create your first workspace to get started.')}
         </p>
       </div>
 
@@ -58,7 +60,7 @@
               <span class="v2-auth-org-body">
                 <b>{org.name}</b>
                 <span class="v2-sub" style="display:block;text-transform:capitalize">
-                  {org.role?.toLowerCase() || 'member'}
+                  {choiceLabel(org.role || 'member')}
                 </span>
               </span>
               {#if loading && selectedOrgId === org.id}
@@ -72,24 +74,25 @@
 
         <a href={resolve('/org/new')} class="v2-auth-add">
           <Plus />
-          Create new organisation
+          {tx('Create new organisation')}
         </a>
       {:else}
         <div class="v2-state" style="padding:22px 0 8px">
           <div class="v2-state-icon"><Building2 size={22} /></div>
-          <h3>No organisations yet</h3>
-          <p>Create your first workspace to start using BottleCRM.</p>
+          <h3>{tx('No organisations yet')}</h3>
+          <p>{tx('Create your first workspace to start using BottleCRM.')}</p>
           <a href={resolve('/org/new')} class="v2-btn v2-btn-primary">
             <Plus size={15} />
-            Create organisation
+            {tx('Create organisation')}
           </a>
         </div>
       {/if}
     </div>
 
+    <LanguageSelect />
     <div class="v2-auth-foot">
       <a href={resolve('/logout')} style="display:inline-flex;align-items:center;gap:5px">
-        <LogOut size={13} /> Sign out
+        <LogOut size={13} /> {tx('Sign out')}
       </a>
     </div>
   </div>

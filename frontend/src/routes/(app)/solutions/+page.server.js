@@ -1,4 +1,6 @@
 import { fail } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { listArticles, setPublished, FILTER_FIELDS } from '$lib/server/v2/solutions.js';
 import { readFilters, buildFilterQuery } from '$lib/server/v2/filter-params.js';
 import { getTags } from '$lib/server/v2/tags.js';
@@ -55,12 +57,12 @@ export const actions = {
   publish: async ({ cookies, request }) => {
     const form = await request.formData();
     const id = form.get('id')?.toString();
-    if (!id) return fail(400, { error: 'No article to publish.' });
+    if (!id) return fail(400, { error: tx('No article to publish.') });
 
     try {
       await setPublished({ cookies }, id, true);
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not publish this article.') });
+      return fail(400, { error: readableError(err, tx('Could not publish this article.')) });
     }
     return { published: true };
   }

@@ -1,6 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { getReopenPolicy, updateReopenPolicy } from '$lib/server/v2/reopen.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -29,10 +31,10 @@ export const actions = {
       await updateReopenPolicy(event, values);
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { update: { error: 'Only an admin can change the reopen policy.' } });
+        return fail(403, { update: { error: tx('Only an admin can change the reopen policy.') } });
       }
       return fail(400, {
-        update: { error: readableError(err, 'Could not save the reopen policy.') }
+        update: { error: readableError(err, tx('Could not save the reopen policy.')) }
       });
     }
 

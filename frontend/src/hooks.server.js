@@ -13,18 +13,28 @@ import * as Sentry from '@sentry/sveltekit';
 import { redirect } from '@sveltejs/kit';
 import axios from 'axios';
 import { env } from '$env/dynamic/public';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { isOrgAdmin } from '$lib/admin.js';
 import { describeError } from '$lib/server/log-safe.js';
 import { relayHeaders } from '$lib/server/relay.js';
+import {
+  bindLocaleStorage,
+  htmlLang,
+  LOCALE_COOKIE,
+  normalizeLocale
+} from '$lib/i18n/locale.js';
+
+const localeStorage = new AsyncLocalStorage();
+bindLocaleStorage(localeStorage);
 
 const API_BASE_URL = `${env.PUBLIC_DJANGO_API_URL}/api`;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * @typedef {{ default_currency?: string, currency_symbol?: string, default_country?: string|null, timezone?: string }} OrgSettingsPayload
- * @typedef {{ org_id?: string, org_name?: string, role?: string, is_organization_admin?: boolean, user_id?: string, user_name?: string, user_email?: string, user_profile_pic?: string, exp?: number, iat?: number, org_settings?: OrgSettingsPayload }} JWTPayload
+ * @typedef {{ org_id?: string, org_name?: string, role?: string, is_organization_admin?: boolean, permissions?: string[], user_id?: string, user_name?: string, user_email?: string, user_profile_pic?: string, exp?: number, iat?: number, org_settings?: OrgSettingsPayload }} JWTPayload
  * @typedef {{ id: string, name: string }} OrgInfo
- * @typedef {{ org: OrgInfo, role?: string, is_organization_admin?: boolean }} ProfileInfo
+ * @typedef {{ org: OrgInfo, role?: string, is_organization_admin?: boolean, permissions?: string[] }} ProfileInfo
  * @typedef {{ id?: string, organizations?: Array<{ id: string, name: string }> }} UserInfo
  * @typedef {{ access_token: string, refresh_token: string, current_org?: OrgInfo }} SwitchOrgResult
  */
@@ -188,6 +198,9 @@ async function switchOrg(accessToken, orgId, refreshToken, event) {
 export const handleError = Sentry.handleErrorWithSentry();
 
 export const handle = sequence(Sentry.sentryHandle(), async function _handle({ event, resolve }) {
+  const locale = normalizeLocale(event.cookies.get(LOCALE_COOKIE));
+  event.locals.locale = locale;
+
   // Get tokens from cookies
   /** @type {string | undefined} */
   let accessToken = event.cookies.get('jwt_access');
@@ -267,7 +280,12 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
           role: jwtPayload.role || 'USER',
           // The admin fact every admin gate reads (`$lib/admin.js`). Server
           // derived and signed; `role` stays for display only.
-          is_organization_admin: isOrgAdmin(jwtPayload)
+          is_organization_admin: isOrgAdmin(jwtPayload),
+          // Absent on a token minted before grants existed. The layout then
+          // derives the list from the role instead of hiding the nav.
+          ...(Array.isArray(jwtPayload.permissions)
+            ? { permissions: jwtPayload.permissions }
+            : {})
         };
         event.locals.org_name = jwtPayload.org_name || 'Organization';
         // Extract org settings for currency/locale
@@ -306,7 +324,10 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
           /** @type {any} */ (event.locals).profile = {
             org: switchResult.current_org,
             role: newPayload?.role || 'USER',
-            is_organization_admin: isOrgAdmin(newPayload)
+            is_organization_admin: isOrgAdmin(newPayload),
+            ...(Array.isArray(newPayload?.permissions)
+              ? { permissions: newPayload.permissions }
+              : {})
           };
           event.locals.org_name = switchResult.current_org?.name || 'Organization';
           event.locals.org_settings = newPayload?.org_settings || {
@@ -341,7 +362,17 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
   // answers the same 404 for an unknown, disabled or inactive org. It is NOT
   // `/help`: that prefix is the signed-in user's own support tickets
   // (`(app)/help`), and listing it here would strip the guard from them.
-  const PUBLIC_ROUTES = ['/login', '/logout', '/bounce', '/portal', '/csat', '/help-center'];
+  const PUBLIC_ROUTES = [
+    '/login',
+    '/logout',
+    '/bounce',
+    '/portal',
+    '/csat',
+    '/help-center',
+    // The language switch is a form post. Sign-in offers it too, so it cannot
+    // require a session.
+    '/locale'
+  ];
 
   // Define semi-protected routes (auth required, but no org)
   const AUTH_ONLY_ROUTES = ['/org', '/plataforma'];
@@ -378,5 +409,10 @@ export const handle = sequence(Sentry.sentryHandle(), async function _handle({ e
     }
   }
 
-  return resolve(event);
+  return localeStorage.run(locale, () =>
+    resolve(event, {
+      transformPageChunk: ({ html }) =>
+        html.replace('<html lang="en">', `<html lang="${htmlLang(locale)}">`)
+    })
+  );
 });

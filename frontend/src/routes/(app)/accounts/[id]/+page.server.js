@@ -2,6 +2,8 @@ import { fail, redirect } from '@sveltejs/kit';
 import { deleteAccount, getAccount } from '$lib/server/v2/accounts.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { recordDuplicates } from '$lib/server/v2/duplicates.js';
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies, params }) {
@@ -24,7 +26,7 @@ export const actions = {
       await deleteAccount({ cookies }, params.id);
     } catch (/** @type {any} */ err) {
       const code = err?.status >= 400 && err?.status < 500 ? err.status : 400;
-      return fail(code, { deleteError: readableError(err, 'Could not delete this account.') });
+      return fail(code, { deleteError: readableError(err, tx('Could not delete this account.')) });
     }
     redirect(303, '/accounts');
   }

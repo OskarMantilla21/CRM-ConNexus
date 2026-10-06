@@ -1,3 +1,5 @@
+import { tx, choiceLabel } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/sell.js';
 import { fail } from '@sveltejs/kit';
 import {
   listBoard,
@@ -128,13 +130,13 @@ export const actions = {
     const columnId = String(form.get('column_id') || '');
     const aboveId = String(form.get('above_id') || '');
     const belowId = String(form.get('below_id') || '');
-    if (!id || !columnId) return fail(400, { error: 'Missing card or column.' });
+    if (!id || !columnId) return fail(400, { error: tx('Missing card or column.') });
     try {
       await moveDeal({ cookies }, id, { columnId, aboveId, belowId });
       return { success: true };
     } catch (err) {
       const status = /** @type {any} */ (err)?.status === 404 ? 404 : 400;
-      return fail(status, { error: readableError(err, 'Could not move the deal.') });
+      return fail(status, { error: readableError(err, tx('Could not move the deal.')) });
     }
   }
 };

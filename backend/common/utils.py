@@ -42,8 +42,10 @@ TYPECHOICES = (
 )
 
 ROLES = (
+    ("CEO", "CEO"),
     ("ADMIN", "ADMIN"),
     ("USER", "USER"),
+    ("EMPLOYEE", "EMPLOYEE"),
 )
 
 LEAD_STATUS = (

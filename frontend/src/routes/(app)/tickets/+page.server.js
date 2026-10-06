@@ -1,4 +1,6 @@
 import { fail } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import {
   listTickets,
   bulkUpdateTickets,
@@ -61,13 +63,13 @@ export const actions = {
   ...savedViewActions('cases'),
   bulkUpdate: async ({ request, cookies }) => {
     const { ids, fields } = parseBulkForm(await request.formData());
-    if (ids.length === 0) return fail(400, { message: 'Select at least one ticket.' });
+    if (ids.length === 0) return fail(400, { message: tx('Select at least one ticket.') });
     const res = await bulkUpdateTickets({ cookies }, ids, fields);
     return { ok: true, kind: 'update', summary: summarizeBulk(res.results) };
   },
   bulkDelete: async ({ request, cookies }) => {
     const ids = (await request.formData()).getAll('ids').map(String);
-    if (ids.length === 0) return fail(400, { message: 'Select at least one ticket.' });
+    if (ids.length === 0) return fail(400, { message: tx('Select at least one ticket.') });
     const res = await bulkDeleteTickets({ cookies }, ids);
     return { ok: true, kind: 'delete', summary: summarizeBulk(res.results) };
   },

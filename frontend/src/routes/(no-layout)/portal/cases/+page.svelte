@@ -7,6 +7,7 @@
   import { enhance } from '$app/forms';
   import { resolve } from '$app/paths';
   import PortalShell from '$lib/v2/components/PortalShell.svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   let { data, form } = $props();
 
@@ -62,35 +63,35 @@
 </script>
 
 <svelte:head>
-  <title>Your support requests</title>
+  <title>{tx('Your support requests')}</title>
 </svelte:head>
 
 <PortalShell>
   <header class="head">
-    <h1>Your requests</h1>
+    <h1>{tx('Your requests')}</h1>
     <div class="actions">
-      <a class="btn" href={resolve('/portal/articles')}>Help</a>
+      <a class="btn" href={resolve('/portal/articles')}>{tx('Help')}</a>
       <button type="button" onclick={() => (composing = !composing)}>
-        {composing ? 'Cancel' : 'New request'}
+        {composing ? tx('Cancel') : tx('New request')}
       </button>
     </div>
   </header>
 
   {#if composing}
     <form method="POST" action="?/create" use:enhance class="compose">
-      <label for="name">What do you need help with?</label>
+      <label for="name">{tx('What do you need help with?')}</label>
       <input
         id="name"
         name="name"
         required
-        placeholder="Short summary"
+        placeholder={tx('Short summary')}
         bind:value={summary}
         oninput={findAnswers}
       />
 
       {#if suggestions.length > 0}
         <aside class="deflect">
-          <p class="deflect-head">These might already answer it</p>
+          <p class="deflect-head">{tx('These might already answer it')}</p>
           <ul>
             {#each suggestions as article (article.id)}
               <li>
@@ -104,18 +105,18 @@
         </aside>
       {/if}
 
-      <label for="description">Any detail that would help</label>
+      <label for="description">{tx('Any detail that would help')}</label>
       <textarea id="description" name="description" rows="4"></textarea>
 
-      <label for="priority">How urgent is it?</label>
+      <label for="priority">{tx('How urgent is it?')}</label>
       <select id="priority" name="priority">
-        <option value="Low">Low</option>
-        <option value="Normal" selected>Normal</option>
-        <option value="High">High</option>
+        <option value="Low">{choiceLabel('Low')}</option>
+        <option value="Normal" selected>{choiceLabel('Normal')}</option>
+        <option value="High">{choiceLabel('High')}</option>
       </select>
 
       {#if form?.error}<p class="err">{form.error}</p>{/if}
-      <button type="submit" class="primary">Send request</button>
+      <button type="submit" class="primary">{tx('Send request')}</button>
     </form>
   {/if}
 
@@ -125,7 +126,7 @@
         href={resolve(filter.value ? `/portal/cases?status=${filter.value}` : '/portal/cases')}
         class:on={data.status === filter.value}
       >
-        {filter.label}
+        {filter.value ? choiceLabel(filter.label) : tx('All')}
       </a>
     {/each}
   </nav>
@@ -133,8 +134,8 @@
   {#if data.cases.length === 0}
     <p class="empty">
       {data.status
-        ? `You have no ${data.status.toLowerCase()} requests.`
-        : 'You have not sent us any requests yet.'}
+        ? tx('You have no {status} requests.', { status: tx(data.status.toLowerCase()) })
+        : tx('You have not sent us any requests yet.')}
     </p>
   {:else}
     <ul class="list">
@@ -143,7 +144,7 @@
           <a href={resolve(`/portal/cases/${item.id}`)}>
             <span class="name">{item.name}</span>
             <span class="meta">
-              <span class="tag" class:open={OPEN_STATUSES.has(item.status)}>{item.status}</span>
+              <span class="tag" class:open={OPEN_STATUSES.has(item.status)}>{choiceLabel(item.status)}</span>
               <span class="when">{formatDate(item.created_at)}</span>
             </span>
           </a>

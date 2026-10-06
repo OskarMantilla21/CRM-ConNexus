@@ -43,6 +43,8 @@
     Unlink,
     X
   } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -201,7 +203,7 @@
     return async ({ result, update }) => {
       macroBusy = false;
       if (result.type === 'failure') {
-        macroError = result.data?.macroError ?? 'Could not use this saved reply.';
+        macroError = result.data?.macroError ?? tx('Could not use this saved reply.');
         return;
       }
       if (result.type !== 'success') return;
@@ -351,13 +353,17 @@
       return ticket.first_response_breached
         ? {
             tone: 'rust',
-            label: 'First reply overdue',
-            text: 'Past its first-reply target and still unanswered. A reply below is the first response. It stops the clock.'
+            label: tx('First reply overdue'),
+            text: tx(
+              'Past its first-reply target and still unanswered. A reply below is the first response. It stops the clock.'
+            )
           }
         : {
             tone: 'ember',
-            label: 'Needs a first reply',
-            text: 'Nobody has replied yet. A reply below is the first response. It is what stops the first-reply clock.'
+            label: tx('Needs a first reply'),
+            text: tx(
+              'Nobody has replied yet. A reply below is the first response. It is what stops the first-reply clock.'
+            )
           };
     }
     // Waiting on the customer is not something we can act on, so it is not a
@@ -366,8 +372,10 @@
     if (!ticket.assignee) {
       return {
         tone: 'ember',
-        label: 'No owner',
-        text: 'Answered, but nobody owns it. Assign someone so it does not stall between people.'
+        label: tx('No owner'),
+        text: tx(
+          'Answered, but nobody owns it. Assign someone so it does not stall between people.'
+        )
       };
     }
     return null;
@@ -401,7 +409,7 @@
     {/if}
   {/snippet}
   {#snippet crumb()}
-    <a href={resolve('/tickets')}>Tickets</a>
+    <a href={resolve('/tickets')}>{tx('Tickets')}</a>
     {#if ticket.account}
       <ChevronRight size={12} />
       <a href={resolve(`/accounts/${ticket.account.id}`)}>{ticket.account.name}</a>
@@ -418,21 +426,21 @@
         style="display:contents"
       >
         <button class="v2-btn" aria-pressed={data.watchers.watching}>
-          {#if data.watchers.watching}<EyeOff size={12} />Unwatch{:else}<Eye size={12} />Watch{/if}
+          {#if data.watchers.watching}<EyeOff size={12} />{tx('Unwatch')}{:else}<Eye size={12} />{tx('Watch')}{/if}
         </button>
       </form>
     {/if}
     {#if canReply}
-      <a class="v2-btn" href={resolve(`/tickets/${ticket.id}/edit`)}><Pencil size={12} />Edit</a>
+      <a class="v2-btn" href={resolve(`/tickets/${ticket.id}/edit`)}><Pencil size={12} />{tx('Edit')}</a>
     {/if}
     {#if data.canMerge && !data.merge.open}
       <a class="v2-btn" href={resolve(`/tickets/${ticket.id}?merge=1`)}
-        ><GitMerge size={12} />Merge into…</a
+        ><GitMerge size={12} />{tx('Merge into…')}</a>
       >
     {/if}
     {#if canReply && !inTree && !data.link.open}
       <a class="v2-btn" href={resolve(`/tickets/${ticket.id}?link=1`)}
-        ><GitBranch size={12} />Link parent…</a
+        ><GitBranch size={12} />{tx('Link parent…')}</a>
       >
     {/if}
     <!-- Status changes and the close-with-children cascade take the ticket's
@@ -441,21 +449,21 @@
     {#if canReply && ticket.is_open}
       <form method="POST" action="?/setStatus" use:enhance style="display:contents">
         {#if ticket.status !== 'Pending'}
-          <button class="v2-btn" name="status" value="Pending">Set to pending</button>
+          <button class="v2-btn" name="status" value="Pending">{tx('Set to pending')}</button>
         {/if}
         {#if !data.close}
-          <button class="v2-btn v2-btn-primary" name="status" value="Closed">Close</button>
+          <button class="v2-btn v2-btn-primary" name="status" value="Closed">{tx('Close')}</button>
         {/if}
       </form>
       <!-- A parent ticket closes through a confirm step, since the same click
            can close tickets belonging to other people. Outside the form above
            so this button never submits it. -->
       {#if data.close && !closePanel}
-        <button class="v2-btn v2-btn-primary" type="button" onclick={openClosePanel}>Close</button>
+        <button class="v2-btn v2-btn-primary" type="button" onclick={openClosePanel}>{tx('Close')}</button>
       {/if}
     {:else if canReply}
       <form method="POST" action="?/setStatus" use:enhance style="display:contents">
-        <button class="v2-btn" name="status" value="New">Reopen</button>
+        <button class="v2-btn" name="status" value="New">{tx('Reopen')}</button>
       </form>
     {/if}
   {/snippet}
@@ -467,18 +475,20 @@
       class="v2-pad"
       style="padding-top:12px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;flex:none"
     >
-      <Pill tone={PRIORITY_TONE[ticket.priority]}>{ticket.priority}</Pill>
-      <Pill tone={CASE_STATUS_TONE[ticket.status]}>{ticket.status}</Pill>
-      {#if ticket.case_type}<Pill tone="slate">{ticket.case_type}</Pill>{/if}
+      <Pill tone={PRIORITY_TONE[ticket.priority]}>{choiceLabel(ticket.priority)}</Pill>
+      <Pill tone={CASE_STATUS_TONE[ticket.status]}>{choiceLabel(ticket.status)}</Pill>
+      {#if ticket.case_type}<Pill tone="slate">{choiceLabel(ticket.case_type)}</Pill>{/if}
       <span class="v2-sub">
         <!-- There is no ticket number. `Case` has a UUID and a subject, so the
              subject is the identifier and the age is the useful fact. -->
-        Opened {shortAge(ticket.opened_at)} ago
+        {tx('Opened {age} ago', { age: shortAge(ticket.opened_at) })}
         {#if ticket.first_response_at}
-          · first reply {relativeTime(ticket.first_response_at)}
+          · {tx('first reply {when}', { when: relativeTime(ticket.first_response_at) })}
         {/if}
         {#if ticket.escalation_count > 0}
-          · <span style="color:var(--v2-rust)">escalated {ticket.escalation_count}×</span>
+          · <span style="color:var(--v2-rust)"
+            >{tx('escalated {n}×', { n: ticket.escalation_count })}</span
+          >
         {/if}
       </span>
     </div>
@@ -515,7 +525,7 @@
         {#if data.merge.open}
           <section class="v2-card merge-panel">
             <div style="font-weight:600;font-size:13.5px">
-              Merge {ticket.name} into another ticket
+              {tx('Merge {name} into another ticket', { name: ticket.name })}
             </div>
             <form method="GET" class="merge-search">
               <input type="hidden" name="merge" value="1" />
@@ -525,11 +535,11 @@
                 name="q"
                 value={data.merge.q}
                 maxlength="200"
-                placeholder="Search by subject"
-                aria-label="Search tickets to merge into"
+                placeholder={tx('Search by subject')}
+                aria-label={tx('Search tickets to merge into')}
               />
-              <button class="v2-btn">Search</button>
-              <a class="v2-btn" href={resolve(`/tickets/${ticket.id}`)}>Cancel</a>
+              <button class="v2-btn">{tx('Search')}</button>
+              <a class="v2-btn" href={resolve(`/tickets/${ticket.id}`)}>{tx('Cancel')}</a>
             </form>
 
             {#if data.merge.error}
@@ -537,8 +547,8 @@
             {:else if data.merge.targets.length === 0}
               <p class="v2-sub" style="font-size:12.5px;margin:12px 0 0">
                 {data.merge.q
-                  ? 'No ticket you could merge this into matches that search.'
-                  : 'There is no ticket you could merge this into.'}
+                  ? tx('No ticket you could merge this into matches that search.')
+                  : tx('There is no ticket you could merge this into.')}
               </p>
             {:else}
               <ul class="merge-list">
@@ -552,7 +562,7 @@
                     >
                       <span class="merge-option-name">{target.name}</span>
                       <span class="v2-sub" style="font-size:11.5px">
-                        {target.status} · {target.priority}{target.account_name
+                        {choiceLabel(target.status)} · {choiceLabel(target.priority)}{target.account_name
                           ? ` · ${target.account_name}`
                           : ''}
                       </span>
@@ -566,13 +576,15 @@
               <form method="POST" action="?/merge" use:enhance class="merge-confirm">
                 <input type="hidden" name="into" value={mergeTarget.id} />
                 <p style="margin:0;font-size:12.5px;line-height:1.5">
-                  "{ticket.name}" will be marked Duplicate and its comments, attachments, and emails
-                  will move into "{mergeTarget.name}". You can undo this from the target ticket.
+                  {tx(
+                    '"{name}" will be marked Duplicate and its comments, attachments, and emails will move into "{into}". You can undo this from the target ticket.',
+                    { name: ticket.name, into: mergeTarget.name }
+                  )}
                 </p>
                 <div class="merge-actions">
-                  <button class="v2-btn v2-btn-primary" type="submit">Merge</button>
+                  <button class="v2-btn v2-btn-primary" type="submit">{tx('Merge')}</button>
                   <button class="v2-btn" type="button" onclick={() => (mergeTarget = null)}>
-                    Cancel
+                    {tx('Cancel')}
                   </button>
                 </div>
               </form>
@@ -601,7 +613,9 @@
                   closePanel = false;
                 }}
             >
-              <div style="font-weight:600;font-size:13.5px">Close {ticket.name}</div>
+              <div style="font-weight:600;font-size:13.5px">
+                {tx('Close {name}', { name: ticket.name })}
+              </div>
               <p class="v2-sub" style="font-size:12.5px;margin:6px 0 0;line-height:1.5">
                 {cascadeSummary({
                   count: data.close.descendants.length,
@@ -614,7 +628,7 @@
                   {#each data.close.descendants as child (child.id)}
                     <li>
                       <span class="v2-close-name">{child.name}</span>
-                      <Pill tone={CASE_STATUS_TONE[child.status]}>{child.status}</Pill>
+                      <Pill tone={CASE_STATUS_TONE[child.status]}>{choiceLabel(child.status)}</Pill>
                     </li>
                   {/each}
                 </ul>
@@ -622,32 +636,33 @@
                 <label class="v2-close-check">
                   <input type="checkbox" name="cascade" bind:checked={cascade} />
                   <span>
-                    <span style="font-weight:600">Close these as well</span>
+                    <span style="font-weight:600">{tx('Close these as well')}</span>
                     <span class="v2-sub" style="display:block;font-size:11.5px;margin-top:2px">
-                      Each one gets a note saying it was closed with this ticket. Leave it unticked
-                      to close only this one.
+                      {tx(
+                        'Each one gets a note saying it was closed with this ticket. Leave it unticked to close only this one.'
+                      )}
                     </span>
                   </span>
                 </label>
 
                 <div class="v2-field" style="margin-top:12px">
-                  <label for="close-comment">Why (optional)</label>
+                  <label for="close-comment">{tx('Why (optional)')}</label>
                   <textarea
                     id="close-comment"
                     class="v2-input"
                     name="resolution_comment"
                     rows="2"
                     maxlength="1000"
-                    placeholder="Recorded against every ticket closed with this one"></textarea>
+                    placeholder={tx('Recorded against every ticket closed with this one')}></textarea>
                 </div>
               {/if}
 
               <div style="display:flex;gap:8px;margin-top:14px">
                 <button class="v2-btn v2-btn-primary" type="submit">
-                  {cascade ? 'Close all of them' : 'Close this ticket'}
+                  {cascade ? tx('Close all of them') : tx('Close this ticket')}
                 </button>
                 <button class="v2-btn" type="button" onclick={() => (closePanel = false)}>
-                  Cancel
+                  {tx('Cancel')}
                 </button>
               </div>
             </form>
@@ -660,13 +675,15 @@
           </div>
         {:else if waiting}
           <p class="v2-sub" style="margin:0 0 18px;font-size:12.5px">
-            Waiting on the customer: the first-reply clock is paused while it sits in Pending.
+            {tx(
+              'Waiting on the customer: the first-reply clock is paused while it sits in Pending.'
+            )}
           </p>
         {/if}
 
         {#if ticket.description}
           <div class="v2-card" style="padding:13px 15px;margin-bottom:18px">
-            <div class="v2-label" style="margin-bottom:7px">What was reported</div>
+            <div class="v2-label" style="margin-bottom:7px">{tx('What was reported')}</div>
             <div style="font-size:13.5px;line-height:1.55;white-space:pre-wrap">
               {ticket.description}
             </div>
@@ -676,7 +693,7 @@
         {#if data.mergedFrom.length}
           <section class="v2-card merge-panel">
             <div class="v2-label" style="display:flex;align-items:center;gap:6px">
-              <GitMerge size={12} />Merged from
+              <GitMerge size={12} />{tx('Merged from')}
             </div>
             <ul class="merge-list">
               {#each data.mergedFrom as src (src.id)}
@@ -691,13 +708,13 @@
                     {/if}
                     {#if src.merged_at}
                       <div class="v2-sub" style="font-size:11.5px">
-                        merged {relativeTime(src.merged_at)}
+                        {tx('merged {when}', { when: relativeTime(src.merged_at) })}
                       </div>
                     {/if}
                   </div>
                   {#if src.can_unmerge && unmergeSource?.id !== src.id}
                     <button class="v2-btn" type="button" onclick={() => (unmergeSource = src)}>
-                      Unmerge
+                      {tx('Unmerge')}
                     </button>
                   {/if}
                   {#if unmergeSource?.id === src.id}
@@ -713,13 +730,15 @@
                     >
                       <input type="hidden" name="source_id" value={src.id} />
                       <p style="margin:0;font-size:12.5px;line-height:1.5">
-                        "{src.name}" will be restored and its comments, attachments, and emails
-                        moved back out of this ticket.
+                        {tx(
+                          '"{name}" will be restored and its comments, attachments, and emails moved back out of this ticket.',
+                          { name: src.name }
+                        )}
                       </p>
                       <div class="merge-actions">
-                        <button class="v2-btn v2-btn-primary" type="submit">Unmerge</button>
+                        <button class="v2-btn v2-btn-primary" type="submit">{tx('Unmerge')}</button>
                         <button class="v2-btn" type="button" onclick={() => (unmergeSource = null)}>
-                          Cancel
+                          {tx('Cancel')}
                         </button>
                       </div>
                     </form>
@@ -741,12 +760,12 @@
           <section class="v2-card tree-panel">
             <div class="tree-head">
               <div class="v2-label" style="display:flex;align-items:center;gap:6px">
-                <GitBranch size={12} />Linked tickets
-                {#if ticket.is_problem}<Pill tone="rust">Problem</Pill>{/if}
+                <GitBranch size={12} />{tx('Linked tickets')}
+                {#if ticket.is_problem}<Pill tone="rust">{tx('Problem')}</Pill>{/if}
               </div>
               {#if canReply && !data.link.open}
                 <a class="v2-btn v2-btn-sm" href={resolve(`/tickets/${ticket.id}?link=1`)}>
-                  {ticket.parent ? 'Change parent' : 'Link parent…'}
+                  {ticket.parent ? tx('Change parent') : tx('Link parent…')}
                 </a>
               {/if}
             </div>
@@ -754,7 +773,7 @@
             {#if ticket.parent}
               <div class="tree-parent">
                 <div style="min-width:0;flex:1">
-                  <div class="v2-sub" style="font-size:11.5px">Parent</div>
+                  <div class="v2-sub" style="font-size:11.5px">{tx('Parent')}</div>
                   {#if ticket.parent.restricted}
                     <span class="tree-name tree-restricted">{ticket.parent.name}</span>
                   {:else}
@@ -764,7 +783,7 @@
                   {/if}
                 </div>
                 {#if ticket.parent.status}
-                  <Pill tone={CASE_STATUS_TONE[ticket.parent.status]}>{ticket.parent.status}</Pill>
+                  <Pill tone={CASE_STATUS_TONE[ticket.parent.status]}>{choiceLabel(ticket.parent.status)}</Pill>
                 {/if}
                 {#if canReply && !confirmDetach}
                   <button
@@ -772,7 +791,7 @@
                     type="button"
                     onclick={() => (confirmDetach = true)}
                   >
-                    <Unlink size={11} />Detach
+                    <Unlink size={11} />{tx('Detach')}
                   </button>
                 {/if}
               </div>
@@ -788,14 +807,19 @@
                   class="merge-confirm"
                 >
                   <p style="margin:0;font-size:12.5px;line-height:1.5">
-                    This ticket will no longer sit under {ticket.parent.restricted
-                      ? 'its parent'
-                      : `"${ticket.parent.name}"`}. Neither ticket is otherwise changed.
+                    {tx(
+                      'This ticket will no longer sit under {parent}. Neither ticket is otherwise changed.',
+                      {
+                        parent: ticket.parent.restricted
+                          ? tx('its parent')
+                          : `"${ticket.parent.name}"`
+                      }
+                    )}
                   </p>
                   <div class="merge-actions">
-                    <button class="v2-btn v2-btn-primary" type="submit">Detach</button>
+                    <button class="v2-btn v2-btn-primary" type="submit">{tx('Detach')}</button>
                     <button class="v2-btn" type="button" onclick={() => (confirmDetach = false)}>
-                      Cancel
+                      {tx('Cancel')}
                     </button>
                   </div>
                 </form>
@@ -803,7 +827,7 @@
             {/if}
 
             {#if data.tree && data.tree.rows.length > 1}
-              <ul class="tree-list" aria-label="Ticket tree">
+              <ul class="tree-list" aria-label={tx('Ticket tree')}>
                 {#each data.tree.rows as row (row.id)}
                   <li class="tree-row" class:tree-focus={row.focus} style="--depth:{row.depth}">
                     {#if row.restricted || row.focus}
@@ -814,31 +838,36 @@
                       <a class="tree-name" href={resolve(`/tickets/${row.id}`)}>{row.name}</a>
                     {/if}
                     {#if row.status}
-                      <Pill tone={CASE_STATUS_TONE[row.status]}>{row.status}</Pill>
+                      <Pill tone={CASE_STATUS_TONE[row.status]}>{choiceLabel(row.status)}</Pill>
                     {/if}
                   </li>
                   {#if row.truncated}
                     <li class="v2-sub tree-row" style="--depth:{row.depth + 1};font-size:11.5px">
-                      More tickets further down are not shown.
+                      {tx('More tickets further down are not shown.')}
                     </li>
                   {/if}
                 {/each}
               </ul>
             {:else if ticket.child_count > 0}
               <p class="v2-sub" style="font-size:12.5px;margin:10px 0 0">
-                {ticket.child_count} linked {ticket.child_count === 1 ? 'ticket' : 'tickets'} under this
-                one. The tree could not be loaded.
+                {ticket.child_count === 1
+                  ? tx('{count} linked ticket under this one. The tree could not be loaded.', {
+                      count: ticket.child_count
+                    })
+                  : tx('{count} linked tickets under this one. The tree could not be loaded.', {
+                      count: ticket.child_count
+                    })}
               </p>
             {:else if !ticket.parent}
               <p class="v2-sub" style="font-size:12.5px;margin:10px 0 0">
-                Not linked to another ticket yet.
+                {tx('Not linked to another ticket yet.')}
               </p>
             {/if}
 
             {#if data.link.open}
               <div class="tree-picker">
                 <div style="font-weight:600;font-size:13.5px">
-                  Link {ticket.name} under a parent
+                  {tx('Link {name} under a parent', { name: ticket.name })}
                 </div>
                 <form method="GET" class="merge-search">
                   <input type="hidden" name="link" value="1" />
@@ -848,11 +877,11 @@
                     name="lq"
                     value={data.link.q}
                     maxlength="200"
-                    placeholder="Search by subject"
-                    aria-label="Search tickets to link under"
+                    placeholder={tx('Search by subject')}
+                    aria-label={tx('Search tickets to link under')}
                   />
-                  <button class="v2-btn">Search</button>
-                  <a class="v2-btn" href={resolve(`/tickets/${ticket.id}`)}>Cancel</a>
+                  <button class="v2-btn">{tx('Search')}</button>
+                  <a class="v2-btn" href={resolve(`/tickets/${ticket.id}`)}>{tx('Cancel')}</a>
                 </form>
 
                 {#if data.link.error}
@@ -860,8 +889,8 @@
                 {:else if data.link.candidates.length === 0}
                   <p class="v2-sub" style="font-size:12.5px;margin:12px 0 0">
                     {data.link.q
-                      ? 'No ticket you could link this under matches that search.'
-                      : 'There is no ticket you could link this under.'}
+                      ? tx('No ticket you could link this under matches that search.')
+                      : tx('There is no ticket you could link this under.')}
                   </p>
                 {:else}
                   <ul class="merge-list">
@@ -875,7 +904,7 @@
                         >
                           <span class="merge-option-name">{candidate.name}</span>
                           <span class="v2-sub" style="font-size:11.5px">
-                            {candidate.status} · {candidate.priority}
+                            {choiceLabel(candidate.status)} · {choiceLabel(candidate.priority)}
                           </span>
                         </button>
                       </li>
@@ -896,14 +925,20 @@
                   >
                     <input type="hidden" name="parent_id" value={linkTarget.id} />
                     <p style="margin:0;font-size:12.5px;line-height:1.5">
-                      "{ticket.name}" will sit under "{linkTarget.name}"{ticket.parent
-                        ? ', instead of its current parent'
-                        : ''}. A tree is at most three levels deep.
+                      {ticket.parent
+                        ? tx(
+                            '"{name}" will sit under "{parent}", instead of its current parent. A tree is at most three levels deep.',
+                            { name: ticket.name, parent: linkTarget.name }
+                          )
+                        : tx(
+                            '"{name}" will sit under "{parent}". A tree is at most three levels deep.',
+                            { name: ticket.name, parent: linkTarget.name }
+                          )}
                     </p>
                     <div class="merge-actions">
-                      <button class="v2-btn v2-btn-primary" type="submit">Link</button>
+                      <button class="v2-btn v2-btn-primary" type="submit">{tx('Link')}</button>
                       <button class="v2-btn" type="button" onclick={() => (linkTarget = null)}>
-                        Cancel
+                        {tx('Cancel')}
                       </button>
                     </div>
                   </form>
@@ -920,7 +955,7 @@
           <section class="v2-card approval-panel">
             <div class="approval-head">
               <ShieldCheck size={15} />
-              <div class="v2-label">Approval</div>
+              <div class="v2-label">{tx('Approval')}</div>
               {#if a}
                 <Pill tone={APPROVAL_STATE_TONE[a.state] ?? 'slate'}>
                   {APPROVAL_STATE_LABEL[a.state] ?? a.state}
@@ -930,38 +965,51 @@
 
             {#if data.approvalRule}
               <p class="v2-sub approval-line">
-                Closing this ticket needs approval under <b>{data.approvalRule.name}</b>.
+                {tx('Closing this ticket needs approval under')} <b>{data.approvalRule.name}</b>.
               </p>
             {/if}
 
             {#if approval.failed}
               <p class="v2-sub approval-line">
-                The approval requests could not be loaded. Nothing else on this ticket is affected.
+                {tx(
+                  'The approval requests could not be loaded. Nothing else on this ticket is affected.'
+                )}
               </p>
             {:else if a}
               <p class="v2-sub approval-line">
-                Requested by {a.requested_by || 'someone'} · {shortAge(a.created_at)} ago
+                {tx('Requested by {name} · {age} ago', {
+                  name: a.requested_by || tx('someone'),
+                  age: shortAge(a.created_at)
+                })}
               </p>
               {#if a.state !== 'pending' && a.decided_at}
                 <p class="v2-sub approval-line">
-                  {APPROVAL_STATE_LABEL[a.state] ?? a.state}{a.approver ? ` by ${a.approver}` : ''} ·
-                  {shortAge(a.decided_at)} ago
+                  {a.approver
+                    ? tx('{state} by {name} · {age} ago', {
+                        state: APPROVAL_STATE_LABEL[a.state] ?? choiceLabel(a.state),
+                        name: a.approver,
+                        age: shortAge(a.decided_at)
+                      })
+                    : tx('{state} · {age} ago', {
+                        state: APPROVAL_STATE_LABEL[a.state] ?? choiceLabel(a.state),
+                        age: shortAge(a.decided_at)
+                      })}
                 </p>
               {/if}
               {#if a.rule.name && a.rule.id !== data.approvalRule?.id}
-                <p class="v2-sub approval-line">Rule: {a.rule.name}</p>
+                <p class="v2-sub approval-line">{tx('Rule: {name}', { name: a.rule.name })}</p>
               {/if}
               {#if a.note}<p class="approval-note">{a.note}</p>{/if}
               {#if a.state === 'rejected' && a.reason}
-                <p class="approval-reason"><b>Reason:</b> {a.reason}</p>
+                <p class="approval-reason"><b>{tx('Reason:')}</b> {a.reason}</p>
               {/if}
               {#if a.is_own_request && a.state === 'pending'}
                 <p class="v2-sub approval-line">
-                  You asked for this, so another approver must decide it.
+                  {tx('You asked for this, so another approver must decide it.')}
                 </p>
               {/if}
             {:else}
-              <p class="v2-sub approval-line">No approval requested yet.</p>
+              <p class="v2-sub approval-line">{tx('No approval requested yet.')}</p>
             {/if}
 
             {#if approval.canDecide || approval.canWithdraw || approval.canRequest}
@@ -969,30 +1017,30 @@
                 {#if approval.canDecide}
                   <form method="POST" action="?/approveApproval" use:enhance>
                     <input type="hidden" name="approval_id" value={a.id} />
-                    <button class="v2-btn v2-btn-primary">Approve</button>
+                    <button class="v2-btn v2-btn-primary">{tx('Approve')}</button>
                   </form>
                   <details class="approval-more">
-                    <summary class="v2-btn">Reject</summary>
+                    <summary class="v2-btn">{tx('Reject')}</summary>
                     <form method="POST" action="?/rejectApproval" use:enhance class="approval-form">
                       <input type="hidden" name="approval_id" value={a.id} />
                       <div class="v2-field">
-                        <label for="ap-reason">Reason</label>
+                        <label for="ap-reason">{tx('Reason')}</label>
                         <textarea id="ap-reason" name="reason" class="v2-input" rows="2" required
                         ></textarea>
                       </div>
-                      <button class="v2-btn">Reject request</button>
+                      <button class="v2-btn">{tx('Reject request')}</button>
                     </form>
                   </details>
                 {/if}
                 {#if approval.canWithdraw}
                   <form method="POST" action="?/withdrawApproval" use:enhance>
                     <input type="hidden" name="approval_id" value={a.id} />
-                    <button class="v2-btn">Withdraw request</button>
+                    <button class="v2-btn">{tx('Withdraw request')}</button>
                   </form>
                 {/if}
                 {#if approval.canRequest}
                   <details class="approval-more">
-                    <summary class="v2-btn">{a ? 'Request again' : 'Request approval'}</summary>
+                    <summary class="v2-btn">{a ? tx('Request again') : tx('Request approval')}</summary>
                     <form
                       method="POST"
                       action="?/requestApproval"
@@ -1000,10 +1048,10 @@
                       class="approval-form"
                     >
                       <div class="v2-field">
-                        <label for="ap-note">Note for the approver (optional)</label>
+                        <label for="ap-note">{tx('Note for the approver (optional)')}</label>
                         <textarea id="ap-note" name="note" class="v2-input" rows="2"></textarea>
                       </div>
-                      <button class="v2-btn v2-btn-primary">Send request</button>
+                      <button class="v2-btn v2-btn-primary">{tx('Send request')}</button>
                     </form>
                   </details>
                 {/if}
@@ -1028,15 +1076,15 @@
         <section class="v2-card time-panel">
           <div class="time-head">
             <div class="time-title">
-              <div class="v2-label">Time</div>
+              <div class="v2-label">{tx('Time')}</div>
               <div class="v2-sub time-total">
                 {#if timeSummary?.total_minutes}
-                  <b class="v2-num">{hm(timeSummary.total_minutes)}</b> logged
+                  <b class="v2-num">{hm(timeSummary.total_minutes)}</b> {tx('logged')}
                   {#if timeSummary.billable_minutes}
-                    · {hm(timeSummary.billable_minutes)} billable
+                    · {hm(timeSummary.billable_minutes)} {tx('billable')}
                   {/if}
                 {:else}
-                  Nothing logged yet
+                  {tx('Nothing logged yet')}
                 {/if}
               </div>
             </div>
@@ -1049,7 +1097,7 @@
               <form method="POST" action="?/stopTimer" use:enhance={timeSubmit} class="time-timer">
                 <input type="hidden" name="entry_id" value={myTimer.id} />
                 <button class="v2-btn v2-btn-primary" disabled={timeBusy}>
-                  <Square size={12} />Stop {hm(runningMinutes(myTimer))}
+                  <Square size={12} />{tx('Stop {time}', { time: hm(runningMinutes(myTimer)) })}
                 </button>
               </form>
             {:else if canReply}
@@ -1057,7 +1105,7 @@
                    they take the rule replying takes (`comment_permission`);
                    the API answers anyone else 403. Stopping stays above. -->
               <form method="POST" action="?/startTimer" use:enhance={timeSubmit} class="time-timer">
-                <button class="v2-btn" disabled={timeBusy}><Play size={12} />Start timer</button>
+                <button class="v2-btn" disabled={timeBusy}><Play size={12} />{tx('Start timer')}</button>
               </form>
             {/if}
 
@@ -1065,7 +1113,7 @@
                  it takes a row of its own rather than the button's column. -->
             {#if canReply}
               <details class="time-log">
-                <summary class="v2-btn"><Plus size={12} />Log time</summary>
+                <summary class="v2-btn"><Plus size={12} />{tx('Log time')}</summary>
                 <form
                   method="POST"
                   action="?/logTime"
@@ -1073,7 +1121,7 @@
                   class="time-log-form"
                 >
                   <div class="v2-field">
-                    <label for="time-minutes">Minutes</label>
+                    <label for="time-minutes">{tx('Minutes')}</label>
                     <input
                       id="time-minutes"
                       class="v2-input"
@@ -1088,7 +1136,7 @@
                     />
                   </div>
                   <div class="v2-field">
-                    <label for="time-rate">Rate per hour</label>
+                    <label for="time-rate">{tx('Rate per hour')}</label>
                     <input
                       id="time-rate"
                       class="v2-input"
@@ -1097,29 +1145,30 @@
                       inputmode="decimal"
                       min="0"
                       step="0.01"
-                      placeholder="Optional"
+                      placeholder={tx('Optional')}
                     />
                   </div>
                   <div class="v2-field time-wide">
-                    <label for="time-what">What was done</label>
+                    <label for="time-what">{tx('What was done')}</label>
                     <input
                       id="time-what"
                       class="v2-input"
                       name="description"
-                      placeholder="Traced the failed import to the CSV encoding"
+                      placeholder={tx('Traced the failed import to the CSV encoding')}
                       required
                     />
                   </div>
                   <div class="time-wide time-log-foot">
                     <label class="time-check">
                       <input type="checkbox" name="billable" />
-                      Billable
+                      {tx('Billable')}
                     </label>
-                    <button class="v2-btn v2-btn-primary" disabled={timeBusy}>Log time</button>
+                    <button class="v2-btn v2-btn-primary" disabled={timeBusy}>{tx('Log time')}</button>
                   </div>
                   <p class="v2-hint time-wide">
-                    Counted back from now. To record a session from an earlier day, start and stop
-                    the timer on it.
+                    {tx(
+                      'Counted back from now. To record a session from an earlier day, start and stop the timer on it.'
+                    )}
                   </p>
                 </form>
               </details>
@@ -1130,51 +1179,51 @@
             <p class="v2-error time-error">
               <span>{form.timeError}</span>
               {#if form.runningTicketId}
-                <a href={resolve(`/tickets/${form.runningTicketId}`)}>Open that ticket</a>
+                <a href={resolve(`/tickets/${form.runningTicketId}`)}>{tx('Open that ticket')}</a>
               {/if}
             </p>
           {/if}
 
           {#if entries === null}
             <p class="v2-sub time-empty">
-              The time entries could not be loaded. Nothing else on this ticket is affected.
+              {tx('The time entries could not be loaded. Nothing else on this ticket is affected.')}
             </p>
           {:else if entries.length === 0}
             <p class="v2-sub time-empty">
               {canReply
-                ? 'No time logged yet. Start the timer, or log a session you have already worked.'
-                : 'No time logged yet.'}
+                ? tx('No time logged yet. Start the timer, or log a session you have already worked.')
+                : tx('No time logged yet.')}
             </p>
           {:else}
             <div class="v2-table-wrap">
               <table class="v2-table">
                 <thead>
                   <tr>
-                    <th>What was done</th>
-                    <th>Who</th>
-                    <th>When</th>
-                    <th class="v2-r">Logged</th>
-                    <th class="v2-r">Billing</th>
+                    <th>{tx('What was done')}</th>
+                    <th>{tx('Who')}</th>
+                    <th>{tx('When')}</th>
+                    <th class="v2-r">{tx('Logged')}</th>
+                    <th class="v2-r">{tx('Billing')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {#each entries as e (e.id)}
                     <tr>
                       <td data-m="title">
-                        {e.description || 'No description'}
-                        {#if !e.ended_at}<span class="time-running">Running</span>{/if}
+                        {e.description || tx('No description')}
+                        {#if !e.ended_at}<span class="time-running">{tx('Running')}</span>{/if}
                         {#if e.auto_stopped}
-                          <span class="v2-sub" title="Stopped automatically after running overnight"
-                            >auto-stopped</span
+                          <span class="v2-sub" title={tx('Stopped automatically after running overnight')}
+                            >{tx('auto-stopped')}</span
                           >
                         {/if}
                       </td>
                       <td data-m="meta">
                         {e.profile?.user_details?.name ||
                           e.profile?.user_details?.email ||
-                          'Someone'}
+                          tx('Someone')}
                       </td>
-                      <td data-m="meta">{shortAge(e.started_at)} ago</td>
+                      <td data-m="meta">{tx('{age} ago', { age: shortAge(e.started_at) })}</td>
                       <td class="v2-num v2-r" data-m="tag">
                         {e.ended_at ? hm(e.duration_minutes) : hm(runningMinutes(e))}
                       </td>
@@ -1183,7 +1232,7 @@
                           <form method="POST" action="?/stopTimer" use:enhance={timeSubmit}>
                             <input type="hidden" name="entry_id" value={e.id} />
                             <button class="v2-btn v2-btn-sm" disabled={timeBusy}>
-                              <Square size={11} />Stop
+                              <Square size={11} />{tx('Stop')}
                             </button>
                           </form>
                         {:else if e.invoice}
@@ -1191,12 +1240,12 @@
                                the API refuses to delete an invoiced entry, and
                                flipping one to non-billable after it has been
                                charged for would leave the invoice standing. -->
-                          <a class="v2-sub" href={resolve(`/invoices/${e.invoice}`)}>Invoiced</a>
+                          <a class="v2-sub" href={resolve(`/invoices/${e.invoice}`)}>{tx('Invoiced')}</a>
                         {:else if confirmDelete === e.id}
                           <form method="POST" action="?/deleteTime" use:enhance={timeSubmit}>
                             <input type="hidden" name="entry_id" value={e.id} />
                             <button class="v2-btn v2-btn-sm time-danger" disabled={timeBusy}>
-                              Delete
+                              {tx('Delete')}
                             </button>
                           </form>
                           <button
@@ -1204,7 +1253,7 @@
                             class="v2-btn v2-btn-sm"
                             onclick={() => (confirmDelete = '')}
                           >
-                            Keep
+                            {tx('Keep')}
                           </button>
                         {:else}
                           <form method="POST" action="?/setBillable" use:enhance={timeSubmit}>
@@ -1221,22 +1270,22 @@
                               class="v2-btn v2-btn-sm"
                               class:time-billable={e.billable}
                               disabled={timeBusy}
-                              title={e.billable ? 'Mark as non-billable' : 'Mark as billable'}
+                              title={e.billable ? tx('Mark as non-billable') : tx('Mark as billable')}
                             >
                               {#if e.billable}
                                 {e.hourly_rate
-                                  ? money(e.hourly_rate, e.currency) + '/hr'
-                                  : 'Billable'}
+                                  ? money(e.hourly_rate, e.currency) + tx('/hr')
+                                  : tx('Billable')}
                               {:else}
-                                Not billable
+                                {tx('Not billable')}
                               {/if}
                             </button>
                           </form>
                           <button
                             type="button"
                             class="v2-btn v2-btn-sm"
-                            aria-label="Delete this entry"
-                            title="Delete this entry"
+                            aria-label={tx('Delete this entry')}
+                            title={tx('Delete this entry')}
                             onclick={() => (confirmDelete = e.id)}
                           >
                             <Trash2 size={11} />
@@ -1259,7 +1308,7 @@
           <section class="v2-card articles-panel" id="articles">
             <div class="articles-head">
               <BookOpen size={14} />
-              <div class="v2-label">Articles</div>
+              <div class="v2-label">{tx('Articles')}</div>
               {#if articles.length}<span class="v2-sub v2-num">{articles.length}</span>{/if}
             </div>
 
@@ -1270,16 +1319,16 @@
                     <a href={resolve(`/solutions/${a.id}`)} class="articles-link">
                       <span class="articles-title">{a.title}</span>
                       <span class="v2-sub articles-meta">
-                        {a.is_published ? 'Published' : 'Not published'} · updated {relativeDays(
-                          a.updated_at
-                        )}
+                        {a.is_published ? tx('Published') : tx('Not published')} · {tx('updated {when}', {
+                          when: relativeDays(a.updated_at)
+                        })}
                       </span>
                     </a>
                     {#if canReply}
                       <form method="POST" action="?/unlinkArticle" use:enhance>
                         <input type="hidden" name="article_id" value={a.id} />
-                        <button class="v2-btn v2-btn-sm" aria-label={`Unlink ${a.title}`}
-                          >Unlink</button
+                        <button class="v2-btn v2-btn-sm" aria-label={tx('Unlink {title}', { title: a.title })}
+                          >{tx('Unlink')}</button
                         >
                       </form>
                     {/if}
@@ -1287,7 +1336,7 @@
                 {/each}
               </ul>
             {:else}
-              <p class="v2-sub articles-empty">No article is linked to this ticket.</p>
+              <p class="v2-sub articles-empty">{tx('No article is linked to this ticket.')}</p>
             {/if}
 
             {#if canReply}
@@ -1295,19 +1344,19 @@
                 <input
                   name="aq"
                   class="v2-input"
-                  placeholder="Find an article to link"
+                  placeholder={tx('Find an article to link')}
                   value={data.articlePicker.q}
-                  aria-label="Find an article to link"
+                  aria-label={tx('Find an article to link')}
                 />
-                <button class="v2-btn">Search</button>
+                <button class="v2-btn">{tx('Search')}</button>
               </form>
               {#if data.articlePicker.candidates === null}
-                <p class="v2-sub articles-empty">The articles could not be loaded.</p>
+                <p class="v2-sub articles-empty">{tx('The articles could not be loaded.')}</p>
               {:else if data.articlePicker.candidates.length}
                 <div class="v2-sub articles-sub">
                   {data.articlePicker.q
-                    ? 'Matching published articles'
-                    : 'Suggested for this ticket'}
+                    ? tx('Matching published articles')
+                    : tx('Suggested for this ticket')}
                 </div>
                 <ul class="articles-list">
                   {#each data.articlePicker.q ? data.articlePicker.candidates : data.articlePicker.candidates.slice(0, 3) as c (c.id)}
@@ -1318,14 +1367,14 @@
                       </a>
                       <form method="POST" action="?/linkArticle" use:enhance>
                         <input type="hidden" name="article_id" value={c.id} />
-                        <button class="v2-btn v2-btn-sm" aria-label={`Link ${c.title}`}>Link</button
+                        <button class="v2-btn v2-btn-sm" aria-label={tx('Link {title}', { title: c.title })}>{tx('Link')}</button
                         >
                       </form>
                     </li>
                   {/each}
                 </ul>
               {:else if data.articlePicker.q}
-                <p class="v2-sub articles-empty">No published article matches that.</p>
+                <p class="v2-sub articles-empty">{tx('No published article matches that.')}</p>
               {/if}
             {/if}
 
@@ -1337,8 +1386,9 @@
 
         {#if conversation.length === 0}
           <p class="v2-sub" style="margin:0 0 18px;font-size:12.5px">
-            Nothing has been said on this ticket yet. A reply below is the first response. It is
-            what stops the first-reply clock.
+            {tx(
+              'Nothing has been said on this ticket yet. A reply below is the first response. It is what stops the first-reply clock.'
+            )}
           </p>
         {/if}
 
@@ -1356,7 +1406,7 @@
               >
                 <Lock size={11} />
                 <b style="color:var(--v2-ink);font-weight:600">{m.author}</b>
-                · internal note · {shortAge(m.at)} ago
+                · {tx('internal note')} · {tx('{age} ago', { age: shortAge(m.at) })}
               </div>
               <div style="font-size:13.5px;line-height:1.55;white-space:pre-wrap">{m.body}</div>
             </div>
@@ -1375,8 +1425,8 @@
               >
                 <div class="v2-sub" style="font-size:11.5px;margin-bottom:5px">
                   <b style="color:var(--v2-ink);font-weight:600">{m.author}</b>
-                  {#if m.kind === 'email'}· email{/if}
-                  · {shortAge(m.at)} ago
+                  {#if m.kind === 'email'}· {tx('email')}{/if}
+                  · {tx('{age} ago', { age: shortAge(m.at) })}
                 </div>
                 {#if m.subject}
                   <div style="font-size:12.5px;font-weight:600;margin-bottom:4px">{m.subject}</div>
@@ -1393,7 +1443,7 @@
                  post the reply, its attachment or its status. -->
             <form method="POST" action="?/renderMacro" use:enhance={insertMacro} class="macro-pick">
               <label for="macro-id" class="v2-sub macro-label"
-                ><MessageSquareQuote size={13} />Saved reply</label
+                ><MessageSquareQuote size={13} />{tx('Saved reply')}</label
               >
               <select
                 id="macro-id"
@@ -1402,7 +1452,7 @@
                 required
                 bind:value={pickedId}
               >
-                <option value="">Choose one…</option>
+                <option value="">{tx('Choose one…')}</option>
                 {#each data.macros as m (m.id)}
                   <option value={m.id}>{m.title}</option>
                 {/each}
@@ -1410,14 +1460,16 @@
               {#if picked && !picked.has_body}
                 <!-- Nothing to insert, so nothing to wait for: its actions
                      are the whole macro, and they apply now. -->
-                <button class="v2-btn" formaction="?/applyMacro" disabled={macroBusy}>Apply</button>
+                <button class="v2-btn" formaction="?/applyMacro" disabled={macroBusy}>{tx('Apply')}</button>
               {:else}
-                <button class="v2-btn" disabled={macroBusy}>Insert</button>
+                <button class="v2-btn" disabled={macroBusy}>{tx('Insert')}</button>
               {/if}
             </form>
             {#if picked && !picked.has_body && picked.chips.length}
               <p class="v2-sub macro-note">
-                Applies now: {picked.chips.map((/** @type {any} */ c) => c.label).join(' · ')}
+                {tx('Applies now: {actions}', {
+                  actions: picked.chips.map((/** @type {any} */ c) => tx(c.label)).join(' · ')
+                })}
               </p>
             {/if}
             {#if macroError || form?.macroError}
@@ -1439,15 +1491,15 @@
                 <!-- The macro's actions, applied right after this reply posts.
                      Each can be taken off; what is left is what applies. -->
                 <div class="macro-chips">
-                  <span class="v2-sub macro-chips-label">Also on send</span>
+                  <span class="v2-sub macro-chips-label">{tx('Also on send')}</span>
                   {#each keptChips as chip (chip.key)}
                     <span class="v2-chip">
-                      {chip.label}
+                      {tx(chip.label)}
                       <input type="hidden" name="macro_action" value={chip.key} />
                       <button
                         type="button"
-                        aria-label="Do not apply {chip.label}"
-                        title="Do not apply this"
+                        aria-label={tx('Do not apply {label}', { label: tx(chip.label) })}
+                        title={tx('Do not apply this')}
                         onclick={() => (kept = kept.filter((k) => k !== chip.key))}
                       >
                         <X size={12} />
@@ -1461,7 +1513,7 @@
                 name="body"
                 bind:value={body}
                 rows="3"
-                placeholder={internal ? 'Note for the team…' : 'Write a reply…'}
+                placeholder={internal ? tx('Note for the team…') : tx('Write a reply…')}
                 style="width:100%;border:none;background:transparent;resize:vertical;font:inherit;font-size:13.5px;line-height:1.55;color:var(--v2-ink);outline:none"
               ></textarea>
               <div
@@ -1472,13 +1524,13 @@
                   style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"
                 >
                   <input type="checkbox" name="internal" bind:checked={internal} />
-                  Internal note
+                  {tx('Internal note')}
                 </label>
                 <!-- The whole chip is the click target: a label wrapping a hidden
                      input. A file may ride with the reply or go on its own. -->
                 <label class="attach" class:has-file={fileName}>
                   <Paperclip size={13} />
-                  <span class="attach-label">{fileName || 'Attach'}</span>
+                  <span class="attach-label">{fileName || tx('Attach')}</span>
                   <input
                     bind:this={fileInput}
                     type="file"
@@ -1488,7 +1540,7 @@
                   />
                 </label>
                 {#if fileName}
-                  <button type="button" class="clear-file" onclick={clearFile} title="Remove file">
+                  <button type="button" class="clear-file" onclick={clearFile} title={tx('Remove file')}>
                     <X size={12} />
                   </button>
                 {/if}
@@ -1496,32 +1548,32 @@
                   <!-- The macro's status chip sets it; two status controls
                        on one send would contradict each other. -->
                   <span class="v2-sub" style="margin-left:auto;font-size:11.5px"
-                    >Status set by the macro</span
+                    >{tx('Status set by the macro')}</span
                   >
                 {:else}
                   <span class="v2-sub" style="margin-left:auto;font-size:11.5px"
-                    >Status on send</span
+                    >{tx('Status on send')}</span
                   >
                   <!-- Answering and moving the ticket is one decision, so it is
                        one submit. Empty means "leave the status alone". -->
                   <select name="status" class="v2-input" style="width:auto;font-size:12px">
-                    <option value="">Unchanged</option>
-                    <option value="Assigned">Assigned</option>
-                    <option value="Pending">Pending</option>
+                    <option value="">{tx('Unchanged')}</option>
+                    <option value="Assigned">{tx('Assigned')}</option>
+                    <option value="Pending">{tx('Pending')}</option>
                   </select>
                 {/if}
                 <button class="v2-btn v2-btn-primary" disabled={sending || !canSend}>
                   {sending
-                    ? 'Sending…'
+                    ? tx('Sending…')
                     : body.trim()
                       ? internal
-                        ? 'Add note'
-                        : 'Send reply'
+                        ? tx('Add note')
+                        : tx('Send reply')
                       : fileName
-                        ? 'Attach file'
+                        ? tx('Attach file')
                         : internal
-                          ? 'Add note'
-                          : 'Send reply'}
+                          ? tx('Add note')
+                          : tx('Send reply')}
                 </button>
               </div>
             </div>
@@ -1530,18 +1582,19 @@
             {/if}
             {#if internal}
               <p class="v2-sub" style="margin:8px 2px 0;font-size:11.5px">
-                A note stays inside the team and does not stop the first-reply clock.
+                {tx('A note stays inside the team and does not stop the first-reply clock.')}
               </p>
             {:else}
               <p class="v2-sub" style="margin:8px 2px 0;font-size:11.5px">
-                A reply is emailed to the contacts on this ticket and shown in their portal.
+                {tx('A reply is emailed to the contacts on this ticket and shown in their portal.')}
               </p>
             {/if}
           </form>
         {:else}
           <p class="v2-sub" style="margin-top:18px;font-size:12.5px">
-            You can read this ticket but not reply to it. Ask an admin, or whoever it is assigned
-            to.
+            {tx(
+              'You can read this ticket but not reply to it. Ask an admin, or whoever it is assigned to.'
+            )}
           </p>
         {/if}
       </div>
@@ -1549,40 +1602,40 @@
   </div>
 
   <aside class="v2-rail">
-    <div class="v2-label v2-rail-head">Ticket</div>
+    <div class="v2-label v2-rail-head">{tx('Ticket')}</div>
     <dl class="v2-kv">
-      <dt>Priority</dt>
-      <dd><Pill tone={PRIORITY_TONE[ticket.priority]}>{ticket.priority}</Pill></dd>
-      <dt>Status</dt>
-      <dd><Pill tone={CASE_STATUS_TONE[ticket.status]}>{ticket.status}</Pill></dd>
-      <dt>Type</dt>
-      <dd>{ticket.case_type ?? 'Not set'}</dd>
-      <dt>Assignee</dt>
+      <dt>{tx('Priority')}</dt>
+      <dd><Pill tone={PRIORITY_TONE[ticket.priority]}>{choiceLabel(ticket.priority)}</Pill></dd>
+      <dt>{tx('Status')}</dt>
+      <dd><Pill tone={CASE_STATUS_TONE[ticket.status]}>{choiceLabel(ticket.status)}</Pill></dd>
+      <dt>{tx('Type')}</dt>
+      <dd>{ticket.case_type ? choiceLabel(ticket.case_type) : tx('Not set')}</dd>
+      <dt>{tx('Assignee')}</dt>
       <dd>
-        {ticket.assignee ?? 'Unassigned'}
+        {ticket.assignee ?? tx('Unassigned')}
         {#if ticket.assignee_count > 1}
           <span class="v2-sub">+{ticket.assignee_count - 1}</span>
         {/if}
       </dd>
-      <dt>Opened</dt>
+      <dt>{tx('Opened')}</dt>
       <dd>{longDate(ticket.opened_at)}</dd>
-      <dt>First reply</dt>
+      <dt>{tx('First reply')}</dt>
       <dd>
         {#if ticket.first_response_at}
           {relativeTime(ticket.first_response_at)}
         {:else if ticket.first_response_deadline}
           <span style={slaColor(ticket.first_response_breached, ticket.first_response_at_risk)}>
-            due {relativeTime(ticket.first_response_deadline)}
+            {tx('due {when}', { when: relativeTime(ticket.first_response_deadline) })}
           </span>
         {:else}
-          No target
+          {tx('No target')}
         {/if}
       </dd>
       {#if ticket.resolved_at}
-        <dt>Resolved</dt>
+        <dt>{tx('Resolved')}</dt>
         <dd>{longDate(ticket.resolved_at)}</dd>
       {:else if ticket.resolution_deadline}
-        <dt>Resolve by</dt>
+        <dt>{tx('Resolve by')}</dt>
         <dd>
           <span style={slaColor(ticket.resolution_breached, ticket.resolution_at_risk)}>
             {relativeTime(ticket.resolution_deadline)}
@@ -1590,13 +1643,13 @@
         </dd>
       {/if}
       {#if ticket.paused_at}
-        <dt>SLA</dt>
-        <dd>Paused while pending</dd>
+        <dt>{tx('SLA')}</dt>
+        <dd>{tx('Paused while pending')}</dd>
       {/if}
     </dl>
 
     {#if ticket.account}
-      <div class="v2-label v2-rail-head">Account</div>
+      <div class="v2-label v2-rail-head">{tx('Account')}</div>
       <a
         class="v2-rail-row"
         href={resolve(`/accounts/${ticket.account.id}`)}
@@ -1607,11 +1660,11 @@
           <div style="font-size:12.5px;font-weight:550">{ticket.account.name}</div>
           <div class="v2-sub" style="font-size:11px">
             {#if contacts.length === 1}
-              Reported by {contacts[0].name}
+              {tx('Reported by {name}', { name: contacts[0].name })}
             {:else if contacts.length > 1}
-              {contacts.length} people on this ticket
+              {tx('{count} people on this ticket', { count: contacts.length })}
             {:else}
-              Nobody named on this ticket
+              {tx('Nobody named on this ticket')}
             {/if}
           </div>
         </div>
@@ -1619,7 +1672,7 @@
     {/if}
 
     {#if contacts.length}
-      <div class="v2-label v2-rail-head">People</div>
+      <div class="v2-label v2-rail-head">{tx('People')}</div>
       {#each contacts as c (c.id)}
         <a
           class="v2-rail-row"
@@ -1633,7 +1686,7 @@
     {/if}
 
     {#if attachments.length}
-      <div class="v2-label v2-rail-head">Attachments</div>
+      <div class="v2-label v2-rail-head">{tx('Attachments')}</div>
       {#each attachments as f (f.id)}
         {#if f.url}
           <!-- A download now, not dead text: the path was always in the payload
@@ -1658,7 +1711,7 @@
     {/if}
 
     {#if alsoOpen.length}
-      <div class="v2-label v2-rail-head">Also open here</div>
+      <div class="v2-label v2-rail-head">{tx('Also open here')}</div>
       {#each alsoOpen as t (t.id)}
         <a
           class="v2-rail-row"
@@ -1668,7 +1721,7 @@
           <div>
             <div style="font-size:12.5px;font-weight:550;line-height:1.35">{t.name}</div>
             <div class="v2-sub" style="font-size:11px">
-              {t.priority} · {shortAge(t.opened_at)} old
+              {choiceLabel(t.priority)} · {tx('{age} old', { age: shortAge(t.opened_at) })}
             </div>
           </div>
         </a>
@@ -1676,13 +1729,16 @@
     {/if}
 
     {#if activity.length}
-      <div class="v2-label v2-rail-head">History</div>
+      <div class="v2-label v2-rail-head">{tx('History')}</div>
       {#each activity.slice(0, 8) as a (a.id)}
         <div class="v2-rail-row">
           <div>
             <div style="font-size:12.5px;font-weight:550;line-height:1.35">{a.label}</div>
             <div class="v2-sub" style="font-size:11px">
-              {a.by ?? 'System'} · {shortAge(a.at)} ago
+              {tx('{who} · {age} ago', {
+                who: a.by ?? tx('System'),
+                age: shortAge(a.at)
+              })}
             </div>
           </div>
         </div>

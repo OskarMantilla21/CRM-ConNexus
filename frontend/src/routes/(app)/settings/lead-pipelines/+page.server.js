@@ -10,6 +10,8 @@ import {
   moveStage
 } from '$lib/server/v2/lead-pipelines.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/ops.js';
 
 const ADMIN_ONLY = 'Only an admin can change lead pipelines.';
 
@@ -46,7 +48,7 @@ async function attempt(key, fallback, write) {
   try {
     await write();
   } catch (/** @type {any} */ err) {
-    if (err?.status === 403) return fail(403, { [key]: { error: ADMIN_ONLY } });
+    if (err?.status === 403) return fail(403, { [key]: { error: tx(ADMIN_ONLY) } });
     return fail(400, { [key]: { error: readableError(err, fallback) } });
   }
   return null;
@@ -57,10 +59,10 @@ export const actions = {
   async createPipeline(event) {
     const form = await event.request.formData();
     const name = form.get('name')?.toString().trim() ?? '';
-    if (!name) return fail(400, { createPipeline: { error: 'Give the pipeline a name.' } });
+    if (!name) return fail(400, { createPipeline: { error: tx('Give the pipeline a name.') } });
     /** @type {any} */
     let created = null;
-    const refused = await attempt('createPipeline', 'Could not create the pipeline.', async () => {
+    const refused = await attempt('createPipeline', tx('Could not create the pipeline.'), async () => {
       created = await createPipeline(event, { name });
     });
     if (refused) return refused;
@@ -72,9 +74,9 @@ export const actions = {
     const form = await event.request.formData();
     const id = form.get('id')?.toString() ?? '';
     const name = form.get('name')?.toString().trim() ?? '';
-    if (!id || !name) return fail(400, { renamePipeline: { error: 'Give the pipeline a name.' } });
+    if (!id || !name) return fail(400, { renamePipeline: { error: tx('Give the pipeline a name.') } });
     return (
-      (await attempt('renamePipeline', 'Could not rename the pipeline.', () =>
+      (await attempt('renamePipeline', tx('Could not rename the pipeline.'), () =>
         renamePipeline(event, id, { name })
       )) ?? { renamed: true }
     );
@@ -84,8 +86,8 @@ export const actions = {
     const form = await event.request.formData();
     const id = form.get('id')?.toString() ?? '';
     if (!id)
-      return fail(400, { deletePipeline: { error: 'That pipeline could not be identified.' } });
-    const refused = await attempt('deletePipeline', 'Could not delete the pipeline.', () =>
+      return fail(400, { deletePipeline: { error: tx('That pipeline could not be identified.') } });
+    const refused = await attempt('deletePipeline', tx('Could not delete the pipeline.'), () =>
       deletePipeline(event, id)
     );
     if (refused) return refused;
@@ -98,10 +100,10 @@ export const actions = {
     const pipelineId = form.get('pipeline_id')?.toString() ?? '';
     const values = readStage(form);
     if (!pipelineId || !values.name) {
-      return fail(400, { stage: { error: 'Give the stage a name.' } });
+      return fail(400, { stage: { error: tx('Give the stage a name.') } });
     }
     return (
-      (await attempt('stage', 'Could not add the stage.', () =>
+      (await attempt('stage', tx('Could not add the stage.'), () =>
         createStage(event, pipelineId, values)
       )) ?? { saved: true }
     );
@@ -111,9 +113,9 @@ export const actions = {
     const form = await event.request.formData();
     const id = form.get('id')?.toString() ?? '';
     const values = readStage(form);
-    if (!id || !values.name) return fail(400, { stage: { error: 'Give the stage a name.' } });
+    if (!id || !values.name) return fail(400, { stage: { error: tx('Give the stage a name.') } });
     return (
-      (await attempt('stage', 'Could not save the stage.', () =>
+      (await attempt('stage', tx('Could not save the stage.'), () =>
         updateStage(event, id, values)
       )) ?? {
         saved: true
@@ -124,9 +126,9 @@ export const actions = {
   async deleteStage(event) {
     const form = await event.request.formData();
     const id = form.get('id')?.toString() ?? '';
-    if (!id) return fail(400, { stageList: { error: 'That stage could not be identified.' } });
+    if (!id) return fail(400, { stageList: { error: tx('That stage could not be identified.') } });
     return (
-      (await attempt('stageList', 'Could not delete the stage.', () => deleteStage(event, id))) ?? {
+      (await attempt('stageList', tx('Could not delete the stage.'), () => deleteStage(event, id))) ?? {
         deleted: true
       }
     );
@@ -138,10 +140,10 @@ export const actions = {
     const id = form.get('id')?.toString() ?? '';
     const direction = form.get('direction')?.toString();
     if (!pipelineId || !id || (direction !== 'up' && direction !== 'down')) {
-      return fail(400, { stageList: { error: 'That stage could not be moved.' } });
+      return fail(400, { stageList: { error: tx('That stage could not be moved.') } });
     }
     return (
-      (await attempt('stageList', 'Could not reorder the stages.', () =>
+      (await attempt('stageList', tx('Could not reorder the stages.'), () =>
         moveStage(event, pipelineId, id, direction)
       )) ?? { moved: true }
     );

@@ -19,6 +19,8 @@
   import { enhance } from '$app/forms';
   import { money, count, shortDate, daysSince } from '$lib/v2/format.js';
   import { RECURRING_FREQUENCY_LABEL, PAYMENT_TERMS_LABEL } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/bill.js';
   import { Plus, RefreshCw, Hand, Pause, Play } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -28,16 +30,16 @@
 
   const frequency = (s) =>
     s.frequency === 'CUSTOM'
-      ? `Every ${s.custom_days} days`
+      ? tx('Every {n} days', { n: s.custom_days })
       : RECURRING_FREQUENCY_LABEL[s.frequency];
 
   /** Next run, or why there isn't one. A paused schedule has no next run. */
   function nextRun(s) {
-    if (!s.is_active) return { text: 'Paused', tone: 'muted' };
+    if (!s.is_active) return { text: tx('Paused'), tone: 'muted' };
     const n = daysSince(s.next_generation_date);
-    if (n > 0) return { text: `${n}d overdue`, tone: 'late' };
-    if (n === 0) return { text: 'Today', tone: 'soon' };
-    if (Math.abs(n) <= 7) return { text: `in ${Math.abs(n)}d`, tone: 'soon' };
+    if (n > 0) return { text: tx('{n}d overdue', { n }), tone: 'late' };
+    if (n === 0) return { text: tx('Today'), tone: 'soon' };
+    if (Math.abs(n) <= 7) return { text: tx('in {n}d', { n: Math.abs(n) }), tone: 'soon' };
     return { text: shortDate(s.next_generation_date), tone: 'normal' };
   }
 
@@ -49,14 +51,14 @@
   };
 </script>
 
-<PageHeader title="Recurring">
+<PageHeader title={tx('Recurring')}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.active)}</span> active schedules ·
-    <span class="v2-num">{money(totals.monthly_run_rate, data.org.currency)}</span> a month
+    <span class="v2-num">{count(totals.active)}</span> {tx('active schedules')} ·
+    <span class="v2-num">{money(totals.monthly_run_rate, data.org.currency)}</span> {tx('a month')}
   {/snippet}
   {#snippet actions()}
     <a class="v2-btn v2-btn-primary" href={resolve('/invoices/recurring/new')}
-      ><Plus />New schedule</a
+      ><Plus />{tx('New schedule')}</a
     >
   {/snippet}
 </PageHeader>
@@ -65,7 +67,7 @@
 
 {#if page.url.search}
   <p class="v2-sub" style="font-size:11.5px;margin:8px 0 0">
-    These numbers describe the filtered list.
+    {tx('These numbers describe the filtered list.')}
   </p>
 {/if}
 
@@ -78,33 +80,33 @@
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <div class="v2-stats">
     <StatCard
-      label="Monthly run rate"
+      label={tx('Monthly run rate')}
       value={money(totals.monthly_run_rate, data.org.currency)}
       tone="ink"
-      detail="Every active schedule, normalised to a month"
+      detail={tx('Every active schedule, normalised to a month')}
     />
-    <StatCard label="Active" value={count(totals.active)} tone="moss" />
+    <StatCard label={tx('Active')} value={count(totals.active)} tone="moss" />
     <StatCard
-      label="Generating within 7 days"
+      label={tx('Generating within 7 days')}
       value={count(totals.due_within_7d)}
       tone="clay"
-      detail="Drafts to check before they send"
+      detail={tx('Drafts to check before they send')}
     />
-    <StatCard label="Schedules" value={count(totals.count)} tone="slate" />
+    <StatCard label={tx('Schedules')} value={count(totals.count)} tone="slate" />
   </div>
 </div>
 
-<FilterBar page="recurring" url={page.url} meta="Active first, then soonest to generate" />
+<FilterBar page="recurring" url={page.url} meta={tx('Active first, then soonest to generate')} />
 
 <div class="v2-scroll">
   {#if data.schedules.length === 0}
     <EmptyState
-      title="Nothing on a schedule"
-      body="A recurring invoice is a template plus a cadence. Set one up for anything you bill on the same day every month and stop retyping it."
+      title={tx('Nothing on a schedule')}
+      body={tx('A recurring invoice is a template plus a cadence. Set one up for anything you bill on the same day every month and stop retyping it.')}
     >
       {#snippet icon()}<RefreshCw size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/invoices/recurring/new')}>New schedule</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/invoices/recurring/new')}>{tx('New schedule')}</a>
       {/snippet}
     </EmptyState>
   {:else}
@@ -112,12 +114,12 @@
       <table class="v2-table">
         <thead>
           <tr>
-            <th>Schedule</th>
-            <th>Account</th>
-            <th>Every</th>
-            <th>When it generates</th>
-            <th class="v2-r">Amount</th>
-            <th class="v2-r">Next</th>
+            <th>{tx('Schedule')}</th>
+            <th>{tx('Account')}</th>
+            <th>{tx('Every')}</th>
+            <th>{tx('When it generates')}</th>
+            <th class="v2-r">{tx('Amount')}</th>
+            <th class="v2-r">{tx('Next')}</th>
           </tr>
         </thead>
         <tbody>
@@ -128,7 +130,7 @@
                 <span class="v2-table-primary">{s.title}</span>
                 <span class="v2-table-secondary" style="display:block">
                   {PAYMENT_TERMS_LABEL[s.payment_terms]} ·
-                  <span class="v2-num">{s.invoices_generated}</span> raised so far
+                  <span class="v2-num">{s.invoices_generated}</span> {tx('raised so far')}
                 </span>
               </td>
               <td>
@@ -142,16 +144,16 @@
                 <!-- Sends itself, or waits for a person. Two different jobs,
                      and the row says which one this is. -->
                 {#if s.auto_send}
-                  <Pill tone="moss" dot>Sends automatically</Pill>
+                  <Pill tone="moss" dot>{tx('Sends automatically')}</Pill>
                 {:else}
                   <span style="display:inline-flex;gap:6px;align-items:center">
                     <Hand size={13} style="color:var(--v2-clay)" />
-                    <span style="font-size:12.5px">Drafts, waits for you</span>
+                    <span style="font-size:12.5px">{tx('Drafts, waits for you')}</span>
                   </span>
                 {/if}
                 {#if endingSoon(s)}
                   <span class="v2-table-secondary" style="display:block;color:var(--v2-clay)">
-                    Ends {shortDate(s.end_date)}, last invoice after that
+                    {tx('Ends {date}, last invoice after that', { date: shortDate(s.end_date) })}
                   </span>
                 {/if}
               </td>
@@ -177,7 +179,7 @@
                   <form method="POST" action="?/toggle" use:enhance>
                     <input type="hidden" name="id" value={s.id} />
                     <button class="v2-btn v2-btn-sm rec-toggle" type="submit">
-                      {#if s.is_active}<Pause size={12} />Pause{:else}<Play size={12} />Resume{/if}
+                      {#if s.is_active}<Pause size={12} />{tx('Pause')}{:else}<Play size={12} />{tx('Resume')}{/if}
                     </button>
                   </form>
                 </div>
@@ -188,7 +190,7 @@
       </table>
     </div>
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
-      Showing <span class="v2-num">{data.schedules.length}</span> of
+      {tx('Showing')} <span class="v2-num">{data.schedules.length}</span> {tx('of')}
       <span class="v2-num">{count(totals.count)}</span>
     </p>
   {/if}

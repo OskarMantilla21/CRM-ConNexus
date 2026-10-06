@@ -15,6 +15,7 @@
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import StatCard from '$lib/v2/components/StatCard.svelte';
   import { money, count, shortDate, hoursMinutes as hm } from '$lib/v2/format.js';
+  import { tx } from '$lib/i18n/translate.js';
   import { Download } from '@lucide/svelte';
 
   /** @type {{ data: any }} */
@@ -63,14 +64,14 @@
   );
 </script>
 
-<PageHeader title="Time report">
+<PageHeader title={tx('Time report')}>
   {#snippet crumb()}
-    <a href={resolve('/timesheet')}>Timesheet</a>
+    <a href={resolve('/timesheet')}>{tx('Timesheet')}</a>
   {/snippet}
   {#snippet sub()}
-    {shortDate(report.start)} - {shortDate(report.end)} · by {GROUP_NOUN[
-      report.group_by
-    ].toLowerCase()}
+    {shortDate(report.start)} - {shortDate(report.end)} · {tx('by {group}', {
+      group: tx(GROUP_NOUN[report.group_by]).toLowerCase()
+    })}
   {/snippet}
   {#snippet actions()}
     <!-- An anchor, not a fetch: the browser's own download, and the proxy
@@ -80,7 +81,7 @@
       href="/api/time-entries/report/export/?{exportQuery}"
       data-sveltekit-reload
     >
-      <Download size={12} />Export CSV
+      <Download size={12} />{tx('Export CSV')}
     </a>
   {/snippet}
 </PageHeader>
@@ -88,49 +89,49 @@
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <form method="GET" class="filters">
     <div class="v2-field">
-      <label for="r-start">From</label>
+      <label for="r-start">{tx('From')}</label>
       <input id="r-start" class="v2-input" type="date" name="start" value={report.start} />
     </div>
     <div class="v2-field">
-      <label for="r-end">To</label>
+      <label for="r-end">{tx('To')}</label>
       <input id="r-end" class="v2-input" type="date" name="end" value={report.end} />
     </div>
     <div class="v2-field">
-      <label for="r-group">Group by</label>
+      <label for="r-group">{tx('Group by')}</label>
       <select id="r-group" class="v2-input" name="group_by" value={report.group_by}>
         {#each GROUPS as group (group.value)}
-          <option value={group.value}>{group.label}</option>
+          <option value={group.value}>{tx(group.label)}</option>
         {/each}
       </select>
     </div>
     <div class="v2-field">
-      <label for="r-billable">Show</label>
+      <label for="r-billable">{tx('Show')}</label>
       <select id="r-billable" class="v2-input" name="billable" value={filters.billable ?? ''}>
-        <option value="">All time</option>
-        <option value="true">Billable only</option>
-        <option value="false">Non-billable only</option>
+        <option value="">{tx('All time')}</option>
+        <option value="true">{tx('Billable only')}</option>
+        <option value="false">{tx('Non-billable only')}</option>
       </select>
     </div>
-    <button class="v2-btn v2-btn-primary filters-go">Apply</button>
+    <button class="v2-btn v2-btn-primary filters-go">{tx('Apply')}</button>
   </form>
 
   <div class="v2-stats" style="margin-top:14px">
-    <StatCard label="Logged" value={hm(report.totals.total_minutes)} tone="ink" />
+    <StatCard label={tx('Logged')} value={hm(report.totals.total_minutes)} tone="ink" />
     <StatCard
-      label="Billable"
+      label={tx('Billable')}
       value={hm(report.totals.billable_minutes)}
       tone="moss"
-      detail="{billableShare}% of logged time"
+      detail={tx('{n}% of logged time', { n: billableShare })}
     />
     <StatCard
-      label="Billable value"
+      label={tx('Billable value')}
       value={money(report.totals.billable_value, currency)}
       tone="slate"
       detail={report.currencies?.length > 1
-        ? `Mixed currencies: ${report.currencies.join(', ')}`
-        : 'At the rate saved on each entry'}
+        ? tx('Mixed currencies: {list}', { list: report.currencies.join(', ') })
+        : tx('At the rate saved on each entry')}
     />
-    <StatCard label="Entries" value={count(report.totals.entry_count)} tone="slate" />
+    <StatCard label={tx('Entries')} value={count(report.totals.entry_count)} tone="slate" />
   </div>
 </div>
 
@@ -138,18 +139,18 @@
   <div class="v2-pad" style="padding-bottom:32px">
     {#if report.rows.length === 0}
       <p class="v2-sub" style="font-size:12.5px">
-        No time logged in this window. Widen the dates, or clear the billable filter.
+        {tx('No time logged in this window. Widen the dates, or clear the billable filter.')}
       </p>
     {:else}
       <div class="v2-table-wrap">
         <table class="v2-table">
           <thead>
             <tr>
-              <th>{GROUP_NOUN[report.group_by]}</th>
-              <th class="v2-r">Entries</th>
-              <th class="v2-r">Billable</th>
-              <th class="v2-r">Value</th>
-              <th class="v2-r">Logged</th>
+              <th>{tx(GROUP_NOUN[report.group_by])}</th>
+              <th class="v2-r">{tx('Entries')}</th>
+              <th class="v2-r">{tx('Billable')}</th>
+              <th class="v2-r">{tx('Value')}</th>
+              <th class="v2-r">{tx('Logged')}</th>
             </tr>
           </thead>
           <tbody>
@@ -165,11 +166,11 @@
                     {row.name}
                   {/if}
                 </td>
-                <td class="v2-num v2-r" data-m="meta" data-l="entries">{count(row.entry_count)}</td>
-                <td class="v2-num v2-r" data-m="meta" data-l="billable">
+                <td class="v2-num v2-r" data-m="meta" data-l={tx('entries')}>{count(row.entry_count)}</td>
+                <td class="v2-num v2-r" data-m="meta" data-l={tx('billable')}>
                   {hm(row.billable_minutes)}
                 </td>
-                <td class="v2-num v2-r" data-m="meta" data-l="worth">
+                <td class="v2-num v2-r" data-m="meta" data-l={tx('worth')}>
                   {money(row.billable_value, currency)}
                 </td>
                 <td class="v2-num v2-r" data-m="tag">{hm(row.total_minutes)}</td>

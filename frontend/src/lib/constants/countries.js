@@ -2,6 +2,7 @@
  * Country codes and names for dropdown selection
  * Matches Django backend COUNTRIES in common/utils.py
  */
+import { dateLocale } from '$lib/i18n/locale.js';
 export const COUNTRIES = [
   { code: 'GB', name: 'United Kingdom' },
   { code: 'AF', name: 'Afghanistan' },
@@ -258,6 +259,12 @@ export const COUNTRIES = [
  */
 export function getCountryName(code) {
   if (!code) return '';
+  try {
+    const name = new Intl.DisplayNames([dateLocale()], { type: 'region' }).of(code);
+    if (name && name !== code) return name;
+  } catch {
+    // An unknown code falls through to the English list, then to the code.
+  }
   const country = COUNTRIES.find((c) => c.code === code);
   return country?.name || code;
 }

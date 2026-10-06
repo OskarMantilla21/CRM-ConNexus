@@ -43,6 +43,7 @@ export default defineConfig({
     // need no DOM, and a node environment keeps the run fast.
     environment: 'node',
     include: ['src/**/*.test.js'],
+    setupFiles: ['./test/setup-locale.js'],
     maxWorkers: '50%'
   },
   resolve: {

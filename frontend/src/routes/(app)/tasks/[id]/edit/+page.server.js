@@ -1,4 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { getTask, getTaskFormOptions, updateTask } from '$lib/server/v2/tasks.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { listTickets } from '$lib/server/v2/tickets.js';
@@ -41,7 +43,7 @@ export async function load(event) {
                 `${l.first_name} ${l.last_name}`.trim() ||
                 l.company_name ||
                 l.email ||
-                '(unnamed lead)'
+                tx('(unnamed lead)')
             }))
           : []
     },
@@ -107,7 +109,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       return fail(400, {
         values: { ...values, parent_kind: kind, parent_id: id },
-        error: readableError(err, 'Could not save this task.')
+        error: readableError(err, tx('Could not save this task.'))
       });
     }
 

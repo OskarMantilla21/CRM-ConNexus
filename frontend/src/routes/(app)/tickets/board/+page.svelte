@@ -12,6 +12,8 @@
   import { invalidateAll } from '$app/navigation';
   import { deserialize } from '$app/forms';
   import { holdLockedCard } from '$lib/v2/board-drag.js';
+  import '$lib/i18n/pages/serve.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -81,9 +83,9 @@
       }
       moveError =
         (result.type === 'failure' && /** @type {any} */ (result.data)?.error) ||
-        'Could not move the ticket, so it went back.';
+        tx('Could not move the ticket, so it went back.');
     } catch {
-      moveError = 'Could not move the ticket, so it went back.';
+      moveError = tx('Could not move the ticket, so it went back.');
     }
     await invalidateAll();
     return false;
@@ -106,10 +108,10 @@
   }
 </script>
 
-<PageHeader title={data.pipeline ? data.pipeline.name : 'Tickets board'}>
+<PageHeader title={data.pipeline ? data.pipeline.name : tx('Tickets board')}>
   {#snippet sub()}
     <span class="v2-num">{count(data.total)}</span>
-    {data.pipeline ? 'in this pipeline' : 'tickets by status'}
+    {data.pipeline ? tx('in this pipeline') : tx('tickets by status')}
   {/snippet}
   {#snippet actions()}
     {#if data.pipelines.length > 0}
@@ -119,19 +121,19 @@
         <select
           name="pipeline"
           class="v2-btn tb-picker"
-          aria-label="Board columns"
+          aria-label={tx('Board columns')}
           value={data.pipeline?.id ?? ''}
           onchange={(e) => e.currentTarget.form?.requestSubmit()}
         >
-          <option value="">By status</option>
+          <option value="">{tx('By status')}</option>
           {#each data.pipelines as p (p.id)}
             <option value={p.id}>{p.name}</option>
           {/each}
         </select>
       </form>
     {/if}
-    <a class="v2-btn v2-btn-quiet" href={resolve('/tickets')}><List />List</a>
-    <span class="v2-btn" aria-current="true"><Columns3 />Board</span>
+    <a class="v2-btn v2-btn-quiet" href={resolve('/tickets')}><List />{tx('List')}</a>
+    <span class="v2-btn" aria-current="true"><Columns3 />{tx('Board')}</span>
   {/snippet}
 </PageHeader>
 
@@ -147,34 +149,38 @@
 {#if data.lanes.length === 0}
   <div class="v2-scroll">
     <EmptyState
-      title="This pipeline has no stages yet"
-      body="There is nowhere on it to move a ticket. An admin can add stages to the pipeline, or you can go back to the board by status."
+      title={tx('This pipeline has no stages yet')}
+      body={tx(
+        'There is nowhere on it to move a ticket. An admin can add stages to the pipeline, or you can go back to the board by status.'
+      )}
     >
       {#snippet icon()}<Columns3 size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn" href={resolve('/tickets/board')}>By status</a>
-        <a class="v2-btn" href={resolve('/tickets')}>Back to the list</a>
+        <a class="v2-btn" href={resolve('/tickets/board')}>{tx('By status')}</a>
+        <a class="v2-btn" href={resolve('/tickets')}>{tx('Back to the list')}</a>
       {/snippet}
     </EmptyState>
   </div>
 {:else}
   <p class="v2-sub v2-pad" style="font-size:11.5px;margin:10px 0 0;flex:none">
-    Drag a card, or use "Move to" on it, to change its {data.pipeline ? 'stage' : 'status'}. Moving
-    a ticket to Closed closes it, so an approval rule can refuse it.
+    {tx(
+      'Drag a card, or use "Move to" on it, to change its {what}. Moving a ticket to Closed closes it, so an approval rule can refuse it.',
+      { what: data.pipeline ? tx('stage') : tx('status') }
+    )}
   </p>
   <div class="v2-board" style="padding-top:12px">
     {#each boardLanes as lane (lane.id)}
       <section class="v2-lane">
         <div class="v2-lane-head">
           <i class="tb-dot" style="background:{lane.color}" aria-hidden="true"></i>
-          <span class="v2-label">{lane.name}</span>
+          <span class="v2-label">{data.pipeline ? lane.name : choiceLabel(lane.name)}</span>
           <span class="v2-num"
             >{count(laneCount(lane))}{lane.wipLimit ? ` / ${lane.wipLimit}` : ''}</span
           >
         </div>
         {#if lane.truncated}
           <p class="v2-sub" style="padding:0 2px 6px;font-size:11.5px">
-            Showing the first <span class="v2-num">{lane.rows.length}</span>.
+            {tx('Showing the first')} <span class="v2-num">{lane.rows.length}</span>.
           </p>
         {/if}
         <div
@@ -203,33 +209,35 @@
                 {#if ticket.owner}<Avatar name={ticket.owner} size={21} />{/if}
                 {#if ticket.priority}
                   <Pill tone={/** @type {any} */ (PRIORITY_TONE)[ticket.priority] ?? 'slate'}
-                    >{ticket.priority}</Pill
+                    >{choiceLabel(ticket.priority)}</Pill
                   >
                 {/if}
                 {#if ticket.slaBreached}
-                  <Pill tone="rust" dot>SLA breached</Pill>
+                  <Pill tone="rust" dot>{tx('SLA breached')}</Pill>
                 {:else if ticket.slaAtRisk}
-                  <Pill tone="clay" dot>SLA at risk</Pill>
+                  <Pill tone="clay" dot>{tx('SLA at risk')}</Pill>
                 {/if}
               </div>
               {#if boardLanes.length > 1 && ticket.canMove}
                 <select
                   class="v2-input tb-move"
-                  aria-label="Move {ticket.name} to"
+                  aria-label={tx('Move {name} to', { name: ticket.name })}
                   disabled={busy}
                   onchange={(e) => moveBySelect(ticket.id, e)}
                 >
-                  <option value="">Move to…</option>
+                  <option value="">{tx('Move to…')}</option>
                   {#each data.lanes as target (target.id)}
                     {#if target.id !== lane.id}
-                      <option value={target.id}>{target.name}</option>
+                      <option value={target.id}
+                        >{data.pipeline ? target.name : choiceLabel(target.name)}</option
+                      >
                     {/if}
                   {/each}
                 </select>
               {/if}
             </div>
           {:else}
-            <p class="v2-sub" style="padding:10px 2px;font-size:12px">Nothing here.</p>
+            <p class="v2-sub" style="padding:10px 2px;font-size:12px">{tx('Nothing here.')}</p>
           {/each}
         </div>
       </section>

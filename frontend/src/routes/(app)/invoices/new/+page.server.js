@@ -4,6 +4,8 @@ import { listContacts } from '$lib/server/v2/contacts.js';
 import { listProducts } from '$lib/server/v2/products.js';
 import { createInvoice } from '$lib/server/v2/invoices.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * The builder needs three pickers: account (required), contact (required, the
@@ -22,10 +24,10 @@ export async function load({ cookies }) {
   ]);
 
   return {
-    accounts: accounts.results.map((a) => ({ id: a.id, name: a.name || 'Unnamed account' })),
+    accounts: accounts.results.map((a) => ({ id: a.id, name: a.name || tx('Unnamed account') })),
     contacts: contacts.results.map((c) => ({
       id: c.id,
-      name: c.name || c.email || 'Unnamed contact',
+      name: c.name || c.email || tx('Unnamed contact'),
       account_id: c.account?.id ?? null,
       account_name: c.account?.name ?? ''
     })),
@@ -49,13 +51,13 @@ export const actions = {
     try {
       body = JSON.parse(form.get('payload')?.toString() || '{}');
     } catch {
-      return fail(400, { error: 'The invoice form could not be read. Please try again.' });
+      return fail(400, { error: tx('The invoice form could not be read. Please try again.') });
     }
 
-    if (!body.account_id) return fail(400, { error: 'Choose an account.' });
-    if (!body.contact_id) return fail(400, { error: 'Choose a contact.' });
+    if (!body.account_id) return fail(400, { error: tx('Choose an account.') });
+    if (!body.contact_id) return fail(400, { error: tx('Choose a contact.') });
     if (!Array.isArray(body.line_items) || body.line_items.length === 0) {
-      return fail(400, { error: 'Add at least one line with a description and an amount.' });
+      return fail(400, { error: tx('Add at least one line with a description and an amount.') });
     }
 
     let created;
@@ -63,7 +65,7 @@ export const actions = {
       created = await createInvoice({ cookies }, body);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
-        error: readableError(err, 'Could not create the invoice.')
+        error: readableError(err, tx('Could not create the invoice.'))
       });
     }
 

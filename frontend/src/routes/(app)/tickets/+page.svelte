@@ -14,6 +14,8 @@
   import { PRIORITY_TONE, CASE_STATUS_TONE } from '$lib/v2/enums.js';
   import TicketImportDrawer from '$lib/components/tickets/TicketImportDrawer.svelte';
   import { Download, Plus, LifeBuoy, Upload } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -47,12 +49,14 @@
    */
   function summaryText(kind, s) {
     const parts = [
-      `${kind === 'delete' ? s.deleted : s.updated} ${kind === 'delete' ? 'deleted' : 'updated'}`
+      kind === 'delete'
+        ? tx('{n} deleted', { n: s.deleted })
+        : tx('{n} updated', { n: s.updated })
     ];
-    if (s.no_access) parts.push(`${s.no_access} skipped (no access)`);
-    if (s.approval_required) parts.push(`${s.approval_required} need approval`);
-    if (s.merged) parts.push(`${s.merged} merged (unmerge first)`);
-    if (s.invalid) parts.push(`${s.invalid} invalid`);
+    if (s.no_access) parts.push(tx('{n} skipped (no access)', { n: s.no_access }));
+    if (s.approval_required) parts.push(tx('{n} need approval', { n: s.approval_required }));
+    if (s.merged) parts.push(tx('{n} merged (unmerge first)', { n: s.merged }));
+    if (s.invalid) parts.push(tx('{n} invalid', { n: s.invalid }));
     return parts.join(' · ');
   }
 
@@ -75,22 +79,26 @@
     if (t.first_response_at) {
       const took =
         (new Date(t.first_response_at).getTime() - new Date(t.opened_at).getTime()) / 6e4;
-      return { state: 'met', label: `Met in ${fmtMins(took)}`, tone: 'moss' };
+      return { state: 'met', label: tx('Met in {time}', { time: fmtMins(took) }), tone: 'moss' };
     }
     if (!t.first_response_deadline) {
-      return { state: 'none', label: 'No target', tone: 'slate' };
+      return { state: 'none', label: tx('No target'), tone: 'slate' };
     }
     const now = Date.now();
     const opened = new Date(t.opened_at).getTime();
     const due = new Date(t.first_response_deadline).getTime();
     if (now >= due) {
-      return { state: 'breached', label: `${fmtMins((now - due) / 6e4)} over`, tone: 'rust' };
+      return {
+        state: 'breached',
+        label: tx('{time} over', { time: fmtMins((now - due) / 6e4) }),
+        tone: 'rust'
+      };
     }
     const pct = Math.max(0, Math.min(100, Math.round(((now - opened) / (due - opened)) * 100)));
     return {
       state: 'running',
       pct,
-      label: `${fmtMins((due - now) / 6e4)} left`,
+      label: tx('{time} left', { time: fmtMins((due - now) / 6e4) }),
       tone: pct >= 75 ? 'rust' : pct >= 50 ? 'clay' : 'slate'
     };
   }
@@ -111,18 +119,18 @@
   };
 </script>
 
-<PageHeader title="Tickets">
+<PageHeader title={tx('Tickets')}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.open)}</span> open ·
-    <span class="v2-num" style="color:var(--v2-rust)">{totals.urgent}</span> urgent ·
+    <span class="v2-num">{count(totals.open)}</span> {tx('open')} ·
+    <span class="v2-num" style="color:var(--v2-rust)">{totals.urgent}</span> {tx('urgent')} ·
     <!-- Not "breaching today". A breach depends on the org's business calendar
          and is a per-row calculation; nobody having replied yet is a fact the
          queue can establish, and it is the one that decides what to open. -->
-    <span class="v2-num">{count(totals.awaiting_reply)}</span> with no reply yet
+    <span class="v2-num">{count(totals.awaiting_reply)}</span> {tx('with no reply yet')}
   {/snippet}
   {#snippet actions()}
-    <a class="v2-btn" href={resolve('/tickets/board')}>Board</a>
-    <button class="v2-btn" onclick={() => (importOpen = true)}><Upload />Import</button>
+    <a class="v2-btn" href={resolve('/tickets/board')}>{tx('Board')}</a>
+    <button class="v2-btn" onclick={() => (importOpen = true)}><Upload />{tx('Import')}</button>
     <!-- The page's own query string: the export rebuilds the same API query
          from it, so the file holds every row this list would page through. -->
     <a
@@ -130,15 +138,15 @@
       href="{resolve('/api/tickets/export')}?{page.url.searchParams}"
       data-sveltekit-reload
     >
-      <Download />Export
+      <Download />{tx('Export')}
     </a>
-    <a class="v2-btn v2-btn-primary" href={resolve('/tickets/new')}><Plus />New ticket</a>
+    <a class="v2-btn v2-btn-primary" href={resolve('/tickets/new')}><Plus />{tx('New ticket')}</a>
   {/snippet}
 </PageHeader>
 
 {#if page.url.search}
   <p class="v2-sub" style="font-size:11.5px;margin:8px 0 0">
-    These numbers describe the filtered queue.
+    {tx('These numbers describe the filtered queue.')}
   </p>
 {/if}
 
@@ -173,25 +181,29 @@
   tags={data.tags}
   meId={data.meId}
   saved={data.savedViews}
-  meta="First-reply targets come from each ticket's SLA hours"
+  meta={tx("First-reply targets come from each ticket's SLA hours")}
 />
 
 <div class="v2-scroll">
   {#if tickets.length === 0}
     <!-- An empty queue is good news, so it does not read like a failure. -->
     <EmptyState
-      title={data.showAll ? 'No tickets here yet' : 'The queue is clear'}
+      title={data.showAll ? tx('No tickets here yet') : tx('The queue is clear')}
       body={data.showAll
-        ? 'Nothing has been raised in this workspace. Tickets arrive here from email, the portal, and anyone who replies to a closed one.'
-        : 'Nothing is waiting on your team right now. Closed and rejected tickets are still here. They are just not in the way.'}
+        ? tx(
+            'Nothing has been raised in this workspace. Tickets arrive here from email, the portal, and anyone who replies to a closed one.'
+          )
+        : tx(
+            'Nothing is waiting on your team right now. Closed and rejected tickets are still here. They are just not in the way.'
+          )}
     >
       {#snippet icon()}<LifeBuoy size={21} />{/snippet}
       {#snippet actions()}
-        <a class="v2-btn v2-btn-primary" href={resolve('/tickets/new')}>New ticket</a>
+        <a class="v2-btn v2-btn-primary" href={resolve('/tickets/new')}>{tx('New ticket')}</a>
         {#if !data.showAll}
-          <a class="v2-btn" href={resolve('/tickets?all=1')}>Show closed too</a>
+          <a class="v2-btn" href={resolve('/tickets?all=1')}>{tx('Show closed too')}</a>
         {/if}
-        <a class="v2-btn" href={resolve('/solutions')}>Knowledge base</a>
+        <a class="v2-btn" href={resolve('/solutions')}>{tx('Knowledge base')}</a>
       {/snippet}
     </EmptyState>
   {:else}
@@ -202,19 +214,19 @@
             <th style="width:34px">
               <input
                 type="checkbox"
-                aria-label="Select all loaded"
+                aria-label={tx('Select all loaded')}
                 checked={tickets.length > 0 && selected.size === tickets.length}
                 onchange={toggleAll}
               />
             </th>
-            <th>Subject</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Type</th>
-            <th>Account</th>
-            <th>Assignee</th>
-            <th class="v2-r">Age</th>
-            <th style="width:130px">First reply</th>
+            <th>{tx('Subject')}</th>
+            <th>{tx('Priority')}</th>
+            <th>{tx('Status')}</th>
+            <th>{tx('Type')}</th>
+            <th>{tx('Account')}</th>
+            <th>{tx('Assignee')}</th>
+            <th class="v2-r">{tx('Age')}</th>
+            <th style="width:130px">{tx('First reply')}</th>
           </tr>
         </thead>
         <tbody>
@@ -224,7 +236,7 @@
               <td data-m="lead">
                 <input
                   type="checkbox"
-                  aria-label="Select ticket"
+                  aria-label={tx('Select ticket')}
                   checked={selected.has(t.id)}
                   onchange={() => toggle(t.id)}
                 />
@@ -234,12 +246,12 @@
                   <span class="v2-table-primary">{t.name}</span>
                 </a>
               </td>
-              <td><Pill tone={PRIORITY_TONE[t.priority]}>{t.priority}</Pill></td>
-              <td data-m="tag"><Pill tone={CASE_STATUS_TONE[t.status]}>{t.status}</Pill></td>
+              <td><Pill tone={PRIORITY_TONE[t.priority]}>{choiceLabel(t.priority)}</Pill></td>
+              <td data-m="tag"><Pill tone={CASE_STATUS_TONE[t.status]}>{choiceLabel(t.status)}</Pill></td>
               <!-- Nullable on the model and null on plenty of rows, so it says
                    so rather than printing an empty cell. -->
               <td class="v2-muted" data-m="hide" style="font-size:12.5px">
-                {t.case_type ?? '—'}
+                {t.case_type ? choiceLabel(t.case_type) : '—'}
               </td>
               <td class="v2-muted" style="font-size:12.5px">
                 {#if t.account}
@@ -247,14 +259,14 @@
                     >{t.account.name}</a
                   >
                 {:else}
-                  No account
+                  {tx('No account')}
                 {/if}
               </td>
               <td data-m="hide">
                 {#if t.assignee}
                   <Avatar name={t.assignee} size={22} />
                 {:else}
-                  <span class="v2-muted" style="font-size:12.5px">Unassigned</span>
+                  <span class="v2-muted" style="font-size:12.5px">{tx('Unassigned')}</span>
                 {/if}
               </td>
               <td class="v2-r v2-num v2-muted" data-m="meta">{shortAge(t.opened_at)}</td>
@@ -290,12 +302,12 @@
       </table>
     </div>
     <p class="v2-sub v2-pad" style="font-size:12px;padding-bottom:24px">
-      Showing <span class="v2-num">{tickets.length}</span> of
+      {tx('Showing')} <span class="v2-num">{tickets.length}</span> {tx('of')}
       <span class="v2-num">{count(totals.count)}</span>
       {#if !data.showAll}
-        · <a href={resolve('/tickets?all=1')} style="color:inherit">include closed</a>
+        · <a href={resolve('/tickets?all=1')} style="color:inherit">{tx('include closed')}</a>
       {:else}
-        · <a href={resolve('/tickets')} style="color:inherit">open only</a>
+        · <a href={resolve('/tickets')} style="color:inherit">{tx('open only')}</a>
       {/if}
     </p>
   {/if}

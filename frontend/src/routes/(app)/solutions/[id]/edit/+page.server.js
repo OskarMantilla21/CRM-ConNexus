@@ -1,4 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
+import '$lib/i18n/pages/serve.js';
+import { tx } from '$lib/i18n/translate.js';
 import { getArticle, updateArticle } from '$lib/server/v2/solutions.js';
 import { getTags } from '$lib/server/v2/tags.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
@@ -77,7 +79,7 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       return fail(400, {
         values: { ...values, tags: tagsForRetry },
-        error: readableError(err, 'Could not save this article.')
+        error: readableError(err, tx('Could not save this article.'))
       });
     }
 

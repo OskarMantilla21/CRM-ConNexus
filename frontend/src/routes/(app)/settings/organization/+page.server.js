@@ -2,6 +2,8 @@ import { fail } from '@sveltejs/kit';
 import { getOrgSettings } from '$lib/server/v2/organization.js';
 import { listPacks, applyPack, clearSampleData } from '$lib/server/packs.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/bill.js';
 
 /**
  * Organization settings (read) + the "Vertical pack" section.
@@ -40,16 +42,16 @@ export const actions = {
   // against re-submitting the currently-applied pack.
   apply: async ({ cookies, request }) => {
     const packId = (await request.formData()).get('pack_id')?.toString();
-    if (!packId) return fail(400, { error: 'Choose a pack to apply.' });
+    if (!packId) return fail(400, { error: tx('Choose a pack to apply.') });
 
     try {
       const { report } = await applyPack(cookies, packId);
       return { appliedPackId: packId, report };
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { error: 'Only an administrator can apply a vertical pack.' });
+        return fail(403, { error: tx('Only an administrator can apply a vertical pack.') });
       }
-      return fail(400, { error: readableError(err, 'Could not apply this pack.') });
+      return fail(400, { error: readableError(err, tx('Could not apply this pack.')) });
     }
   },
 
@@ -64,9 +66,9 @@ export const actions = {
       return { cleared: deleted ?? 0, retained };
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
-        return fail(403, { error: 'Only an administrator can clear sample data.' });
+        return fail(403, { error: tx('Only an administrator can clear sample data.') });
       }
-      return fail(400, { error: readableError(err, 'Could not clear sample data.') });
+      return fail(400, { error: readableError(err, tx('Could not clear sample data.')) });
     }
   }
 };

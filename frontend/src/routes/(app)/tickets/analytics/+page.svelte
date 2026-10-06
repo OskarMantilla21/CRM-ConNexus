@@ -25,6 +25,8 @@
   import Avatar from '$lib/v2/components/Avatar.svelte';
   import { count, shortDate } from '$lib/v2/format.js';
   import { Clock } from '@lucide/svelte';
+  import '$lib/i18n/pages/serve.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @type {{ data: any }} */
   let { data } = $props();
@@ -77,12 +79,12 @@
   const ratingShare = (n) => (data.csat.count ? Math.round((n / data.csat.count) * 100) : 0);
 </script>
 
-<PageHeader title="Service analytics">
+<PageHeader title={tx('Service analytics')}>
   {#snippet sub()}
     {#if canView}
-      Last <span class="v2-num">{totals.window_days}</span> days
+      {tx('Last')} <span class="v2-num">{totals.window_days}</span> {tx('days')}
     {:else}
-      Service health
+      {tx('Service health')}
     {/if}
   {/snippet}
 </PageHeader>
@@ -95,35 +97,36 @@
          so a capped card pinned to the left leaves the rest of a wide screen
          empty. margin-inline centres the column. -->
     <div class="v2-card" style="padding:20px 22px;max-width:520px;margin-inline:auto">
-      <strong>This dashboard is for administrators.</strong>
+      <strong>{tx('This dashboard is for administrators.')}</strong>
       <p>
-        Opened and closed volume, response attainment, customer satisfaction and the queue breakdown
-        are whole-organisation figures, so they are limited to admins. Your own tickets are on the <a
-          href={resolve('/tickets')}>Tickets</a
-        > tab.
+        {tx(
+          'Opened and closed volume, response attainment, customer satisfaction and the queue breakdown are whole-organisation figures, so they are limited to admins. Your own tickets are on the'
+        )}
+        <a href={resolve('/tickets')}>{tx('Tickets')}</a>
+        {tx('tab.')}
       </p>
     </div>
   </div>
 {:else}
   <div class="v2-pad" style="padding-top:16px;flex:none">
     <div class="v2-stats">
-      <StatCard label="Opened" value={count(totals.opened)} tone="ink" />
-      <StatCard label="Closed" value={count(totals.closed)} tone="moss" />
+      <StatCard label={tx('Opened')} value={count(totals.opened)} tone="ink" />
+      <StatCard label={tx('Closed')} value={count(totals.closed)} tone="moss" />
       <StatCard
-        label="Backlog"
+        label={tx('Backlog')}
         value={count(totals.open_now)}
         tone={net > 0 ? 'clay' : 'slate'}
         detail={net > 0
-          ? `Grew by ${net} over the window`
+          ? tx('Grew by {n} over the window', { n: net })
           : net < 0
-            ? `Shrank by ${Math.abs(net)} over the window`
-            : 'Level over the window'}
+            ? tx('Shrank by {n} over the window', { n: Math.abs(net) })
+            : tx('Level over the window')}
       />
       <StatCard
-        label="Median resolution"
+        label={tx('Median resolution')}
         value={`${totals.median_resolution_hours}h`}
         tone="slate"
-        detail="Median, not mean. One three-week ticket should not move it"
+        detail={tx('Median, not mean. One three-week ticket should not move it')}
       />
     </div>
   </div>
@@ -133,15 +136,22 @@
       <!-- Volume -->
       <div class="v2-card" style="padding:16px 18px 14px;margin-bottom:18px">
         <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px">
-          <div class="v2-label">Opened and closed, per day</div>
+          <div class="v2-label">{tx('Opened and closed, per day')}</div>
           <span class="v2-sub" style="font-size:11.5px;margin-left:auto">
-            <i class="v2-swatch v2-swatch-in"></i>opened
-            <i class="v2-swatch" style="margin-left:10px"></i>closed
+            <i class="v2-swatch v2-swatch-in"></i>{tx('opened')}
+            <i class="v2-swatch" style="margin-left:10px"></i>{tx('closed')}
           </span>
         </div>
         <div class="v2-cols">
           {#each data.volume as d (d.date)}
-            <div class="v2-col" title="{shortDate(d.date)}, {d.opened} opened, {d.closed} closed">
+            <div
+              class="v2-col"
+              title={tx('{date}, {opened} opened, {closed} closed', {
+                date: shortDate(d.date),
+                opened: d.opened,
+                closed: d.closed
+              })}
+            >
               <i class="in" style="height:{(d.opened / peak) * 100}%"></i>
               <i class="out" style="height:{(d.closed / peak) * 100}%"></i>
             </div>
@@ -158,10 +168,11 @@
       <div class="v2-split" style="margin-bottom:18px">
         <!-- First response -->
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:4px">First response, against target</div>
+          <div class="v2-label" style="margin-bottom:4px">{tx('First response, against target')}</div>
           <p class="v2-sub" style="font-size:11.5px;margin:0 0 14px">
-            Each priority carries its own target from the escalation policy, so each one is scored
-            against its own promise.
+            {tx(
+              'Each priority carries its own target from the escalation policy, so each one is scored against its own promise.'
+            )}
           </p>
           {#each data.firstResponse as r (r.priority)}
             {@const pct = attainment(r)}
@@ -169,9 +180,11 @@
               <div
                 style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;margin-bottom:5px"
               >
-                <b style="font-weight:600">{r.priority}</b>
+                <b style="font-weight:600">{choiceLabel(r.priority)}</b>
                 <span class="v2-sub" style="font-size:11.5px">
-                  target {duration(r.target_minutes)} · median {duration(r.median_minutes)}
+                  {tx('target {time}', { time: duration(r.target_minutes) })} · {tx('median {time}', {
+                    time: duration(r.median_minutes)
+                  })}
                 </span>
                 <span
                   class="v2-num"
@@ -186,12 +199,12 @@
                 <i style="width:{pct ?? 0}%;background:{barColor(pct)}"></i>
               </div>
               <div class="v2-bar-legend">
-                <span><span class="v2-num">{r.met}</span> in time</span>
+                <span><span class="v2-num">{r.met}</span> {tx('in time')}</span>
                 <span>
                   {#if r.missed}
-                    <span class="v2-num" style="color:var(--v2-rust)">{r.missed}</span> late
+                    <span class="v2-num" style="color:var(--v2-rust)">{r.missed}</span> {tx('late')}
                   {:else}
-                    none late
+                    {tx('none late')}
                   {/if}
                 </span>
               </div>
@@ -201,9 +214,11 @@
 
         <!-- Mix -->
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:4px">What the queue is made of</div>
+          <div class="v2-label" style="margin-bottom:4px">{tx('What the queue is made of')}</div>
           <p class="v2-sub" style="font-size:11.5px;margin:0 0 14px">
-            Incidents and problems are work; questions are usually a gap in the knowledge base.
+            {tx(
+              'Incidents and problems are work; questions are usually a gap in the knowledge base.'
+            )}
           </p>
           {#each data.byType as t (t.case_type)}
             {@const share = Math.round(
@@ -211,7 +226,7 @@
             )}
             <div style="margin-bottom:13px">
               <div style="display:flex;align-items:baseline;font-size:12.5px;margin-bottom:5px">
-                <span>{t.case_type}</span>
+                <span>{choiceLabel(t.case_type)}</span>
                 <span class="v2-sub v2-num" style="margin-left:auto;font-size:12px">
                   {t.count} · {share}%
                 </span>
@@ -223,8 +238,10 @@
           {#if data.byType.find((t) => t.case_type === 'Question')}
             <p class="v2-sub" style="font-size:11.5px;margin:16px 0 0">
               <a href={resolve('/solutions')} style="color:inherit">
-                {data.byType.find((t) => t.case_type === 'Question').count} questions in this window
-              </a>. The ones that repeat belong in the knowledge base.
+                {tx('{n} questions in this window', {
+                  n: data.byType.find((t) => t.case_type === 'Question').count
+                })}
+              </a>. {tx('The ones that repeat belong in the knowledge base.')}
             </p>
           {/if}
         </div>
@@ -234,13 +251,14 @@
         <!-- Next response. Built like the first-response card above, scored the
              same way: per priority, against that priority's own target. -->
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:4px">Next response, against target</div>
+          <div class="v2-label" style="margin-bottom:4px">{tx('Next response, against target')}</div>
           <p class="v2-sub" style="font-size:11.5px;margin:0 0 14px">
-            The wait after a customer writes back, once the first reply has gone. Counted around the
-            clock, against each priority's <a
-              href={resolve('/settings/escalation')}
-              style="color:inherit">next reply target</a
-            >. A reply still overdue on an open ticket counts as late.
+            {tx(
+              'The wait after a customer writes back, once the first reply has gone. Counted around the clock, against each priority\'s'
+            )}
+            <a href={resolve('/settings/escalation')} style="color:inherit"
+              >{tx('next reply target')}</a
+            >. {tx('A reply still overdue on an open ticket counts as late.')}
           </p>
           {#each data.nextResponse as r (r.priority)}
             {@const pct = attainment(r)}
@@ -248,10 +266,11 @@
               <div
                 style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;margin-bottom:5px"
               >
-                <b style="font-weight:600">{r.priority}</b>
+                <b style="font-weight:600">{choiceLabel(r.priority)}</b>
                 <span class="v2-sub" style="font-size:11.5px">
-                  target {duration(minutesOf(r.target_hours))} · median {duration(
-                    minutesOf(r.median_hours)
+                  {tx('target {time}', { time: duration(minutesOf(r.target_hours)) })} · {tx(
+                    'median {time}',
+                    { time: duration(minutesOf(r.median_hours)) }
                   )}
                 </span>
                 <span
@@ -267,12 +286,12 @@
                 <i style="width:{pct ?? 0}%;background:{barColor(pct)}"></i>
               </div>
               <div class="v2-bar-legend">
-                <span><span class="v2-num">{r.met}</span> in time</span>
+                <span><span class="v2-num">{r.met}</span> {tx('in time')}</span>
                 <span>
                   {#if r.missed}
-                    <span class="v2-num" style="color:var(--v2-rust)">{r.missed}</span> late
+                    <span class="v2-num" style="color:var(--v2-rust)">{r.missed}</span> {tx('late')}
                   {:else}
-                    none late
+                    {tx('none late')}
                   {/if}
                 </span>
               </div>
@@ -282,34 +301,36 @@
 
         <!-- Satisfaction -->
         <div class="v2-card" style="padding:16px 18px">
-          <div class="v2-label" style="margin-bottom:4px">Customer satisfaction</div>
+          <div class="v2-label" style="margin-bottom:4px">{tx('Customer satisfaction')}</div>
           {#if data.csat.count === 0}
             <p class="v2-sub" style="font-size:11.5px;margin:0">
-              No ratings came back in this window. A survey goes to the ticket's contact when it
-              closes, if surveys are switched on in <a
-                href={resolve('/settings/organization')}
-                style="color:inherit">organisation settings</a
+              {tx(
+                "No ratings came back in this window. A survey goes to the ticket's contact when it closes, if surveys are switched on in"
+              )}
+              <a href={resolve('/settings/organization')} style="color:inherit"
+                >{tx('organisation settings')}</a
               >.
             </p>
           {:else}
             <p class="v2-sub" style="font-size:11.5px;margin:0 0 10px">
-              What customers answered in the survey sent when their ticket closed, on a scale of 1
-              to 5.
+              {tx(
+                'What customers answered in the survey sent when their ticket closed, on a scale of 1 to 5.'
+              )}
             </p>
             <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">
               <span class="v2-stat-value" style="margin:0">
                 {data.csat.average == null ? '—' : data.csat.average.toFixed(1)}
               </span>
               <span class="v2-sub" style="font-size:12px">
-                average from <span class="v2-num">{count(data.csat.count)}</span>
-                {data.csat.count === 1 ? 'rating' : 'ratings'}
+                {tx('average from')} <span class="v2-num">{count(data.csat.count)}</span>
+                {data.csat.count === 1 ? tx('rating') : tx('ratings')}
               </span>
             </div>
             {#each RATINGS as rating (rating)}
               {@const n = data.csat.distribution[rating] ?? 0}
               <div style="margin-bottom:11px">
                 <div style="display:flex;align-items:baseline;font-size:12.5px;margin-bottom:5px">
-                  <span>{rating} out of 5</span>
+                  <span>{tx('{n} out of 5', { n: rating })}</span>
                   <span class="v2-sub v2-num" style="margin-left:auto;font-size:12px">
                     {n} · {ratingShare(n)}%
                   </span>
@@ -322,16 +343,16 @@
       </div>
 
       <!-- Per agent -->
-      <div class="v2-label" style="margin-bottom:10px">Who is carrying it</div>
+      <div class="v2-label" style="margin-bottom:10px">{tx('Who is carrying it')}</div>
       <div class="v2-table-wrap">
         <table class="v2-table">
           <thead>
             <tr>
-              <th>Agent</th>
-              <th class="v2-r">Open now</th>
-              <th class="v2-r">Closed this week</th>
-              <th class="v2-r">Median first response</th>
-              <th class="v2-r">Missed target</th>
+              <th>{tx('Agent')}</th>
+              <th class="v2-r">{tx('Open now')}</th>
+              <th class="v2-r">{tx('Closed this week')}</th>
+              <th class="v2-r">{tx('Median first response')}</th>
+              <th class="v2-r">{tx('Missed target')}</th>
             </tr>
           </thead>
           <tbody>
@@ -375,16 +396,19 @@
         <Clock size={15} style="color:var(--v2-slate);flex:none;margin-top:2px" />
         <p class="v2-sub" style="font-size:12px;margin:0">
           {#if totals.business_hours_applied}
-            These figures count elapsed time around the clock, evenings and weekends included. Each
-            ticket's own SLA deadline is counted inside {totals.calendar_name}, so a reply on time
-            there can show as late here.
+            {tx(
+              "These figures count elapsed time around the clock, evenings and weekends included. Each ticket's own SLA deadline is counted inside {name}, so a reply on time there can show as late here.",
+              { name: totals.calendar_name }
+            )}
             <a href={resolve('/settings/business-hours')} style="color:inherit"
-              >Change the calendar</a
+              >{tx('Change the calendar')}</a
             >.
           {:else}
-            Elapsed time is counted around the clock. No business-hours calendar is set, so evenings
-            and weekends count against a target.
-            <a href={resolve('/settings/business-hours')} style="color:inherit">Set up a calendar</a
+            {tx(
+              'Elapsed time is counted around the clock. No business-hours calendar is set, so evenings and weekends count against a target.'
+            )}
+            <a href={resolve('/settings/business-hours')} style="color:inherit"
+              >{tx('Set up a calendar')}</a
             >.
           {/if}
         </p>
