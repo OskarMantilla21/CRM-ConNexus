@@ -62,18 +62,22 @@ afterEach(() => {
   delete privateEnv.RELAY_SECRET;
 });
 
-describe('magic-link request (records the address on the token)', () => {
+describe('password sign-in (the sign-in audit row records the address)', () => {
   const submit = () => {
     const body = new FormData();
-    body.set('email', 'ada@example.com');
+    body.set('username', 'ada');
+    body.set('password', 'secret');
     const request = visit('http://app.test/login', { method: 'POST', body });
-    return login.actions.default(/** @type {any} */ ({ request, getClientAddress }));
+    return ignoringRedirect(() =>
+      login.actions.default(/** @type {any} */ ({ request, getClientAddress, cookies: cookies() }))
+    );
   };
 
   it('sends the signed visitor address', async () => {
     await submit();
-    const [url, , config] = vi.mocked(axios.post).mock.calls[0];
-    expect(url).toMatch(/\/api\/auth\/magic-link\/request\/$/);
+    const [url, payload, config] = vi.mocked(axios.post).mock.calls[0];
+    expect(url).toMatch(/\/api\/auth\/password\/$/);
+    expect(payload).toEqual({ username: 'ada', password: 'secret' });
     expect(config?.headers).toMatchObject(SIGNED);
   });
 

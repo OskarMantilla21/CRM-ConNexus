@@ -217,6 +217,9 @@ class RequireOrgContext:
         "/healthz/",
         "/api/packs/",
         "/api/auth/logout/",
+        # Username and password sign-in. Anonymous by design: the caller has
+        # no org claim yet. Exact match, same as logout.
+        "/api/auth/password/",
         # Platform directory. The caller has no organization claim: the role
         # is a property of the user, and the view refuses everyone else.
         # Exact match so a later route under /api/platform/ has to opt in.

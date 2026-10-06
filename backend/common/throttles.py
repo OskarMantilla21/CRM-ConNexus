@@ -60,6 +60,17 @@ class MagicLinkGlobalThrottle(SimpleRateThrottle):
         return self.cache_format % {"scope": self.scope, "ident": "all"}
 
 
+class PasswordLoginIPThrottle(_ClientIPThrottle):
+    """Username and password sign-in, per address.
+
+    Same bucket shape as the magic-link request: the web page calls the API
+    from the SvelteKit server, so the signed visitor address is what separates
+    one person from another.
+    """
+
+    scope = "password_login_ip"
+
+
 class PortalLoginIPThrottle(_ClientIPThrottle):
     """Not bucketed per org, unlike the web form limit: an org id is not secret
     (it is in every portal email), so a per-org IP bucket would let one caller
