@@ -35,9 +35,6 @@ Pedir el lead de otro negocio responde `404`. La lista no lo incluye.
 
 ## Cómo verlo en el navegador
 
-1. Abre http://127.0.0.1:5181/login
-2. Escribe uno de los tres correos y pulsa **Continue with email**.
-3. El enlace sale en `docker compose logs celery-worker --since 2m`, dentro de `C:\ConNexus-Gen\CRM`.
-4. Ábrelo, pulsa **Continue to BottleCRM** y entra a la única organización que aparece.
+Los usuarios y las contraseñas están en [cuentas-de-acceso.md](cuentas-de-acceso.md). Ana entra como `ana.luna`, Carlos como `carlos.andes` y Lucia como `lucia.rio`.
 
-Ana debe ver el pedido de panes y no el camión ni el catálogo. Carlos y Lucia, al revés. Para comparar hay que cerrar sesión y entrar con el otro correo. Un mismo usuario no puede cambiar a un negocio donde no tiene perfil.
+Ana debe ver el pedido de panes y no el camión ni el catálogo. Carlos y Lucia, al revés. Para comparar hay que cerrar sesión y entrar con el otro usuario. Un mismo usuario no puede cambiar a un negocio donde no tiene perfil.
