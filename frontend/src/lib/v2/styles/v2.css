@@ -231,16 +231,24 @@
   width: min(100%, 440px);
 }
 .v2-signin h1 {
-  margin: 0 0 28px;
+  margin: 0 0 8px;
   text-align: center;
   font-size: 32px;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
+.v2-signin-lead {
+  margin: 0 0 22px;
+  text-align: center;
+  color: var(--v2-slate);
+}
 .v2-signin-label {
   display: block;
-  margin-bottom: 6px;
+  margin: 14px 0 6px;
   font-size: 14px;
+}
+.v2-signin-label:first-of-type {
+  margin-top: 0;
 }
 .v2-signin .v2-btn-primary {
   display: flex;

@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-  <title>{tx('User directory · BottleCRM')}</title>
+  <title>{tx('User directory · ConNexus-CRM')}</title>
 </svelte:head>
 
 <div class="v2-root v2-public">

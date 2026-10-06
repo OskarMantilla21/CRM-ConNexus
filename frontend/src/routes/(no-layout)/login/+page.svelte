@@ -3,43 +3,27 @@
   import '$lib/v2/styles/v2.css';
   import { enhance } from '$app/forms';
 
-  import { Check } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
   import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
-  let { data = {} } = $props();
+  let { form = null } = $props();
 
-  let isLoading = $state(false);
-  let email = $state('');
-  let magicLinkSent = $state(false);
-  let isSendingLink = $state(false);
-  let magicLinkError = $state('');
+  let submitting = $state(false);
 
-  function handleGoogleLogin() {
-    isLoading = true;
-  }
-
-  function handleMagicLink() {
-    isSendingLink = true;
-    magicLinkError = '';
-    return async ({ result }) => {
-      isSendingLink = false;
-      if (result?.type === 'success') {
-        magicLinkSent = true;
-      } else if (result?.type === 'failure') {
-        magicLinkError = result.data?.error || tx('Something went wrong. Please try again.');
-      } else if (!result) {
-        magicLinkError = tx('Something went wrong. Please try again.');
-      }
+  function handleSubmit() {
+    submitting = true;
+    return async ({ update }) => {
+      await update();
+      submitting = false;
     };
   }
 </script>
 
 <svelte:head>
-  <title>{tx('Sign in · BottleCRM')}</title>
+  <title>{tx('Sign in · ConNexus-CRM')}</title>
   <meta
     name="description"
-    content={tx('Sign in to BottleCRM to manage your contacts, deals, and grow your business.')}
+    content={tx('Sign in to ConNexus-CRM to manage your contacts, deals, and grow your business.')}
   />
 </svelte:head>
 
@@ -48,63 +32,40 @@
   <div class="v2-public-body">
     <div class="v2-signin">
       <h1>{tx('Sign in to your workspace')}</h1>
-
-      {#if magicLinkSent}
-        <div class="v2-auth-note v2-auth-note-ok">
-          <Check />
-          <div>
-            <b>{tx('Check your email.')}</b>
-            <div style="font-weight:400;margin-top:2px">
-              {tx('We sent a sign-in link. It expires in 10 minutes.')}
-            </div>
-          </div>
+      <p class="v2-signin-lead">{tx('Sign in with your username and password.')}</p>
+      <form method="POST" use:enhance={handleSubmit}>
+        <label class="v2-signin-label" for="username">{tx('Username')}</label>
+        <input
+          id="username"
+          name="username"
+          class="v2-input"
+          autocomplete="username"
+          required
+          disabled={submitting}
+        />
+        <label class="v2-signin-label" for="password">{tx('Password')}</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          class="v2-input"
+          autocomplete="current-password"
+          required
+          disabled={submitting}
+        />
+        <button type="submit" class="v2-btn v2-btn-primary" disabled={submitting}>
+          {#if submitting}
+            <span class="v2-spin"></span>
+            <span>{tx('Signing you in…')}</span>
+          {:else}
+            <span>{tx('Sign in')}</span>
+          {/if}
+        </button>
+      </form>
+      {#if form?.error}
+        <div class="v2-auth-note v2-auth-note-bad" style="margin-top:14px">
+          <span>{form.error}</span>
         </div>
-      {:else}
-        <form method="POST" use:enhance={handleMagicLink}>
-          <label class="v2-signin-label" for="email">{tx('Work email')}</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            class="v2-input"
-            placeholder="you@company.com"
-            required
-            bind:value={email}
-            disabled={isSendingLink}
-          />
-          <div class="v2-google-pill">
-            {#if data['google_url']}
-              <a
-                href={data['google_url']}
-                rel="external"
-                onclick={handleGoogleLogin}
-                style:pointer-events={isLoading ? 'none' : null}
-              >
-                {#if isLoading}
-                  <span class="v2-spin"></span>
-                  <span>{tx('Redirecting…')}</span>
-                {:else}
-                  <span>{tx('Continue with Google')}</span>
-                {/if}
-              </a>
-            {:else}
-              <span>{tx('Google is unavailable')}</span>
-            {/if}
-          </div>
-          <button type="submit" class="v2-btn v2-btn-primary" disabled={isSendingLink}>
-            {#if isSendingLink}
-              <span class="v2-spin"></span>
-              <span>{tx('Sending…')}</span>
-            {:else}
-              <span>{tx('Send link')}</span>
-            {/if}
-          </button>
-        </form>
-        {#if magicLinkError}
-          <div class="v2-auth-note v2-auth-note-bad" style="margin-top:14px">
-            <span>{magicLinkError}</span>
-          </div>
-        {/if}
       {/if}
     </div>
   </div>

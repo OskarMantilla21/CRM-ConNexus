@@ -1,6 +1,6 @@
 # Cómo iniciar el CRM para trabajar
 
-El CRM de este proyecto es **BottleCRM** (Django + SvelteKit). El código está en `C:\ConNexus-Gen\CRM` y el repositorio propio es [OskarMantilla21/CRM-ConNexus](https://github.com/OskarMantilla21/CRM-ConNexus).
+El CRM de este proyecto es **ConNexus-CRM** (Django + SvelteKit). El código está en `C:\ConNexus-Gen\CRM` y el repositorio propio es [OskarMantilla21/CRM-ConNexus](https://github.com/OskarMantilla21/CRM-ConNexus).
 
 No hace falta XAMPP ni SuiteCRM para este proyecto. Esos sirven para otra instalación. Aquí todo corre con Docker.
 
@@ -64,24 +64,14 @@ docker compose down
 
 ## Cómo entrar
 
-La aplicación no tiene usuario y contraseña. El acceso es un enlace de un solo uso que caduca a los 10 minutos. En este entorno el correo no sale a internet: se imprime en el log del worker.
+La pantalla de acceso pide usuario y contraseña. No pide correo.
 
 1. Abre http://127.0.0.1:5181/login
-2. En el campo de correo escribe `oskarmantilla1708@gmail.com`
-3. Pulsa **Continue with email**
-4. En PowerShell, dentro de `C:\ConNexus-Gen\CRM`, lee el enlace:
+2. Usuario `oskarmantilla1708`, contraseña `Oskar-1708`
+3. Pulsa **Iniciar sesión**
+4. Elige la organización **MicroPyramid**
 
-```powershell
-docker compose logs celery-worker --since 2m
-```
-
-5. Copia la URL que empieza por `http://localhost:5181/login/verify?token=` y ábrela en el navegador.
-6. Pulsa **Continue to BottleCRM**.
-7. Elige la organización **MicroPyramid**.
-
-Esa organización ya tiene datos de prueba: 20 leads, 10 cuentas, 15 contactos, 10 oportunidades, 5 tickets y 50 facturas. El correo `oskarmantilla1708@gmail.com` es el administrador de esa organización.
-
-El botón **Continue with Google** no funciona aquí. Google OAuth está vacío en `.env.docker`.
+Esa organización ya tiene datos de prueba: 20 leads, 10 cuentas, 15 contactos, 10 oportunidades, 5 tickets y 50 facturas. Esa cuenta es administrador de esa organización.
 
 ### Admin de Django
 

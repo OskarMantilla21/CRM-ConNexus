@@ -1,4 +1,4 @@
-/// User model for BottleCRM
+/// User model for ConNexus-CRM
 class User {
   final String id;
   final String name;

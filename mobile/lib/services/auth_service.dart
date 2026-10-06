@@ -9,7 +9,7 @@ import 'api_service.dart';
 import 'crash_reporting.dart';
 import 'token_storage.dart';
 
-/// Authentication service for BottleCRM
+/// Authentication service for ConNexus-CRM
 ///
 /// Handles Google Sign-In using ID token flow (same as old app),
 /// token storage, and authentication state management.

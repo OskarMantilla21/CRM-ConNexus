@@ -8,14 +8,36 @@ import { addMessages } from '../translate.js';
  */
 export const messages = {
   // Signed-out chrome
-  'Signing you in · BottleCRM': {
-    es: 'Entrando · BottleCRM',
-    pt: 'Entrando · BottleCRM'
+  'Signing you in · ConNexus-CRM': {
+    es: 'Entrando · ConNexus-CRM',
+    pt: 'Entrando · ConNexus-CRM'
   },
   'Signing you in…': { es: 'Entrando…', pt: 'Entrando…' },
-  'Choose organisation · BottleCRM': {
-    es: 'Elegir organización · BottleCRM',
-    pt: 'Escolher organização · BottleCRM'
+  'Sign in with your username and password.': {
+    es: 'Entra con tu usuario y tu contraseña.',
+    pt: 'Entre com seu usuário e sua senha.'
+  },
+  Username: { es: 'Usuario', pt: 'Usuário' },
+  Password: { es: 'Contraseña', pt: 'Senha' },
+  'Username and password are required': {
+    es: 'El usuario y la contraseña son obligatorios.',
+    pt: 'O usuário e a senha são obrigatórios.'
+  },
+  'Invalid username or password': {
+    es: 'Usuario o contraseña incorrectos.',
+    pt: 'Usuário ou senha incorretos.'
+  },
+  'Too many sign-in attempts. Wait a few minutes and try again.': {
+    es: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+    pt: 'Muitas tentativas. Espere alguns minutos e tente de novo.'
+  },
+  'User account is disabled': {
+    es: 'Esta cuenta está desactivada.',
+    pt: 'Esta conta está desativada.'
+  },
+  'Choose organisation · ConNexus-CRM': {
+    es: 'Elegir organización · ConNexus-CRM',
+    pt: 'Escolher organização · ConNexus-CRM'
   },
   'Choose an organisation': { es: 'Elige una organización', pt: 'Escolha uma organização' },
   "Pick the workspace you'd like to open.": {
@@ -28,14 +50,14 @@ export const messages = {
   },
   'Create new organisation': { es: 'Crear nueva organización', pt: 'Criar nova organização' },
   'No organisations yet': { es: 'Aún no hay organizaciones', pt: 'Ainda não há organizações' },
-  'Create your first workspace to start using BottleCRM.': {
-    es: 'Crea tu primer espacio de trabajo para empezar a usar BottleCRM.',
-    pt: 'Crie seu primeiro espaço de trabalho para começar a usar o BottleCRM.'
+  'Create your first workspace to start using ConNexus-CRM.': {
+    es: 'Crea tu primer espacio de trabajo para empezar a usar ConNexus-CRM.',
+    pt: 'Crie seu primeiro espaço de trabalho para começar a usar o ConNexus-CRM.'
   },
   'Create organisation': { es: 'Crear organización', pt: 'Criar organização' },
-  'Create organisation · BottleCRM': {
-    es: 'Crear organización · BottleCRM',
-    pt: 'Criar organização · BottleCRM'
+  'Create organisation · ConNexus-CRM': {
+    es: 'Crear organización · ConNexus-CRM',
+    pt: 'Criar organização · ConNexus-CRM'
   },
   'Set up a new workspace for your team.': {
     es: 'Configura un espacio de trabajo nuevo para tu equipo.',
@@ -43,9 +65,9 @@ export const messages = {
   },
   'Organisation name': { es: 'Nombre de la organización', pt: 'Nome da organização' },
   'e.g. Acme Inc.': { es: 'p. ej. Acme Inc.', pt: 'p. ex. Acme Inc.' },
-  'This becomes your workspace name in BottleCRM.': {
-    es: 'Este será el nombre de tu espacio de trabajo en BottleCRM.',
-    pt: 'Este será o nome do seu espaço de trabalho no BottleCRM.'
+  'This becomes your workspace name in ConNexus-CRM.': {
+    es: 'Este será el nombre de tu espacio de trabajo en ConNexus-CRM.',
+    pt: 'Este será o nome do seu espaço de trabalho no ConNexus-CRM.'
   },
   'Time zone': { es: 'Zona horaria', pt: 'Fuso horário' },
   'Sets when a day starts here, so "due today" and "overdue" mean what your team expects. You can change it later in Settings.':
@@ -115,18 +137,18 @@ export const messages = {
     pt: 'O link expirou ou é inválido'
   },
   'Back to sign in': { es: 'Volver a iniciar sesión', pt: 'Voltar para entrar' },
-  'Sign in to BottleCRM': { es: 'Entra en BottleCRM', pt: 'Entre no BottleCRM' },
+  'Sign in to ConNexus-CRM': { es: 'Entra en ConNexus-CRM', pt: 'Entre no ConNexus-CRM' },
   'Press the button to finish signing in.': {
     es: 'Pulsa el botón para terminar de entrar.',
     pt: 'Aperte o botão para concluir o acesso.'
   },
   'Signing in…': { es: 'Entrando…', pt: 'Entrando…' },
-  'Continue to BottleCRM': { es: 'Continuar a BottleCRM', pt: 'Continuar para o BottleCRM' },
+  'Continue to ConNexus-CRM': { es: 'Continuar a ConNexus-CRM', pt: 'Continuar para o ConNexus-CRM' },
 
   // Platform directory (the screen was written in Spanish; English is the source)
-  'User directory · BottleCRM': {
-    es: 'Directorio de usuarios · BottleCRM',
-    pt: 'Diretório de usuários · BottleCRM'
+  'User directory · ConNexus-CRM': {
+    es: 'Directorio de usuarios · ConNexus-CRM',
+    pt: 'Diretório de usuários · ConNexus-CRM'
   },
   'User directory': { es: 'Directorio de usuarios', pt: 'Diretório de usuários' },
   'This role sees who has an account and which company they belong to. It does not open customers, invoices, or payments.':
@@ -787,7 +809,7 @@ export const messages = {
   'received an email': { es: 'recibió un correo', pt: 'recebeu um e-mail' },
   'replied to': { es: 'respondió a', pt: 'respondeu a' },
   updated: { es: 'actualizó', pt: 'atualizou' },
-  'BottleCRM Support': { es: 'Soporte de BottleCRM', pt: 'Suporte do BottleCRM' },
+  'ConNexus-CRM Support': { es: 'Soporte de ConNexus-CRM', pt: 'Suporte do ConNexus-CRM' },
   Unknown: { es: 'Desconocido', pt: 'Desconhecido' },
   Comments: { es: 'Comentarios', pt: 'Comentários' },
   'Write a comment… type @ to mention': {
@@ -1069,14 +1091,14 @@ export const messages = {
   'Unread only': { es: 'Solo sin leer', pt: 'Somente não lidas' },
   'Mark all read': { es: 'Marcar todas como leídas', pt: 'Marcar todas como lidas' },
   'No notifications': { es: 'No hay notificaciones', pt: 'Não há notificações' },
-  'Everything here has been read. Notifications arrive for CRM ticket activity and updates from BottleCRM Support.':
+  'Everything here has been read. Notifications arrive for CRM ticket activity and updates from ConNexus-CRM Support.':
     {
-      es: 'Todo lo de aquí ya se leyó. Las notificaciones llegan por la actividad de tickets del CRM y por avisos de BottleCRM Support.',
-      pt: 'Tudo aqui já foi lido. As notificações chegam pela atividade de chamados do CRM e por avisos do BottleCRM Support.'
+      es: 'Todo lo de aquí ya se leyó. Las notificaciones llegan por la actividad de tickets del CRM y por avisos de ConNexus-CRM Support.',
+      pt: 'Tudo aqui já foi lido. As notificações chegam pela atividade de chamados do CRM e por avisos do ConNexus-CRM Support.'
     },
-  'Notifications arrive for CRM ticket activity and updates from BottleCRM Support.': {
-    es: 'Las notificaciones llegan por la actividad de tickets del CRM y por avisos de BottleCRM Support.',
-    pt: 'As notificações chegam pela atividade de chamados do CRM e por avisos do BottleCRM Support.'
+  'Notifications arrive for CRM ticket activity and updates from ConNexus-CRM Support.': {
+    es: 'Las notificaciones llegan por la actividad de tickets del CRM y por avisos de ConNexus-CRM Support.',
+    pt: 'As notificações chegam pela atividade de chamados do CRM e por avisos do ConNexus-CRM Support.'
   },
   'Go to tickets': { es: 'Ir a tickets', pt: 'Ir para chamados' },
   'Get help': { es: 'Pedir ayuda', pt: 'Pedir ajuda' },

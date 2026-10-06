@@ -13,7 +13,7 @@ class SupportTicketListData {
   final int count;
 }
 
-/// Thrown when this deployment serves no BottleCRM support queue.
+/// Thrown when this deployment serves no ConNexus-CRM support queue.
 ///
 /// `/api/support/` comes from the enterprise `platform_support` app, so a
 /// community backend answers 404. That is a deployment fact, not a failure,

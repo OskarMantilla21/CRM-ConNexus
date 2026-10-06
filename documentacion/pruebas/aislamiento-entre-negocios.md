@@ -2,7 +2,7 @@
 
 Fecha de la prueba: 5 de octubre de 2026.
 
-Objetivo: comprobar que varias personas pueden tener su negocio en el mismo CRM y que ninguna ve la información de las otras. En BottleCRM cada negocio es una organización. Un usuario solo entra a las organizaciones donde tiene un perfil.
+Objetivo: comprobar que varias personas pueden tener su negocio en el mismo CRM y que ninguna ve la información de las otras. En ConNexus-CRM cada negocio es una organización. Un usuario solo entra a las organizaciones donde tiene un perfil.
 
 ## Negocios creados
 
@@ -38,6 +38,6 @@ Pedir el lead de otro negocio responde `404`. La lista no lo incluye.
 1. Abre http://127.0.0.1:5181/login
 2. Escribe uno de los tres correos y pulsa **Continue with email**.
 3. El enlace sale en `docker compose logs celery-worker --since 2m`, dentro de `C:\ConNexus-Gen\CRM`.
-4. Ábrelo, pulsa **Continue to BottleCRM** y entra a la única organización que aparece.
+4. Ábrelo, pulsa **Continuar a ConNexus-CRM** y entra a la única organización que aparece.
 
-Ana debe ver el pedido de panes y no el camión ni el catálogo. Carlos y Lucia, al revés. Para comparar hay que cerrar sesión y entrar con el otro correo. Un mismo usuario no puede cambiar a un negocio donde no tiene perfil.
+Ana debe ver el pedido de panes y no el camión ni el catálogo. Carlos y Lucia, al revés. Para comparar hay que cerrar sesión y entrar con la otra cuenta. Un mismo usuario no puede cambiar a un negocio donde no tiene perfil.

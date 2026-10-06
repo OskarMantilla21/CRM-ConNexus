@@ -11,8 +11,8 @@ Both platforms read app identity and version from a few shared sources: `applica
 `ios/Runner.xcodeproj/project.pbxproj`) are the same string on both platforms; `pubspec.yaml`'s
 `version: 1.2.0+11` supplies both the build name (`1.2.0`) and build number (`11`) via
 `flutter.versionName`/`flutter.versionCode` on Android and `$(FLUTTER_BUILD_NAME)`/
-`$(FLUTTER_BUILD_NUMBER)` on iOS. `io.bottlecrm` is BottleCRM's own identifier. It's also the
-package ID of BottleCRM's own Play Store listing referenced in `mobile/README.md`. If you're
+`$(FLUTTER_BUILD_NUMBER)` on iOS. `io.bottlecrm` is ConNexus-CRM's own identifier. It's also the
+package ID of ConNexus-CRM's own Play Store listing referenced in `mobile/README.md`. If you're
 distributing your own build through your own Play Console/App Store Connect listing, you'll want
 your own identifier here, which has knock-on effects on the Google Sign-In client registrations
 covered on [Connect to a self-hosted backend](connect-to-self-hosted.md#google-sign-in-configuration)

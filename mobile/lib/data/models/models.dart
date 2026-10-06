@@ -1,4 +1,4 @@
-/// BottleCRM Data Models
+/// ConNexus-CRM Data Models
 /// Barrel export for all model files
 library;
 

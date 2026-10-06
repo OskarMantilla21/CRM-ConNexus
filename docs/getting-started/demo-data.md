@@ -1,6 +1,6 @@
 # Demo data and packs
 
-BottleCRM has two independent ways to populate an organization with non-empty data: the
+ConNexus-CRM has two independent ways to populate an organization with non-empty data: the
 `seed_data` management command, which generates a large, randomized dataset for an entire org, and
 **vertical packs**, which apply a small, curated, industry-specific set of pipelines and sample
 records to an org that already exists.

@@ -309,10 +309,10 @@ export const messages = {
   'Work email': { es: 'Correo de trabajo', pt: 'E-mail de trabalho' },
   'Send link': { es: 'Enviar enlace', pt: 'Enviar link' },
   'Google is unavailable': { es: 'Google · No disponible', pt: 'Google · Indisponível' },
-  'Sign in · BottleCRM': { es: 'Iniciar sesión · BottleCRM', pt: 'Entrar · BottleCRM' },
-  'Sign in to BottleCRM to manage your contacts, deals, and grow your business.': {
-    es: 'Entra en BottleCRM para gestionar contactos, negocios y hacer crecer tu empresa.',
-    pt: 'Entre no BottleCRM para gerenciar contatos, negócios e fazer a empresa crescer.'
+  'Sign in · ConNexus-CRM': { es: 'Iniciar sesión · ConNexus-CRM', pt: 'Entrar · ConNexus-CRM' },
+  'Sign in to ConNexus-CRM to manage your contacts, deals, and grow your business.': {
+    es: 'Entra en ConNexus-CRM para gestionar contactos, negocios y hacer crecer tu empresa.',
+    pt: 'Entre no ConNexus-CRM para gerenciar contatos, negócios e fazer a empresa crescer.'
   },
   'Welcome back. Choose how you\'d like to continue.': {
     es: 'Hola de nuevo. Elige cómo quieres continuar.',

@@ -2,12 +2,12 @@
 
 ## What this does
 
-A complete, runnable script that talks to the BottleCRM REST API from plain Python: it obtains an
+A complete, runnable script that talks to the ConNexus-CRM REST API from plain Python: it obtains an
 access token, lists the org's leads, and creates one.
 
 "Obtains a token" here means reading a **personal access token** (`bcrm_pat_…`) from the
 environment, rather than driving one of the interactive sign-in flows on
-[Authentication](../api/authentication.md). A PAT is what BottleCRM issues specifically so a script
+[Authentication](../api/authentication.md). A PAT is what ConNexus-CRM issues specifically so a script
 doesn't need a browser, an OAuth client secret, or a magic-link email round trip just to make API
 calls. See [Tokens and API keys](../api/tokens-and-api-keys.md#personal-access-tokens) for how it
 authenticates and what it inherits. There are two ways to mint one, and which applies depends on
@@ -34,7 +34,7 @@ This prints the raw `bcrm_pat_…` token once, copy it, there's no way to retrie
 
 ```python
 #!/usr/bin/env python3
-"""List an org's leads and create one, using a BottleCRM personal access token.
+"""List an org's leads and create one, using a ConNexus-CRM personal access token.
 
 Usage:
     BCRM_BASE_URL=http://localhost:8000 BCRM_TOKEN=bcrm_pat_... python leads_sample.py
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 ## Running it
 
-Save the script as `leads_sample.py`. You need a reachable BottleCRM backend (local or
+Save the script as `leads_sample.py`. You need a reachable ConNexus-CRM backend (local or
 self-hosted) and a personal access token for a profile in the org you want to query, minted as
 described [above](#what-this-does).
 
@@ -169,7 +169,7 @@ Found the new lead: id=3f2a1c9e-....
 ```
 
 A validation failure: for example, running the script twice in the same second so the generated
-email collides. Comes back as a `400` and the script exits with the error body BottleCRM returned,
+email collides. Comes back as a `400` and the script exits with the error body ConNexus-CRM returned,
 per [Errors](../api/errors.md#validation-errors):
 
 ```text

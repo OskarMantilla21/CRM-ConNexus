@@ -8,7 +8,7 @@
    * splits on `data.available`, which the load sets from whether the enterprise
    * support queue answered:
    *
-   *   available   their tickets with the BottleCRM team, and a way to open one
+   *   available   their tickets with the ConNexus-CRM team, and a way to open one
    *   otherwise   how to reach a person, and what to tell them
    *
    * The second tier is not a degraded state, it is the whole of what a
@@ -145,7 +145,7 @@
         <EmptyState
           title={tx('No support tickets')}
           body={tx(
-            'When you need help with BottleCRM, open a ticket here. Replies and status changes stay attached to it.'
+            'When you need help with ConNexus-CRM, open a ticket here. Replies and status changes stay attached to it.'
           )}
         >
           {#snippet icon()}<LifeBuoy size={21} />{/snippet}

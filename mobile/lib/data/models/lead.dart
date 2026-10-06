@@ -134,7 +134,7 @@ enum Priority {
   }
 }
 
-/// Lead model for BottleCRM
+/// Lead model for ConNexus-CRM
 class Lead {
   final String id;
   final String? title;

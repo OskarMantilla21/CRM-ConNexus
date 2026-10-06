@@ -160,7 +160,7 @@ class DealProduct {
   }
 }
 
-/// Deal model for BottleCRM
+/// Deal model for ConNexus-CRM
 class Deal {
   final String id;
   final String title;

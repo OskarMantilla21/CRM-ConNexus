@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>{tx('Signing you in · BottleCRM')}</title>
+  <title>{tx('Signing you in · ConNexus-CRM')}</title>
 </svelte:head>
 
 <div class="v2-root v2-auth">

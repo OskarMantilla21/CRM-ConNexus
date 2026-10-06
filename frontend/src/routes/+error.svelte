@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>{$page.status} {$page.status === 404 ? tx('Not Found') : tx('Error')} | BottleCRM</title>
+  <title>{$page.status} {$page.status === 404 ? tx('Not Found') : tx('Error')} | ConNexus-CRM</title>
 </svelte:head>
 
 <main class="bg-background min-h-screen">

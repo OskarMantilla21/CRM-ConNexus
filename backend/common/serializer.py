@@ -76,8 +76,9 @@ class OrgAwareRefreshToken(RefreshToken):
         # Add user info to token (avoids extra API calls for display)
         if user:
             token["user_email"] = user.email
-            # Build display name from email (User model doesn't have first/last name)
-            token["user_name"] = user.email.split("@")[0] if user.email else ""
+            token["user_name"] = (user.name or "").strip() or (
+                user.email.split("@", 1)[0] if user.email else ""
+            )
             token["user_profile_pic"] = user.profile_pic or ""
             # Display hint for the web app. The API re-reads the column.
             token["is_platform_admin"] = bool(user.is_platform_admin)

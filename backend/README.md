@@ -1,6 +1,6 @@
-# BottleCRM Backend - Django REST API
+# ConNexus-CRM Backend - Django REST API
 
-BottleCRM is a self-hosted CRM you run on your own infrastructure, MIT licensed and
+ConNexus-CRM is a self-hosted CRM you run on your own infrastructure, MIT licensed and
 free to use. This package is the backend: a Django REST Framework API that serves
 both the SvelteKit web app and the Flutter mobile client from one set of endpoints.
 

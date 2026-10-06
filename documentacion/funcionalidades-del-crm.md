@@ -37,7 +37,7 @@ Un paquete de industria puede cambiar las palabras de la interfaz (por ejemplo, 
 
 | Pantalla | Ruta | Qué hace la persona |
 |---|---|---|
-| Entrar | `/login` | Escribe su correo. No hay contraseña en la aplicación. También existe Google, apagado en esta máquina. |
+| Entrar | `/login` | Escribe su usuario y su contraseña. No pide correo. |
 | Confirmar enlace | `/login/verify?token=…` | La página solo muestra Continuar. El enlace se gasta al pulsar, no al abrir. Caduca en unos 10 minutos. En esta máquina el mensaje sale en `docker compose logs celery-worker`, no en el buzón. |
 | Elegir empresa | `/org` | Lista las empresas de esa cuenta, con su rol. Puede crear una empresa nueva en `/org/new`. |
 | Directorio | `/plataforma` | Solo el super rol. Si entra otra persona, vuelve a `/org`. |
@@ -287,7 +287,7 @@ De la persona, no de la empresa.
 Ayuda para quien usa el CRM, no el centro de ayuda de sus clientes.
 
 - Atajos a la base de conocimiento, a la cola de tickets y a Ajustes.
-- Si el servicio de soporte de BottleCRM responde, lista los tickets abiertos con ese equipo y deja crear uno. En esta instalación local esa cola no está, y la página explica cómo pedir ayuda por fuera.
+- Si el servicio de soporte de ConNexus-CRM responde, lista los tickets abiertos con ese equipo y deja crear uno. En esta instalación local esa cola no está, y la página explica cómo pedir ayuda por fuera.
 
 ### Notificaciones — `/notifications`
 

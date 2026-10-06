@@ -141,8 +141,8 @@
       <EmptyState
         title={filter === 'unread' ? tx('Nothing unread') : tx('No notifications')}
         body={filter === 'unread'
-          ? tx('Everything here has been read. Notifications arrive for CRM ticket activity and updates from BottleCRM Support.')
-          : tx('Notifications arrive for CRM ticket activity and updates from BottleCRM Support.')}
+          ? tx('Everything here has been read. Notifications arrive for CRM ticket activity and updates from ConNexus-CRM Support.')
+          : tx('Notifications arrive for CRM ticket activity and updates from ConNexus-CRM Support.')}
       >
         {#snippet icon()}<BellOff size={21} />{/snippet}
         {#snippet actions()}
@@ -169,7 +169,7 @@
             <div class="body">
               <p class="line">
                 {#if isSupportNotification(n)}
-                  <b class="system">BottleCRM Support</b>
+                  <b class="system">ConNexus-CRM Support</b>
                 {:else if n.actor}
                   <Avatar name={n.actor.name} size={17} />
                   <b>{n.actor.name}</b>

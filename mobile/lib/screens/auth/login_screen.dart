@@ -178,7 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ),
         const SizedBox(height: 10),
         Text(
-          'Sign in to BottleCRM.',
+          'Sign in to ConNexus-CRM.',
           textAlign: TextAlign.center,
           style: AppTypography.body.copyWith(
             color: AppColors.textSecondary,

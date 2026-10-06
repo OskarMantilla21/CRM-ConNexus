@@ -54,7 +54,7 @@ enum ActivityType {
   }
 }
 
-/// Activity model for BottleCRM
+/// Activity model for ConNexus-CRM
 class Activity {
   final String id;
   final ActivityType type;

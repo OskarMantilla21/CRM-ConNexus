@@ -141,7 +141,7 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
             _buildSectionHeader('Support'),
             MenuRow(
               icon: LucideIcons.lifeBuoy,
-              label: 'Contact BottleCRM Support',
+              label: 'Contact ConNexus-CRM Support',
               description: 'Open a ticket and follow replies',
               onTap: () => context.push(AppRoutes.help),
             ),

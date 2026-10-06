@@ -50,7 +50,7 @@ BACKOFF = (
 MAX_ATTEMPTS = len(BACKOFF) + 1
 CLAIM = timedelta(minutes=2)
 RETENTION_DAYS = 30
-USER_AGENT = "BottleCRM-Webhooks"
+USER_AGENT = "ConNexus-CRM-Webhooks"
 
 
 def sign(secret, timestamp, body):

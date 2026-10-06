@@ -15,7 +15,7 @@
 </script>
 
 <svelte:head>
-  <title>{tx('Choose organisation · BottleCRM')}</title>
+  <title>{tx('Choose organisation · ConNexus-CRM')}</title>
 </svelte:head>
 
 <div class="v2-root v2-public">
@@ -76,7 +76,7 @@
         <div class="v2-state" style="padding:22px 0 8px">
           <div class="v2-state-icon"><Building2 size={22} /></div>
           <h3>{tx('No organisations yet')}</h3>
-          <p>{tx('Create your first workspace to start using BottleCRM.')}</p>
+          <p>{tx('Create your first workspace to start using ConNexus-CRM.')}</p>
           <a href={resolve('/org/new')} class="v2-btn v2-btn-primary">
             <Plus size={15} />
             {tx('Create organisation')}

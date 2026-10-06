@@ -17,7 +17,7 @@ locally.
 
 ```javascript
 #!/usr/bin/env node
-// List an org's leads and create one, using a BottleCRM personal access token.
+// List an org's leads and create one, using a ConNexus-CRM personal access token.
 //
 // Usage:
 //   BCRM_BASE_URL=http://localhost:8000 BCRM_TOKEN=bcrm_pat_... node leads-sample.mjs
@@ -134,7 +134,7 @@ Save the script as `leads-sample.mjs`. It uses no `import`/`export` and no top-l
 at the top level), so it runs the same way whether Node treats the file as CommonJS or an ES
 module, the `.mjs` extension just removes any ambiguity from a `package.json` in the same
 directory. You need a reachable
-BottleCRM backend and a personal access token, minted as described in the
+ConNexus-CRM backend and a personal access token, minted as described in the
 [Python sample](python-sample.md#what-this-does):
 
 ```bash
@@ -164,7 +164,7 @@ Confirming it was created...
 Found the new lead: id=3f2a1c9e-....
 ```
 
-A validation failure comes back as a `400` and the script throws with the error body BottleCRM
+A validation failure comes back as a `400` and the script throws with the error body ConNexus-CRM
 returned, per [Errors](../api/errors.md#validation-errors):
 
 ```text

@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>{tx('Sign in · BottleCRM')}</title>
+  <title>{tx('Sign in · ConNexus-CRM')}</title>
   <!-- same-origin, not no-referrer: under no-referrer the browser sends
        `Origin: null` on the form POST, and SvelteKit's CSRF check refuses it
        as cross-site (403). same-origin still keeps the token in this URL out of
@@ -33,7 +33,7 @@
         <a href={resolve('/login')} class="v2-btn v2-btn-block">{tx('Back to sign in')}</a>
       {:else}
         <div class="v2-auth-head" style="margin-bottom:16px">
-          <h1>{tx('Sign in to BottleCRM')}</h1>
+          <h1>{tx('Sign in to ConNexus-CRM')}</h1>
           <p>{tx('Press the button to finish signing in.')}</p>
         </div>
         <!-- A plain submit, never an automatic one: see +page.server.js. No
@@ -44,7 +44,7 @@
               <span class="v2-spin"></span>
               <span>{tx('Signing in…')}</span>
             {:else}
-              <span>{tx('Continue to BottleCRM')}</span>
+              <span>{tx('Continue to ConNexus-CRM')}</span>
             {/if}
           </button>
         </form>

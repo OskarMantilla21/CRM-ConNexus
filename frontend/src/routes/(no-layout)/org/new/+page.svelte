@@ -42,7 +42,7 @@
 </script>
 
 <svelte:head>
-  <title>{tx('Create organisation · BottleCRM')}</title>
+  <title>{tx('Create organisation · ConNexus-CRM')}</title>
 </svelte:head>
 
 <div class="v2-root v2-public">
@@ -77,7 +77,7 @@
             required
             disabled={isSubmitting || !!form?.data}
           />
-          <p class="v2-hint">{tx('This becomes your workspace name in BottleCRM.')}</p>
+          <p class="v2-hint">{tx('This becomes your workspace name in ConNexus-CRM.')}</p>
         </div>
 
         <div class="v2-field">

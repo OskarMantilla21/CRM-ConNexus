@@ -134,7 +134,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           const SizedBox(height: 6),
           Text(
             'Notifications arrive for CRM ticket activity and updates from '
-            'BottleCRM Support.',
+            'ConNexus-CRM Support.',
             textAlign: TextAlign.center,
             style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           ),

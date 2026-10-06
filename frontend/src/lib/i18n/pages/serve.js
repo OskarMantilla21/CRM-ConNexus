@@ -1265,9 +1265,9 @@ export const messages = {
     es: 'Este panel es para administradores.',
     pt: 'Este painel é para administradores.'
   },
-  'This deployment has no BottleCRM support queue. The help page lists the ways to reach us.': {
-    es: 'Esta instalación no tiene una cola de soporte de BottleCRM. La página de ayuda lista las formas de contactarnos.',
-    pt: 'Esta instalação não tem uma fila de suporte do BottleCRM. A página de ajuda lista as formas de falar conosco.'
+  'This deployment has no ConNexus-CRM support queue. The help page lists the ways to reach us.': {
+    es: 'Esta instalación no tiene una cola de soporte de ConNexus-CRM. La página de ayuda lista las formas de contactarnos.',
+    pt: 'Esta instalação não tem uma fila de suporte do ConNexus-CRM. A página de ajuda lista as formas de falar conosco.'
   },
   'This is a draft. Send it for review when the answer is right: somebody other than you has to approve it before it can be published.':
     {
@@ -1400,10 +1400,10 @@ export const messages = {
     es: 'Cómo lo dirías en voz alta. Tiene que ser único aquí.',
     pt: 'Como você diria em voz alta. Precisa ser único aqui.'
   },
-  'When you need help with BottleCRM, open a ticket here. Replies and status changes stay attached to it.':
+  'When you need help with ConNexus-CRM, open a ticket here. Replies and status changes stay attached to it.':
     {
-      es: 'Cuando necesites ayuda con BottleCRM, abre un ticket aquí. Las respuestas y los cambios de estado quedan en él.',
-      pt: 'Quando você precisar de ajuda com o BottleCRM, abra um chamado aqui. As respostas e as mudanças de status ficam nele.'
+      es: 'Cuando necesites ayuda con ConNexus-CRM, abre un ticket aquí. Las respuestas y los cambios de estado quedan en él.',
+      pt: 'Quando você precisar de ajuda com o ConNexus-CRM, abra um chamado aqui. As respostas e as mudanças de status ficam nele.'
     },
   'Which approval? None was given.': {
     es: '¿Qué aprobación? No se indicó ninguna.',

@@ -13,7 +13,7 @@ import '../../widgets/common/menu_row.dart';
 
 /// Help, in two tiers. See the web page at `routes/(app)/help/+page.svelte`.
 ///
-/// The queue of tickets with the BottleCRM team is an enterprise feature, so a
+/// The queue of tickets with the ConNexus-CRM team is an enterprise feature, so a
 /// community deployment has none and the provider raises [SupportUnavailable].
 /// That is not an error state: it is the whole of what this deployment can
 /// offer, so the screen shows the self-serve routes and how to reach a person.
@@ -193,7 +193,7 @@ class _EmptyState extends StatelessWidget {
       ),
       const SizedBox(height: 7),
       Text(
-        'Open a ticket when you need help with BottleCRM. Replies and status changes stay attached to it.',
+        'Open a ticket when you need help with ConNexus-CRM. Replies and status changes stay attached to it.',
         textAlign: TextAlign.center,
         style: AppTypography.body.copyWith(color: AppColors.textSecondary),
       ),
@@ -201,7 +201,7 @@ class _EmptyState extends StatelessWidget {
   );
 }
 
-/// What Help is on a deployment with no BottleCRM support queue.
+/// What Help is on a deployment with no ConNexus-CRM support queue.
 class _SelfServeHelp extends StatelessWidget {
   const _SelfServeHelp();
 

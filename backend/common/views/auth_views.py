@@ -6,7 +6,8 @@ from datetime import timedelta
 
 import requests
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password, make_password
+from django.db.models import Q
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers, status
@@ -24,6 +25,7 @@ from common.throttles import (
     FirstRefusalThrottleMixin,
     MagicLinkGlobalThrottle,
     MagicLinkIPThrottle,
+    PasswordLoginIPThrottle,
 )
 from common.utils import CURRENCY_SYMBOLS
 
@@ -104,6 +106,139 @@ def _disabled_account_response():
         {"error": "User account is disabled"},
         status=status.HTTP_403_FORBIDDEN,
     )
+
+
+def _invalid_password_login():
+    """400 that does not say whether the username exists."""
+    return Response(
+        {"error": "Invalid username or password"},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+_dummy_password_hash = None
+
+
+def _password_matches(user, password):
+    """True when ``user`` has this password.
+
+    A missing account, or one with no usable password, still runs a hash so
+    the two answers take the same shape of work.
+    """
+    global _dummy_password_hash
+    if user is not None and user.has_usable_password():
+        return user.check_password(password)
+    if _dummy_password_hash is None:
+        _dummy_password_hash = make_password(secrets.token_urlsafe(16))
+    check_password(password, _dummy_password_hash)
+    return False
+
+
+def _users_for_login_name(raw):
+    """Accounts this sign-in name could mean.
+
+    The account's identity is still its email. The person may type that
+    email, the part before ``@``, or the tag after ``+`` (``ceo`` opens
+    ``owner+ceo@gmail.com``). The caller refuses the name when more than
+    one account matches.
+    """
+    name = (raw or "").strip().lower()
+    if not name or len(name) > 254 or any(ord(ch) < 32 for ch in name):
+        return User.objects.none()
+    if "@" in name:
+        return User.objects.filter(email__iexact=name)
+    return User.objects.filter(
+        Q(email__istartswith=f"{name}@") | Q(email__icontains=f"+{name}@")
+    )
+
+
+def _password_login_response(user, request):
+    """JWT pair for a password that already checked out."""
+    from common.audit_log import audit_log
+
+    user.last_login = timezone.now()
+    user.save(update_fields=["last_login"])
+
+    profiles = list(
+        Profile.objects.filter(user=user, is_active=True)
+        .select_related("org")
+        .order_by("org__name")
+    )
+    # Bind the session to an org only when there is no choice to make.
+    default_org = None
+    profile = None
+    if len(profiles) == 1:
+        profile = profiles[0]
+        default_org = profile.org
+
+    token = OrgAwareRefreshToken.for_user_and_org(user, default_org, profile)
+    audit_log.login_success(user, default_org, request)
+    response_data = {
+        "access_token": str(token.access_token),
+        "refresh_token": str(token),
+        "user": serializer.UserDetailSerializer(user).data,
+    }
+    if default_org:
+        response_data["current_org"] = _org_payload(default_org, profile=profile)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+class PasswordLoginView(FirstRefusalThrottleMixin, APIView):
+    """Sign in with a username and a password.
+
+    Does not create an account and does not send email. A username is the
+    email, the part before @, or the +tag of the address.
+    """
+
+    permission_classes = []
+    authentication_classes = []
+    throttle_classes = [PasswordLoginIPThrottle]
+
+    @extend_schema(
+        tags=["auth"],
+        request=inline_serializer(
+            name="PasswordLoginRequest",
+            fields={
+                "username": serializers.CharField(),
+                "password": serializers.CharField(),
+            },
+        ),
+        responses={
+            200: inline_serializer(
+                name="PasswordLoginResponse",
+                fields={
+                    "access_token": serializers.CharField(),
+                    "refresh_token": serializers.CharField(),
+                    "user": serializers.DictField(),
+                },
+            )
+        },
+    )
+    def post(self, request):
+        from common.audit_log import audit_log
+
+        body = request.data if isinstance(request.data, dict) else {}
+        username = body.get("username")
+        password = body.get("password")
+        if not isinstance(username, str) or not isinstance(password, str):
+            return _invalid_password_login()
+        username = username.strip()
+        if not username or not password or len(username) > 254 or len(password) > 256:
+            return _invalid_password_login()
+
+        matches = list(_users_for_login_name(username)[:2])
+        user = matches[0] if len(matches) == 1 else None
+        if not _password_matches(user, password):
+            claimed = user.email if user is not None else username
+            reason = "password_ambiguous" if len(matches) > 1 else "password_rejected"
+            audit_log.login_failure(claimed, reason, request)
+            return _invalid_password_login()
+
+        if not user.is_active:
+            audit_log.login_failure(user.email, "account_disabled", request)
+            return _disabled_account_response()
+
+        return _password_login_response(user, request)
 
 
 class GoogleOAuthCallbackView(APIView):

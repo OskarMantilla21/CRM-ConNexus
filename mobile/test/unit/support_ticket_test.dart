@@ -72,7 +72,7 @@ void main() {
         messages: [
           {
             'id': 'm1',
-            'author_label': 'BottleCRM Support',
+            'author_label': 'ConNexus-CRM Support',
             'author_type': 'staff',
             'body': 'Please try again.',
             'attachment_name': 'steps.pdf',

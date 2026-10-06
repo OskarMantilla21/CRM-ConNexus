@@ -1,6 +1,6 @@
 # PostgreSQL and RLS
 
-BottleCRM's multi-tenancy is not just an application-layer convention. Every org-scoped table is
+ConNexus-CRM's multi-tenancy is not just an application-layer convention. Every org-scoped table is
 protected by PostgreSQL Row-Level Security (RLS), configured centrally in
 `backend/common/rls/__init__.py` and enabled by Django migrations. This page explains why that
 matters, how to set up the database role RLS depends on, how policies get applied, and how to

@@ -1,6 +1,6 @@
-# Contributing to BottleCRM
+# Contributing to ConNexus-CRM
 
-Thank you for helping improve BottleCRM. Contributions of all sizes are welcome, including bug fixes, features, tests, documentation, and accessibility improvements.
+Thank you for helping improve ConNexus-CRM. Contributions of all sizes are welcome, including bug fixes, features, tests, documentation, and accessibility improvements.
 
 ## Before You Start
 

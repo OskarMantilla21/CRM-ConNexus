@@ -4,7 +4,7 @@ Read this page before you run or build the mobile app against anything other tha
 `api.bottlecrm.io`. The short version: the backend URL is baked into the binary at compile time,
 there is no way to point a build at a different server without editing source and rebuilding, and
 the two URLs shipped in source today aren't `localhost` or any generic placeholder. They're a
-specific developer's tunnel and BottleCRM's own production API.
+specific developer's tunnel and ConNexus-CRM's own production API.
 
 ## The compile-time base URL
 
@@ -36,7 +36,7 @@ The practical consequences:
 
 - **A store-distributed release build can only ever talk to `https://api.bottlecrm.io`.** If
   you're self-hosting, a generic APK/AAB/IPA built from this source with the constants unchanged
-  will authenticate against and read/write data on BottleCRM's own hosted API, not yours. There is
+  will authenticate against and read/write data on ConNexus-CRM's own hosted API, not yours. There is
   no in-app way to redirect it.
 - **A debug build (`flutter run`) does not point at `localhost` either.** `_developmentUrl` is
   `https://msi-8000.rcdev.in`: an individual developer's personal tunnel/host, not a generic
@@ -44,7 +44,7 @@ The practical consequences:
   own machine, you have to edit this constant regardless of whether you're in debug or release
   mode.
 - **This means self-hosting the mobile app is source-edit-and-rebuild, not configure-and-run.**
-  There's no middle ground between "use BottleCRM's hosted API" and "maintain your own fork of
+  There's no middle ground between "use ConNexus-CRM's hosted API" and "maintain your own fork of
   this one file." If that's a blocker for your deployment, treat it as a known limitation rather
   than something you missed a flag for.
 
@@ -123,7 +123,7 @@ Web client ID, because `GoogleIdTokenView` verifies every ID token's audience ag
 value (`google.oauth2.id_token.verify_oauth2_token(..., settings.GOOGLE_CLIENT_ID)`). Leave it
 blank and Google Sign-In stays off. Magic links are the only path in.
 
-**Android side**: three things, all tied to BottleCRM's own Google Cloud project as shipped:
+**Android side**: three things, all tied to ConNexus-CRM's own Google Cloud project as shipped:
 
 1. `mobile/lib/services/auth_service.dart` (lines 70-73) hardcodes a **Web** OAuth client ID as
    `serverClientId`:
@@ -136,7 +136,7 @@ blank and Google Sign-In stays off. Magic links are the only path in.
    The code comment identifies this as "the audience the Django backend's `GOOGLE_CLIENT_ID`
    verifies against." For your self-hosted backend to accept tokens from your own mobile build,
    this constant must be a Web client ID from **your own** Google Cloud project, and your
-   backend's `GOOGLE_CLIENT_ID` must be that same value. Reusing BottleCRM's own client ID here
+   backend's `GOOGLE_CLIENT_ID` must be that same value. Reusing ConNexus-CRM's own client ID here
    will not work against your backend, because your `GOOGLE_CLIENT_ID` won't match it.
 2. Android sign-in additionally needs an **Android**-type OAuth client (separate from the Web
    client above) registered in Google Cloud, tied to your app's `applicationId` and the SHA-1

@@ -56,7 +56,7 @@ void main() async {
         DeviceOrientation.portraitDown,
       ]);
 
-      runApp(const ProviderScope(child: BottleCRMApp()));
+      runApp(const ProviderScope(child: ConNexusCRMApp()));
     },
     (error, stack) {
       // Catch-all for anything that escaped the zone, e.g. errors from
@@ -68,16 +68,16 @@ void main() async {
   );
 }
 
-/// BottleCRM - Main Application Widget
-class BottleCRMApp extends ConsumerWidget {
-  const BottleCRMApp({super.key});
+/// ConNexus-CRM - Main Application Widget
+class ConNexusCRMApp extends ConsumerWidget {
+  const ConNexusCRMApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'BottleCRM',
+      title: 'ConNexus-CRM',
       debugShowCheckedModeBanner: false,
 
       // Theme

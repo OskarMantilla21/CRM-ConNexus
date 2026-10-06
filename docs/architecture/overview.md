@@ -1,6 +1,6 @@
 # Architecture overview
 
-This section is for developers extending or auditing BottleCRM, not for operators deploying it.
+This section is for developers extending or auditing ConNexus-CRM, not for operators deploying it.
 See Self-hosting for that. It explains how the backend is put together: what runs before a view
 ever sees a request, what each Django app owns, and where to go for the detail on tenancy,
 authentication, permissions, the data model, and background jobs.

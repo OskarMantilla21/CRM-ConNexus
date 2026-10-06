@@ -1,6 +1,6 @@
 # Authentication
 
-BottleCRM has three separate credential types, a short-lived JWT for interactive clients, a
+ConNexus-CRM has three separate credential types, a short-lived JWT for interactive clients, a
 personal access token for agents and scripts, and a per-org API key for server-to-server
 integrations, and this page describes how each one proves identity and how the server decides
 what it's allowed to do. The rule underneath all three is the same one stated in

@@ -1,4 +1,4 @@
-# BottleCRM Mobile
+# ConNexus-CRM Mobile
 
 <div align="center">
 
@@ -12,11 +12,11 @@
 
 </div>
 
-A modern, feature-rich Flutter CRM application for startups and enterprises. Built with a scalable architecture, BottleCRM Mobile provides comprehensive customer relationship management capabilities with multi-tenant support, real-time synchronization, and intuitive user experience.
+A modern, feature-rich Flutter CRM application for startups and enterprises. Built with a scalable architecture, ConNexus-CRM Mobile provides comprehensive customer relationship management capabilities with multi-tenant support, real-time synchronization, and intuitive user experience.
 
 ## 🚀 Overview
 
-BottleCRM Mobile is designed to streamline your sales and customer management processes with:
+ConNexus-CRM Mobile is designed to streamline your sales and customer management processes with:
 - **Multi-tenant Architecture**: Organization-based data isolation and role management
 - **Offline-First Design**: Local caching with smart synchronization
 - **Modern UI/UX**: Material Design 3 with adaptive layouts
@@ -250,7 +250,7 @@ Build configurations are managed in:
 
 ## 🏗 Architecture
 
-BottleCRM Mobile follows a robust, scalable architecture designed for enterprise applications:
+ConNexus-CRM Mobile follows a robust, scalable architecture designed for enterprise applications:
 
 ### Core Architecture Patterns
 
@@ -538,7 +538,7 @@ docs(readme): update installation instructions
 ```
 MIT License
 
-Copyright (c) 2024 BottleCRM
+Copyright (c) 2024 ConNexus-CRM
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -570,7 +570,7 @@ SOFTWARE.
 
 <div align="center">
 
-**BottleCRM Mobile** - Free CRM for startups and enterprises
+**ConNexus-CRM Mobile** - Free CRM for startups and enterprises
 
 Made with ❤️ using Flutter
 

@@ -1,10 +1,10 @@
-# BottleCRM: Free and Open Source Customer Relationship Management
+# ConNexus-CRM: Free and Open Source Customer Relationship Management
 
 <div align="center">
   <h3>Powerful, Modern Multi-Tenant CRM for Everyone</h3>
 </div>
 
-BottleCRM is a free, open-source Customer Relationship Management solution designed to help small and medium businesses effectively manage their customer relationships. Built with modern technologies and enterprise-grade multi-tenancy, it offers a comprehensive set of features without the enterprise price tag.
+ConNexus-CRM is a free, open-source Customer Relationship Management solution designed to help small and medium businesses effectively manage their customer relationships. Built with modern technologies and enterprise-grade multi-tenancy, it offers a comprehensive set of features without the enterprise price tag.
 
 ## ✨ Key Highlights
 
@@ -222,7 +222,7 @@ We welcome contributions of all kinds! See our [CONTRIBUTING.md](CONTRIBUTING.md
 
 ## 📄 License
 
-BottleCRM is open source software [licensed as MIT](LICENSE).
+ConNexus-CRM is open source software [licensed as MIT](LICENSE).
 
 ---
 

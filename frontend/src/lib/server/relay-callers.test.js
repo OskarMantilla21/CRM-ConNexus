@@ -62,24 +62,26 @@ afterEach(() => {
   delete privateEnv.RELAY_SECRET;
 });
 
-describe('magic-link request (records the address on the token)', () => {
+describe('password sign-in (records the address on the audit row)', () => {
   const submit = () => {
     const body = new FormData();
-    body.set('email', 'ada@example.com');
+    body.set('username', 'ada');
+    body.set('password', 'secret');
     const request = visit('http://app.test/login', { method: 'POST', body });
-    return login.actions.default(/** @type {any} */ ({ request, getClientAddress }));
+    return login.actions.default(/** @type {any} */ ({ request, cookies: cookies(), getClientAddress }));
   };
 
   it('sends the signed visitor address', async () => {
-    await submit();
-    const [url, , config] = vi.mocked(axios.post).mock.calls[0];
-    expect(url).toMatch(/\/api\/auth\/magic-link\/request\/$/);
+    await ignoringRedirect(submit);
+    const [url, payload, config] = vi.mocked(axios.post).mock.calls[0];
+    expect(url).toMatch(/\/api\/auth\/password\/$/);
+    expect(payload).toEqual({ username: 'ada', password: 'secret' });
     expect(config?.headers).toMatchObject(SIGNED);
   });
 
   it('sends only the unsigned, pre-1.12 address without a secret', async () => {
     delete privateEnv.RELAY_SECRET;
-    await submit();
+    await ignoringRedirect(submit);
     expect(vi.mocked(axios.post).mock.calls[0][2]?.headers).toEqual({
       'Content-Type': 'application/json',
       'X-Forwarded-For': VISITOR
