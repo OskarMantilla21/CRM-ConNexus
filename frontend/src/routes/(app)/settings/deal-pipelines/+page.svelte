@@ -26,6 +26,8 @@
   import Pill from '$lib/v2/components/Pill.svelte';
   import { count } from '$lib/v2/format.js';
   import { ArrowDown, ArrowUp, Plus } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -70,23 +72,28 @@
 
   /** @param {any} s */
   function rotting(s) {
-    if (s.kind !== 'open') return 'Closed, does not age';
-    if (!s.expected_days) return 'Never';
-    const warn = s.warning_days ? `, warns at ${s.warning_days}d` : '';
-    return `After ${s.expected_days}d${warn}`;
+    if (s.kind !== 'open') return tx('Closed, does not age');
+    if (!s.expected_days) return tx('Never');
+    if (s.warning_days) {
+      return tx('After {days}d, warns at {warn}d', {
+        days: s.expected_days,
+        warn: s.warning_days
+      });
+    }
+    return tx('After {days}d', { days: s.expected_days });
   }
 </script>
 
-<PageHeader title="Deal pipelines">
+<PageHeader title={tx('Deal pipelines')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
     <span class="v2-num">{count(data.pipelines.length)}</span>
-    {data.pipelines.length === 1 ? 'pipeline' : 'pipelines'} of deal stages
+    {data.pipelines.length === 1 ? tx('pipeline') : tx('pipelines')} {tx('of deal stages')}
   {/snippet}
   {#snippet actions()}
     {#if data.can_edit && !addingPipeline}
       <button class="v2-btn v2-btn-primary" onclick={() => (addingPipeline = true)}
-        ><Plus />New pipeline</button
+        ><Plus />{tx('New pipeline')}</button
       >
     {/if}
   {/snippet}
@@ -96,21 +103,22 @@
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
     {#if addingPipeline}
       <SettingsFormPanel
-        title="New pipeline"
+        title={tx('New pipeline')}
         action="?/createPipeline"
         error={form?.createPipeline?.error}
-        submitLabel="Create pipeline"
+        submitLabel={tx('Create pipeline')}
         oncancel={() => (addingPipeline = false)}
         ondone={() => (addingPipeline = false)}
       >
         {#snippet fields()}
           <div class="v2-field v2-sfp-wide">
-            <label for="p-name">Name</label>
+            <label for="p-name">{tx('Name')}</label>
             <!-- svelte-ignore a11y_autofocus -->
             <input id="p-name" class="v2-input" name="name" maxlength="100" required autofocus />
             <p class="v2-hint">
-              Starts with six stages (four open, then Closed Won and Closed Lost) that you can
-              rename, reorder or delete.
+              {tx(
+                'Starts with six stages (four open, then Closed Won and Closed Lost) that you can rename, reorder or delete.'
+              )}
             </p>
           </div>
         {/snippet}
@@ -118,8 +126,8 @@
     {/if}
 
     {#if data.pipelines.length > 1}
-      <div class="v2-label" style="margin-bottom:10px">Pipelines</div>
-      <nav class="dp-pipelines" aria-label="Pipelines">
+      <div class="v2-label" style="margin-bottom:10px">{tx('Pipelines')}</div>
+      <nav class="dp-pipelines" aria-label={tx('Pipelines')}>
         {#each data.pipelines as p (p.id)}
           <a
             class="v2-btn dp-pipeline"
@@ -127,7 +135,7 @@
             aria-current={p.id === pipeline?.id ? 'page' : undefined}
           >
             {p.name}
-            {#if p.is_default}<span class="v2-sub">default</span>{/if}
+            {#if p.is_default}<span class="v2-sub">{tx('default')}</span>{/if}
           </a>
         {/each}
       </nav>
@@ -147,7 +155,7 @@
               }}
           >
             <input type="hidden" name="id" value={pipeline.id} />
-            <label class="v2-sr-only" for="p-rename">Pipeline name</label>
+            <label class="v2-sr-only" for="p-rename">{tx('Pipeline name')}</label>
             <input
               id="p-rename"
               class="v2-input"
@@ -156,32 +164,34 @@
               required
               value={pipeline.name}
             />
-            <button class="v2-btn v2-btn-primary" type="submit">Save</button>
-            <button class="v2-btn" type="button" onclick={() => (renaming = false)}>Cancel</button>
+            <button class="v2-btn v2-btn-primary" type="submit">{tx('Save')}</button>
+            <button class="v2-btn" type="button" onclick={() => (renaming = false)}>{tx('Cancel')}</button>
           </form>
         {:else}
           <div style="flex:1;min-width:0">
             <b style="font-size:14px">{pipeline.name}</b>
-            {#if pipeline.is_default}<Pill tone="slate">Default</Pill>{/if}
+            {#if pipeline.is_default}<Pill tone="slate">{tx('Default')}</Pill>{/if}
             <div class="v2-sub" style="font-size:11.5px;margin-top:3px">
-              <span class="v2-num">{count(pipeline.stages.length)}</span> stages ·
+              <span class="v2-num">{count(pipeline.stages.length)}</span> {tx('stages')} ·
               <a
                 href={resolve(`/pipeline?view=board&pipeline=${pipeline.id}`)}
-                style="color:inherit">Open the board</a
+                style="color:inherit">{tx('Open the board')}</a
               >
             </div>
           </div>
           {#if data.can_edit}
             <div class="dp-actions">
               <button class="v2-btn v2-btn-sm" type="button" onclick={() => (renaming = true)}>
-                Rename
+                {tx('Rename')}
               </button>
               {#if !pipeline.is_default}
                 <ConfirmAction
                   action="?/deletePipeline"
-                  label="Delete"
-                  confirmLabel="Delete pipeline"
-                  explain="It leaves the board and the deal forms. Refused while any deal is still in it."
+                  label={tx('Delete')}
+                  confirmLabel={tx('Delete pipeline')}
+                  explain={tx(
+                    'It leaves the board and the deal forms. Refused while any deal is still in it.'
+                  )}
                   hidden={{ id: pipeline.id }}
                 />
               {/if}
@@ -191,8 +201,9 @@
       </div>
       {#if pipeline.is_default}
         <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 14px;max-width:64ch">
-          The default pipeline is where a deal lands when nothing names another one, so it cannot be
-          deleted.
+          {tx(
+            'The default pipeline is where a deal lands when nothing names another one, so it cannot be deleted.'
+          )}
         </p>
       {/if}
       {#if form?.renamePipeline?.error}
@@ -204,10 +215,10 @@
 
       {#if editing}
         <SettingsFormPanel
-          title={editing === 'new' ? 'New stage' : `Edit ${editing.label}`}
+          title={editing === 'new' ? tx('New stage') : tx('Edit {name}', { name: editing.label })}
           action={editing === 'new' ? '?/createStage' : '?/updateStage'}
           error={form?.stage?.error}
-          submitLabel={editing === 'new' ? 'Add stage' : 'Save stage'}
+          submitLabel={editing === 'new' ? tx('Add stage') : tx('Save stage')}
           oncancel={() => (editing = null)}
           ondone={() => (editing = null)}
         >
@@ -218,7 +229,7 @@
               <input type="hidden" name="id" value={editing.id} />
             {/if}
             <div class="v2-field">
-              <label for="s-label">Name</label>
+              <label for="s-label">{tx('Name')}</label>
               <input
                 id="s-label"
                 class="v2-input"
@@ -229,19 +240,19 @@
               />
             </div>
             <div class="v2-field">
-              <label for="s-kind">Kind</label>
+              <label for="s-kind">{tx('Kind')}</label>
               <select id="s-kind" class="v2-input" name="kind" bind:value={editingKind}>
                 {#each KINDS as [value, label] (value)}
-                  <option {value}>{label}</option>
+                  <option {value}>{tx(label)}</option>
                 {/each}
               </select>
               <p class="v2-hint">
-                Won and lost close a deal. Reports and goals count by kind, not by name.
+                {tx('Won and lost close a deal. Reports and goals count by kind, not by name.')}
               </p>
             </div>
             {#if editingKind === 'open'}
               <div class="v2-field">
-                <label for="s-expected">Rotting after (days)</label>
+                <label for="s-expected">{tx('Rotting after (days)')}</label>
                 <input
                   id="s-expected"
                   class="v2-input"
@@ -254,12 +265,13 @@
                   value={editing === 'new' ? '' : (editing.expected_days ?? '')}
                 />
                 <p class="v2-hint">
-                  A deal past this many days in the stage reads Past expected, and Stalled at one
-                  and a half times it. Blank: it never rots here.
+                  {tx(
+                    'A deal past this many days in the stage reads Past expected, and Stalled at one and a half times it. Blank: it never rots here.'
+                  )}
                 </p>
               </div>
               <div class="v2-field">
-                <label for="s-warning">Warn after (days)</label>
+                <label for="s-warning">{tx('Warn after (days)')}</label>
                 <input
                   id="s-warning"
                   class="v2-input"
@@ -271,7 +283,7 @@
                   inputmode="numeric"
                   value={editing === 'new' ? '' : (editing.warning_days ?? '')}
                 />
-                <p class="v2-hint">Optional. An earlier Past expected, before the rotting day.</p>
+                <p class="v2-hint">{tx('Optional. An earlier Past expected, before the rotting day.')}</p>
               </div>
             {/if}
           {/snippet}
@@ -283,10 +295,10 @@
       {/if}
 
       <div class="dp-stages-head">
-        <div class="v2-label">Stages, in board order</div>
+        <div class="v2-label">{tx('Stages, in board order')}</div>
         {#if data.can_edit && !editing}
           <button class="v2-btn v2-btn-sm" type="button" onclick={() => edit('new')}
-            ><Plus size={13} />Add stage</button
+            ><Plus size={13} />{tx('Add stage')}</button
           >
         {/if}
       </div>
@@ -294,9 +306,9 @@
         <table class="v2-table">
           <thead>
             <tr>
-              <th>Stage</th>
-              <th>Kind</th>
-              <th>Rots</th>
+              <th>{tx('Stage')}</th>
+              <th>{tx('Kind')}</th>
+              <th>{tx('Rots')}</th>
               {#if data.can_edit}<th></th>{/if}
             </tr>
           </thead>
@@ -305,7 +317,7 @@
               <tr>
                 <td class="v2-table-primary" data-m="title">{s.label}</td>
                 <td data-m="tag"
-                  ><Pill tone={KIND_TONE[s.kind] ?? 'slate'}>{KIND_LABEL[s.kind]}</Pill></td
+                  ><Pill tone={KIND_TONE[s.kind] ?? 'slate'}>{tx(KIND_LABEL[s.kind])}</Pill></td
                 >
                 <td data-m="meta">{rotting(s)}</td>
                 {#if data.can_edit}
@@ -319,7 +331,9 @@
                           <button
                             class="v2-btn v2-btn-sm dp-icon"
                             type="submit"
-                            aria-label="Move {s.label} {direction}"
+                            aria-label={direction === 'up'
+                              ? tx('Move {name} up', { name: s.label })
+                              : tx('Move {name} down', { name: s.label })}
                             disabled={direction === 'up'
                               ? i === 0
                               : i === pipeline.stages.length - 1}
@@ -331,13 +345,15 @@
                         </form>
                       {/each}
                       <button class="v2-btn v2-btn-sm" type="button" onclick={() => edit(s)}
-                        >Edit</button
+                        >{tx('Edit')}</button
                       >
                       <ConfirmAction
                         action="?/deleteStage"
-                        label="Delete"
-                        confirmLabel="Delete stage"
-                        explain="The column leaves the board. Refused while deals are in it, and for the pipeline's last open, won or lost stage."
+                        label={tx('Delete')}
+                        confirmLabel={tx('Delete stage')}
+                        explain={tx(
+                          "The column leaves the board. Refused while deals are in it, and for the pipeline's last open, won or lost stage."
+                        )}
                         hidden={{ id: s.id }}
                       />
                     </div>

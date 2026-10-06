@@ -1,6 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { getTimesheet, stopTimer } from '$lib/server/v2/timesheet.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/public.js';
 
 /**
  * `?start=&end=` (YYYY-MM-DD) pick the week; absent, the API picks this week
@@ -23,7 +25,7 @@ export const actions = {
     try {
       await stopTimer(event, entryId);
     } catch (/** @type {any} */ err) {
-      return fail(400, { error: readableError(err, 'Could not stop the timer.') });
+      return fail(400, { error: readableError(err, tx('Could not stop the timer.')) });
     }
 
     return { stopped: true };

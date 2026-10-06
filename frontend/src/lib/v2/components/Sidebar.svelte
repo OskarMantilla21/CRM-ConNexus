@@ -26,7 +26,6 @@
   } from '@lucide/svelte';
   import { t } from '$lib/terminology.js';
   import { tx } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /**
    * One flat tree, grouped by what the person is doing rather than by which
@@ -220,7 +219,6 @@
       <LogOut />
       {tx('Sign out')}
     </a>
-    <LanguageSelect />
   </div>
 </nav>
 

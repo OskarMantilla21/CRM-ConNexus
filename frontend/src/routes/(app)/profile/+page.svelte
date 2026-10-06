@@ -1,5 +1,6 @@
 <script>
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   /**
    * Your own account.
    *
@@ -22,11 +23,14 @@
   import { ROLE_LABEL, ROLE_TONE } from '$lib/v2/enums.js';
   import { KeyRound, Lock, ArrowLeftRight, CalendarDays } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
+  import { DEFAULT_LOCALE, LOCALES } from '$lib/i18n/locale.js';
   import '$lib/i18n/pages/bill.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
+
+  let currentLocale = $derived(page.data.locale || DEFAULT_LOCALE);
+  let localeNext = $derived(`${page.url.pathname}${page.url.search}`);
 
   let p = $derived(data.profile);
   let name = $derived(`${p.user_details.first_name} ${p.user_details.last_name}`.trim());
@@ -144,9 +148,28 @@
         {/if}
 
         <div class="v2-label" style="margin-bottom:10px">{tx('Language')}</div>
-        <div class="v2-card" style="padding:14px 16px;margin-bottom:20px">
-          <p class="v2-sub" style="margin:0 0 10px">{tx('Choose the language for this browser.')}</p>
-          <LanguageSelect />
+        <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
+          <p class="v2-sub" style="font-size:11.5px;margin:0;padding:12px 16px 4px">
+            {tx('Choose the language for this browser.')}
+          </p>
+          {#each LOCALES as item (item.id)}
+            <form class="v2-lang-form" method="POST" action="/locale">
+              <input type="hidden" name="locale" value={item.id} />
+              <input type="hidden" name="next" value={localeNext} />
+              <button
+                class="v2-setting"
+                type="submit"
+                aria-current={currentLocale === item.id ? 'true' : undefined}
+              >
+                <div class="v2-setting-body">
+                  <b>{item.label}</b>
+                </div>
+                {#if currentLocale === item.id}
+                  <Pill tone="ink" dot>{tx('Current')}</Pill>
+                {/if}
+              </button>
+            </form>
+          {/each}
         </div>
 
         <div class="v2-label" style="margin-bottom:10px">{tx('Organisations')}</div>
@@ -269,5 +292,24 @@
      as the bare button was (the row uses flex; the form must not add a box). */
   .v2-inline-form {
     display: contents;
+  }
+
+  .v2-lang-form {
+    margin: 0;
+  }
+  .v2-lang-form .v2-setting {
+    width: 100%;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--v2-line-soft);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .v2-lang-form:last-child .v2-setting {
+    border-bottom: 0;
+  }
+  .v2-lang-form .v2-setting:hover {
+    background: var(--v2-hover);
   }
 </style>

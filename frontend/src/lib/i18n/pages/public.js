@@ -982,7 +982,197 @@ export const messages = {
     es: 'Se importarán {n} {kind}.',
     pt: 'Serão importados {n} {kind}.'
   },
-  'Imported {n} {kind}.': { es: 'Se importaron {n} {kind}.', pt: '{n} {kind} importados.' }
+  'Imported {n} {kind}.': { es: 'Se importaron {n} {kind}.', pt: '{n} {kind} importados.' },
+
+  // Shared across sales, support, and billing screens.
+  '{n} tickets': { es: '{n} tickets', pt: '{n} chamados' },
+  '{n}d': { es: '{n} d', pt: '{n} d' },
+  '{n}d late': { es: '{n} d de retraso', pt: '{n} d de atraso' },
+  '{name} team': { es: 'equipo {name}', pt: 'equipe {name}' },
+  '{priority} priority': { es: 'prioridad {priority}', pt: 'prioridade {priority}' },
+  Activity: { es: 'Actividad', pt: 'Atividade' },
+  'Add note': { es: 'Añadir nota', pt: 'Adicionar nota' },
+  Added: { es: 'Añadido', pt: 'Adicionado' },
+  'Adding…': { es: 'Añadiendo…', pt: 'Adicionando…' },
+  Address: { es: 'Dirección', pt: 'Endereço' },
+  'Admins only': { es: 'Solo administradores', pt: 'Somente administradores' },
+  Age: { es: 'Antigüedad', pt: 'Antiguidade' },
+  and: { es: 'y', pt: 'e' },
+  'Attach file': { es: 'Adjuntar archivo', pt: 'Anexar arquivo' },
+  Attached: { es: 'Adjunto', pt: 'Anexo' },
+  'Back to the list': { es: 'Volver a la lista', pt: 'Voltar à lista' },
+  Board: { es: 'Tablero', pt: 'Quadro' },
+  Category: { es: 'Categoría', pt: 'Categoria' },
+  'Closed on': { es: 'Cerrado el', pt: 'Fechado em' },
+  Contact: { es: 'Contacto', pt: 'Contato' },
+  Country: { es: 'País', pt: 'País' },
+  Deal: { es: 'Negocio', pt: 'Negócio' },
+  'Delete for good': { es: 'Eliminar para siempre', pt: 'Excluir de vez' },
+  Due: { es: 'Vence', pt: 'Vence' },
+  'Edit {name}': { es: 'Editar {name}', pt: 'Editar {name}' },
+  Export: { es: 'Exportar', pt: 'Exportar' },
+  Files: { es: 'Archivos', pt: 'Arquivos' },
+  'Filter activity': { es: 'Filtrar actividad', pt: 'Filtrar atividade' },
+  'Has to be unique in this organisation, ignoring capitals.': {
+    es: 'Tiene que ser único en esta organización, sin distinguir mayúsculas.',
+    pt: 'Precisa ser único nesta organização, sem diferenciar maiúsculas.'
+  },
+  History: { es: 'Historial', pt: 'Histórico' },
+  Import: { es: 'Importar', pt: 'Importar' },
+  Invoiced: { es: 'Facturado', pt: 'Faturado' },
+  'Keep it': { es: 'Conservarlo', pt: 'Manter' },
+  Last: { es: 'Último', pt: 'Último' },
+  List: { es: 'Lista', pt: 'Lista' },
+  'Loose end': { es: 'Pendiente', pt: 'Pendente' },
+  'Merge {name}': { es: 'Fusionar {name}', pt: 'Unir {name}' },
+  'Missing card or column.': { es: 'Falta la tarjeta o la columna.', pt: 'Falta o cartão ou a coluna.' },
+  'Move to…': { es: 'Mover a…', pt: 'Mover para…' },
+  Name: { es: 'Nombre', pt: 'Nome' },
+  never: { es: 'nunca', pt: 'nunca' },
+  'No account': { es: 'Sin cuenta', pt: 'Sem conta' },
+  'no due date': { es: 'sin fecha de vencimiento', pt: 'sem data de vencimento' },
+  nobody: { es: 'nadie', pt: 'ninguém' },
+  Nobody: { es: 'Nadie', pt: 'Ninguém' },
+  'Not linked': { es: 'Sin vincular', pt: 'Sem vínculo' },
+  'Not set': { es: 'Sin definir', pt: 'Não definido' },
+  of: { es: 'de', pt: 'de' },
+  Off: { es: 'Apagado', pt: 'Desligado' },
+  People: { es: 'Personas', pt: 'Pessoas' },
+  Person: { es: 'Persona', pt: 'Pessoa' },
+  'Remove file': { es: 'Quitar archivo', pt: 'Remover arquivo' },
+  'required fields done': { es: 'campos obligatorios listos', pt: 'campos obrigatórios prontos' },
+  'Save changes': { es: 'Guardar cambios', pt: 'Salvar alterações' },
+  'Saved.': { es: 'Guardado.', pt: 'Salvo.' },
+  'Saving…': { es: 'Guardando…', pt: 'Salvando…' },
+  Showing: { es: 'Mostrando', pt: 'Mostrando' },
+  State: { es: 'Estado', pt: 'Estado' },
+  'That did not work': { es: 'Eso no funcionó', pt: 'Isso não funcionou' },
+  'The server refused this change': {
+    es: 'El servidor rechazó este cambio',
+    pt: 'O servidor recusou esta alteração'
+  },
+  'These numbers describe the filtered list.': {
+    es: 'Estas cifras describen la lista filtrada.',
+    pt: 'Estes números descrevem a lista filtrada.'
+  },
+  Title: { es: 'Título', pt: 'Título' },
+  Unassigned: { es: 'Sin asignar', pt: 'Não atribuído' },
+  'updated {when}': { es: 'actualizado {when}', pt: 'atualizado {when}' },
+  Visibility: { es: 'Visibilidad', pt: 'Visibilidade' },
+  Website: { es: 'Sitio web', pt: 'Site' },
+  When: { es: 'Cuándo', pt: 'Quando' },
+  'Yes, delete': { es: 'Sí, eliminar', pt: 'Sim, excluir' },
+
+  unread: { es: 'sin leer', pt: 'não lidas' },
+  'Nothing unread': { es: 'Nada sin leer', pt: 'Nada não lido' },
+  'Show read too': { es: 'Ver también las leídas', pt: 'Ver também as lidas' },
+  'Unread only': { es: 'Solo sin leer', pt: 'Somente não lidas' },
+  'Mark all read': { es: 'Marcar todas como leídas', pt: 'Marcar todas como lidas' },
+  'No notifications': { es: 'No hay notificaciones', pt: 'Não há notificações' },
+  'Everything here has been read. Notifications arrive for CRM ticket activity and updates from BottleCRM Support.':
+    {
+      es: 'Todo lo de aquí ya se leyó. Las notificaciones llegan por la actividad de tickets del CRM y por avisos de BottleCRM Support.',
+      pt: 'Tudo aqui já foi lido. As notificações chegam pela atividade de chamados do CRM e por avisos do BottleCRM Support.'
+    },
+  'Notifications arrive for CRM ticket activity and updates from BottleCRM Support.': {
+    es: 'Las notificaciones llegan por la actividad de tickets del CRM y por avisos de BottleCRM Support.',
+    pt: 'As notificações chegam pela atividade de chamados do CRM e por avisos do BottleCRM Support.'
+  },
+  'Go to tickets': { es: 'Ir a tickets', pt: 'Ir para chamados' },
+  'Get help': { es: 'Pedir ayuda', pt: 'Pedir ajuda' },
+  'mentioned you on': { es: 'te mencionó en', pt: 'mencionou você em' },
+  'commented on': { es: 'comentó en', pt: 'comentou em' },
+  'replied to': { es: 'respondió a', pt: 'respondeu a' },
+  updated: { es: 'actualizó', pt: 'atualizou' },
+  'The system': { es: 'El sistema', pt: 'O sistema' },
+  'a ticket that no longer has a name': {
+    es: 'un ticket que ya no tiene nombre',
+    pt: 'um chamado que não tem mais nome'
+  },
+  'has no producer': { es: 'no tiene productor', pt: 'não tem produtor' },
+  'Mark read': { es: 'Marcar como leída', pt: 'Marcar como lida' },
+  'of these were written before the producer was fixed and still carry a': {
+    es: 'de estas se escribieron antes de corregir el productor y todavía llevan un enlace',
+    pt: 'destas foram escritas antes de corrigir o produtor e ainda levam um link'
+  },
+  'link, which no client serves. They open as': {
+    es: 'que ningún cliente atiende. Se abren como',
+    pt: 'que nenhum cliente atende. Elas abrem como'
+  },
+  'here. New ones are written correctly at source by': {
+    es: 'aquí. Las nuevas se escriben bien en el origen, en',
+    pt: 'aqui. As novas são gravadas corretamente na origem, em'
+  },
+
+  // Timesheet. Loaded globally so the week view does not depend on another page.
+  'Previous week': { es: 'Semana anterior', pt: 'Semana anterior' },
+  'This week': { es: 'Esta semana', pt: 'Esta semana' },
+  'Next week': { es: 'Semana siguiente', pt: 'Próxima semana' },
+  Report: { es: 'Informe', pt: 'Relatório' },
+  'Logged this week': { es: 'Registrado esta semana', pt: 'Apontado nesta semana' },
+  Billable: { es: 'Facturable', pt: 'Faturável' },
+  '{n}% of logged time': { es: '{n}% del tiempo registrado', pt: '{n}% do tempo apontado' },
+  'Billable value': { es: 'Valor facturable', pt: 'Valor faturável' },
+  'At the rate saved on each entry': {
+    es: 'A la tarifa guardada en cada registro',
+    pt: 'Na taxa salva em cada registro'
+  },
+  'Not yet invoiced': { es: 'Aún sin facturar', pt: 'Ainda sem faturar' },
+  'Billable entries with no invoice': {
+    es: 'Registros facturables sin factura',
+    pt: 'Registros faturáveis sem fatura'
+  },
+  'Everything billable is billed': {
+    es: 'Todo lo facturable ya está facturado',
+    pt: 'Tudo que é faturável já foi faturado'
+  },
+  'Timer running': { es: 'Temporizador en marcha', pt: 'Timer em andamento' },
+  '{n} timers running': { es: '{n} temporizadores en marcha', pt: '{n} timers em andamento' },
+  on: { es: 'en', pt: 'em' },
+  'Stop timer': { es: 'Detener temporizador', pt: 'Parar timer' },
+  Mon: { es: 'Lun', pt: 'Seg' },
+  Tue: { es: 'Mar', pt: 'Ter' },
+  Wed: { es: 'Mié', pt: 'Qua' },
+  Thu: { es: 'Jue', pt: 'Qui' },
+  Fri: { es: 'Vie', pt: 'Sex' },
+  Sat: { es: 'Sáb', pt: 'Sáb' },
+  Sun: { es: 'Dom', pt: 'Dom' },
+  running: { es: 'en marcha', pt: 'em andamento' },
+  internal: { es: 'interno', pt: 'interno' },
+  'Billed on {number}': { es: 'Facturado en {number}', pt: 'Faturado em {number}' },
+  billed: { es: 'facturado', pt: 'faturado' },
+  'Nothing logged': { es: 'Nada registrado', pt: 'Nada apontado' },
+  'Time is logged against a ticket, so every hour here is attached to something a customer can be shown. Rates are saved on each entry when it is logged. Changing your rate does not rewrite what past weeks were worth.':
+    {
+      es: 'El tiempo se registra contra un ticket, así que cada hora de aquí está unida a algo que se le puede mostrar a un cliente. Las tarifas se guardan en cada registro cuando se anota. Cambiar tu tarifa no reescribe lo que valían las semanas pasadas.',
+      pt: 'O tempo é apontado em um chamado, então cada hora daqui está ligada a algo que pode ser mostrado a um cliente. As taxas são salvas em cada registro no momento do apontamento. Mudar a sua taxa não reescreve o que as semanas passadas valiam.'
+    },
+  'Could not stop the timer.': {
+    es: 'No se pudo detener el temporizador.',
+    pt: 'Não foi possível parar o timer.'
+  },
+  'Time report': { es: 'Informe de tiempo', pt: 'Relatório de tempo' },
+  'by {group}': { es: 'por {group}', pt: 'por {group}' },
+  'Export CSV': { es: 'Exportar CSV', pt: 'Exportar CSV' },
+  From: { es: 'Desde', pt: 'De' },
+  To: { es: 'Hasta', pt: 'Até' },
+  'Group by': { es: 'Agrupar por', pt: 'Agrupar por' },
+  Show: { es: 'Mostrar', pt: 'Mostrar' },
+  'All time': { es: 'Todo el tiempo', pt: 'Todo o tempo' },
+  'Billable only': { es: 'Solo facturable', pt: 'Somente faturável' },
+  'Non-billable only': { es: 'Solo no facturable', pt: 'Somente não faturável' },
+  Logged: { es: 'Registrado', pt: 'Apontado' },
+  Entries: { es: 'Registros', pt: 'Registros' },
+  'Mixed currencies: {list}': { es: 'Monedas mixtas: {list}', pt: 'Moedas mistas: {list}' },
+  'No time logged in this window. Widen the dates, or clear the billable filter.': {
+    es: 'No hay tiempo registrado en este periodo. Amplía las fechas o quita el filtro de facturable.',
+    pt: 'Não há tempo apontado neste período. Amplie as datas ou limpe o filtro de faturável.'
+  },
+  Agent: { es: 'Agente', pt: 'Agente' },
+  Ticket: { es: 'Ticket', pt: 'Chamado' },
+  entries: { es: 'registros', pt: 'registros' },
+  billable: { es: 'facturable', pt: 'faturável' },
+  worth: { es: 'valor', pt: 'valor' }
 };
 
 addMessages(messages);

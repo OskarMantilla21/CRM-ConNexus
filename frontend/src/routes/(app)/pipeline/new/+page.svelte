@@ -88,7 +88,7 @@
     if (!form.account) e.account = tx('Pick the account this deal belongs to.');
 
     const amount = Number(form.amount);
-    if (form.amount === 'tx(') e.amount = tx(')How much is it worth?');
+    if (form.amount === '') e.amount = tx('How much is it worth?');
     else if (!Number.isFinite(amount) || amount <= 0)
       e.amount = tx('Amount has to be a number greater than zero.');
 

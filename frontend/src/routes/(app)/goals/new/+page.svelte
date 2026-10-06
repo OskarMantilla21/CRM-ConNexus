@@ -56,7 +56,7 @@
     if (!form.name.trim()) e.name = tx('Give the goal a name you would recognise in a list.');
 
     const target = Number(form.target_value);
-    if (form.target_value === 'tx(') e.target_value = tx(')What is the target?');
+    if (form.target_value === '') e.target_value = tx('What is the target?');
     else if (!Number.isFinite(target) || target <= 0)
       e.target_value = tx('Target has to be a number greater than zero.');
 

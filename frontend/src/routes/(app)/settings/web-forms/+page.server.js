@@ -7,6 +7,8 @@ import {
   deleteWebForm
 } from '$lib/server/v2/web-forms.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
+import { tx } from '$lib/i18n/translate.js';
+import '$lib/i18n/pages/ops.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -57,9 +59,9 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       const { status, message } = actionError(
         err,
-        'Only an admin can create a web form. A form accepts submissions from anyone on the internet, so making one is an admin action.',
-        'That form no longer exists.',
-        'Could not create the form.'
+        tx('Only an admin can create a web form. A form accepts submissions from anyone on the internet, so making one is an admin action.'),
+        tx('That form no longer exists.'),
+        tx('Could not create the form.')
       );
       return fail(status, { create: { error: message } });
     }
@@ -78,9 +80,9 @@ export const actions = {
       // publishing" is the response, and `readableError` carries it through.
       const { status, message } = actionError(
         err,
-        'Only an admin can publish a web form.',
-        'That form no longer exists.',
-        'Could not publish the form.'
+        tx('Only an admin can publish a web form.'),
+        tx('That form no longer exists.'),
+        tx('Could not publish the form.')
       );
       return fail(status, { publish: { error: message } });
     }
@@ -95,9 +97,9 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       const { status, message } = actionError(
         err,
-        'Only an admin can unpublish a web form.',
-        'That form no longer exists.',
-        'Could not unpublish the form.'
+        tx('Only an admin can unpublish a web form.'),
+        tx('That form no longer exists.'),
+        tx('Could not unpublish the form.')
       );
       return fail(status, { unpublish: { error: message } });
     }
@@ -112,9 +114,9 @@ export const actions = {
     } catch (/** @type {any} */ err) {
       const { status, message } = actionError(
         err,
-        'Only an admin can remove a web form.',
-        'That form no longer exists.',
-        'Could not remove the form.'
+        tx('Only an admin can remove a web form.'),
+        tx('That form no longer exists.'),
+        tx('Could not remove the form.')
       );
       return fail(status, { delete: { error: message } });
     }

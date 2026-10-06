@@ -23,6 +23,8 @@
   import { count } from '$lib/v2/format.js';
   import { FIELD_TYPE_LABEL, TARGET_MODEL_LABEL } from '$lib/v2/enums.js';
   import { Plus, TriangleAlert, Filter } from '@lucide/svelte';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -73,30 +75,30 @@
   let gaps = $derived(data.fields.filter((f) => f.is_required && f.records_missing_value > 0));
 </script>
 
-<PageHeader title="Custom fields">
+<PageHeader title={tx('Custom fields')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    <span class="v2-num">{count(totals.active)}</span> fields across
-    <span class="v2-num">{count(totals.models_extended)}</span> record types
+    <span class="v2-num">{count(totals.active)}</span> {tx('fields across')}
+    <span class="v2-num">{count(totals.models_extended)}</span> {tx('record types')}
   {/snippet}
   {#snippet actions()}
     {#if data.can_edit && !editing}
-      <button class="v2-btn v2-btn-primary" onclick={openCreate}><Plus />New field</button>
+      <button class="v2-btn v2-btn-primary" onclick={openCreate}><Plus />{tx('New field')}</button>
     {/if}
   {/snippet}
 </PageHeader>
 
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <div class="v2-stats">
-    <StatCard label="Active fields" value={count(totals.active)} tone="ink" />
-    <StatCard label="Record types extended" value={count(totals.models_extended)} tone="slate" />
+    <StatCard label={tx('Active fields')} value={count(totals.active)} tone="ink" />
+    <StatCard label={tx('Record types extended')} value={count(totals.models_extended)} tone="slate" />
     <StatCard
-      label="Required with gaps"
+      label={tx('Required with gaps')}
       value={count(totals.required_with_gaps)}
       tone={totals.required_with_gaps > 0 ? 'clay' : 'slate'}
-      detail="Records that predate the rule"
+      detail={tx('Records that predate the rule')}
     />
-    <StatCard label="Turned off" value={count(totals.count - totals.active)} tone="slate" />
+    <StatCard label={tx('Turned off')} value={count(totals.count - totals.active)} tone="slate" />
   </div>
 </div>
 
@@ -104,10 +106,10 @@
   <div class="v2-pad" style="padding-bottom:32px">
     {#if editing}
       <SettingsFormPanel
-        title={editing === 'new' ? 'New custom field' : `Edit ${editing.label}`}
+        title={editing === 'new' ? tx('New custom field') : tx('Edit {name}', { name: editing.label })}
         action={editing === 'new' ? '?/create' : '?/update'}
         error={editing === 'new' ? form?.create?.error : form?.update?.error}
-        submitLabel={editing === 'new' ? 'Add field' : 'Save field'}
+        submitLabel={editing === 'new' ? tx('Add field') : tx('Save field')}
         oncancel={() => (editing = null)}
         ondone={() => (editing = null)}
       >
@@ -117,7 +119,7 @@
           {/if}
 
           <div class="v2-field">
-            <label for="f-label">Label</label>
+            <label for="f-label">{tx('Label')}</label>
             <input
               id="f-label"
               class="v2-input"
@@ -129,7 +131,7 @@
           </div>
 
           <div class="v2-field">
-            <label for="f-key">Key</label>
+            <label for="f-key">{tx('Key')}</label>
             {#if editing === 'new'}
               <input
                 id="f-key"
@@ -138,23 +140,25 @@
                 maxlength="64"
                 pattern="[a-z][a-z0-9_]*"
                 required
-                placeholder="severity"
+                placeholder={tx('severity')}
               />
               <p class="v2-hint">
-                Lowercase letters, numbers and underscores, starting with a letter. No hyphens.
-                Cannot be changed later.
+                {tx(
+                  'Lowercase letters, numbers and underscores, starting with a letter. No hyphens. Cannot be changed later.'
+                )}
               </p>
             {:else}
               <code class="v2-cf-key">{editing.key}</code>
               <p class="v2-hint">
-                Fixed after creation. Every value already stored is filed under this key, and
-                changing it would leave them all behind.
+                {tx(
+                  'Fixed after creation. Every value already stored is filed under this key, and changing it would leave them all behind.'
+                )}
               </p>
             {/if}
           </div>
 
           <div class="v2-field">
-            <label for="f-target">On record type</label>
+            <label for="f-target">{tx('On record type')}</label>
             {#if editing === 'new'}
               <select id="f-target" class="v2-input" name="target_model" required>
                 {#each Object.entries(TARGET_MODEL_LABEL) as [value, label] (value)}
@@ -165,12 +169,12 @@
               <div style="font-size:13px">
                 {TARGET_MODEL_LABEL[editing.target_model] ?? editing.target_model}
               </div>
-              <p class="v2-hint">Fixed after creation.</p>
+              <p class="v2-hint">{tx('Fixed after creation.')}</p>
             {/if}
           </div>
 
           <div class="v2-field">
-            <label for="f-type">Type</label>
+            <label for="f-type">{tx('Type')}</label>
             {#if editing === 'new'}
               <select id="f-type" class="v2-input" name="field_type" bind:value={fieldType}>
                 {#each Object.entries(FIELD_TYPE_LABEL) as [value, label] (value)}
@@ -188,15 +192,16 @@
               <input type="hidden" name="field_type" value={fieldType} />
               <div style="font-size:13px">{FIELD_TYPE_LABEL[editing.field_type]}</div>
               <p class="v2-hint">
-                Fixed after creation. Values already stored were written and checked against this
-                type.
+                {tx(
+                  'Fixed after creation. Values already stored were written and checked against this type.'
+                )}
               </p>
             {/if}
           </div>
 
           {#if fieldType === 'dropdown'}
             <div class="v2-field v2-sfp-wide">
-              <label for="f-choices">Choices</label>
+              <label for="f-choices">{tx('Choices')}</label>
               {#each optionRows as row, i (i)}
                 <div style="display:flex;gap:7px;align-items:center;margin-bottom:6px">
                   <input type="hidden" name="option_value" value={row.value} />
@@ -212,7 +217,7 @@
                     type="button"
                     onclick={() => (optionRows = optionRows.filter((_, j) => j !== i))}
                   >
-                    Remove
+                    {tx('Remove')}
                   </button>
                 </div>
               {/each}
@@ -222,17 +227,18 @@
                 style="align-self:flex-start"
                 onclick={() => (optionRows = [...optionRows, { value: '', label: '' }])}
               >
-                Add a choice
+                {tx('Add a choice')}
               </button>
               <p class="v2-hint">
-                Renaming a choice keeps the values already stored against it. Removing one leaves
-                the records that hold it showing a value the list no longer offers.
+                {tx(
+                  'Renaming a choice keeps the values already stored against it. Removing one leaves the records that hold it showing a value the list no longer offers.'
+                )}
               </p>
             </div>
           {/if}
 
           <div class="v2-field">
-            <label for="f-order">Order</label>
+            <label for="f-order">{tx('Order')}</label>
             <input
               id="f-order"
               class="v2-input"
@@ -244,7 +250,7 @@
           </div>
 
           <div class="v2-field">
-            <label for="f-required">Required</label>
+            <label for="f-required">{tx('Required')}</label>
             <label style="display:flex;gap:8px;align-items:center;font-weight:400">
               <input
                 id="f-required"
@@ -253,12 +259,12 @@
                 value="true"
                 checked={editing !== 'new' && editing.is_required}
               />
-              Binds new writes only. Records saved before this keep their gap.
+              {tx('Binds new writes only. Records saved before this keep their gap.')}
             </label>
           </div>
 
           <div class="v2-field">
-            <label for="f-filterable">Filterable</label>
+            <label for="f-filterable">{tx('Filterable')}</label>
             <label style="display:flex;gap:8px;align-items:center;font-weight:400">
               <input
                 id="f-filterable"
@@ -267,7 +273,7 @@
                 value="true"
                 checked={editing !== 'new' && editing.is_filterable}
               />
-              Can be used to narrow a list, not just read on the record.
+              {tx('Can be used to narrow a list, not just read on the record.')}
             </label>
           </div>
         {/snippet}
@@ -279,16 +285,20 @@
         <TriangleAlert size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
         <div>
           <div style="font-weight:600;font-size:13px">
-            Required does not mean every record has one
+            {tx('Required does not mean every record has one')}
           </div>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 0;line-height:1.5">
             {gaps
-              .map(
-                (f) =>
-                  `${f.label} is missing on ${f.records_missing_value} ${(TARGET_MODEL_LABEL[f.target_model] ?? f.target_model).toLowerCase()}`
+              .map((f) =>
+                tx('{label} is missing on {n} {records}', {
+                  label: f.label,
+                  n: f.records_missing_value,
+                  records: (TARGET_MODEL_LABEL[f.target_model] ?? f.target_model).toLowerCase()
+                })
               )
-              .join('; ')}. Marking a field required binds new writes only, nothing goes back and
-            fills in what was saved before.
+              .join('; ')}. {tx(
+              'Marking a field required binds new writes only, nothing goes back and fills in what was saved before.'
+            )}
           </p>
         </div>
       </div>
@@ -304,7 +314,9 @@
     <div class="v2-cf-groups">
       {#each groups as g (g.model)}
         <div>
-          <div class="v2-label" style="margin-bottom:10px">On {g.label.toLowerCase()}</div>
+          <div class="v2-label" style="margin-bottom:10px">
+            {tx('On {records}', { records: g.label.toLowerCase() })}
+          </div>
           <div class="v2-card" style="overflow:hidden">
             {#each g.fields as f (f.id)}
               <div class="v2-setting" style="opacity:{f.is_active ? 1 : 0.6}">
@@ -319,7 +331,7 @@
                     {/if}
                     {#if f.is_required && f.records_missing_value > 0}
                       · <span style="color:var(--v2-clay)">
-                        {count(f.records_missing_value)} without a value
+                        {count(f.records_missing_value)} {tx('without a value')}
                       </span>
                     {/if}
                   </span>
@@ -332,22 +344,22 @@
                   <Filter size={13} style="color:var(--v2-slate);flex:none" />
                 {/if}
                 {#if !f.is_active}
-                  <Pill tone="slate">Off</Pill>
+                  <Pill tone="slate">{tx('Off')}</Pill>
                 {:else if f.is_required}
-                  <Pill tone="clay">Required</Pill>
+                  <Pill tone="clay">{tx('Required')}</Pill>
                 {/if}
 
                 {#if data.can_edit}
                   <div style="display:flex;gap:6px;align-items:center;flex:none">
                     <button class="v2-btn v2-btn-sm" type="button" onclick={() => openEdit(f)}>
-                      Edit
+                      {tx('Edit')}
                     </button>
                     {#if f.is_active}
                       <ConfirmAction
                         action="?/deactivate"
-                        label="Turn off"
-                        confirmLabel="Turn off"
-                        explain="Stops being collected. Stored values stay."
+                        label={tx('Turn off')}
+                        confirmLabel={tx('Turn off')}
+                        explain={tx('Stops being collected. Stored values stay.')}
                         hidden={{ id: f.id }}
                       />
                     {:else}
@@ -360,7 +372,7 @@
                            action rather than a bare `update` submit. -->
                       <form method="POST" action="?/activate" use:enhance>
                         <input type="hidden" name="id" value={f.id} />
-                        <button class="v2-btn v2-btn-sm" type="submit">Turn on</button>
+                        <button class="v2-btn v2-btn-sm" type="submit">{tx('Turn on')}</button>
                       </form>
                     {/if}
                   </div>
@@ -373,9 +385,9 @@
     </div>
 
     <p class="v2-sub" style="font-size:11.5px;margin-top:16px;max-width:66ch">
-      A field marked with the filter icon can be used to narrow a list; the rest are readable only
-      on the record itself. Turning a field off stops it being collected and hides it, and leaves
-      the values already stored on each record untouched.
+      {tx(
+        'A field marked with the filter icon can be used to narrow a list; the rest are readable only on the record itself. Turning a field off stops it being collected and hides it, and leaves the values already stored on each record untouched.'
+      )}
     </p>
   </div>
 </div>

@@ -103,7 +103,7 @@
         <span
           class="v2-pill"
           style={i <= stageIndex
-            ? tx('color:var(--v2-ink);background:color-mix(in srgb, var(--v2-ink) 9%, transparent)')
+            ? 'color:var(--v2-ink);background:color-mix(in srgb, var(--v2-ink) 9%, transparent)'
             : 'color:var(--v2-slate);background:var(--v2-line-soft)'}
         >
           {#if i < stageIndex}<Check size={11} />{/if}

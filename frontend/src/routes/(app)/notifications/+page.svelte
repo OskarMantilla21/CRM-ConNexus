@@ -36,6 +36,7 @@
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import Avatar from '$lib/v2/components/Avatar.svelte';
   import { relativeTime } from '$lib/v2/format.js';
+  import { tx } from '$lib/i18n/translate.js';
   import { BellOff, AtSign, MessageSquare, Bell, Check, LifeBuoy } from '@lucide/svelte';
 
   /** @type {{ data: any }} */
@@ -63,10 +64,10 @@
    * "sla breached" and not `case.sla_breached`.
    */
   function verbPhrase(n) {
-    if (n.verb === 'case.mentioned') return 'mentioned you on';
-    if (n.verb === 'case.commented') return 'commented on';
-    if (n.verb === 'support.replied') return 'replied to';
-    if (n.verb === 'support.status_changed') return 'updated';
+    if (n.verb === 'case.mentioned') return tx('mentioned you on');
+    if (n.verb === 'case.commented') return tx('commented on');
+    if (n.verb === 'support.replied') return tx('replied to');
+    if (n.verb === 'support.status_changed') return tx('updated');
     return `${n.verb.replace(/^[^.]+\./, '').replace(/_/g, ' ')}, `;
   }
 
@@ -112,12 +113,12 @@
   }
 </script>
 
-<PageHeader title="Notifications">
+<PageHeader title={tx('Notifications')}>
   {#snippet sub()}
     {#if unread.length}
-      <span class="v2-num">{unread.length}</span> unread
+      <span class="v2-num">{unread.length}</span> {tx('unread')}
     {:else}
-      Nothing unread
+      {tx('Nothing unread')}
     {/if}
   {/snippet}
   {#snippet actions()}
@@ -126,10 +127,10 @@
       type="button"
       onclick={() => (filter = filter === 'unread' ? 'all' : 'unread')}
     >
-      {filter === 'unread' ? 'Show read too' : 'Unread only'}
+      {filter === 'unread' ? tx('Show read too') : tx('Unread only')}
     </button>
     <button class="v2-btn" type="button" disabled={!unread.length} onclick={markAllRead}>
-      <Check />Mark all read
+      <Check />{tx('Mark all read')}
     </button>
   {/snippet}
 </PageHeader>
@@ -138,20 +139,20 @@
   <div class="v2-pad" style="padding-top:16px;padding-bottom:32px">
     {#if visible.length === 0}
       <EmptyState
-        title={filter === 'unread' ? 'Nothing unread' : 'No notifications'}
+        title={filter === 'unread' ? tx('Nothing unread') : tx('No notifications')}
         body={filter === 'unread'
-          ? 'Everything here has been read. Notifications arrive for CRM ticket activity and updates from BottleCRM Support.'
-          : 'Notifications arrive for CRM ticket activity and updates from BottleCRM Support.'}
+          ? tx('Everything here has been read. Notifications arrive for CRM ticket activity and updates from BottleCRM Support.')
+          : tx('Notifications arrive for CRM ticket activity and updates from BottleCRM Support.')}
       >
         {#snippet icon()}<BellOff size={21} />{/snippet}
         {#snippet actions()}
           {#if filter === 'unread' && rows.length}
             <button class="v2-btn" type="button" onclick={() => (filter = 'all')}>
-              Show read too
+              {tx('Show read too')}
             </button>
           {/if}
-          <a class="v2-btn" href={resolve('/tickets')}>Go to tickets</a>
-          <a class="v2-btn" href={resolve('/help')}>Get help</a>
+          <a class="v2-btn" href={resolve('/tickets')}>{tx('Go to tickets')}</a>
+          <a class="v2-btn" href={resolve('/help')}>{tx('Get help')}</a>
         {/snippet}
       </EmptyState>
     {:else}
@@ -173,7 +174,7 @@
                   <Avatar name={n.actor.name} size={17} />
                   <b>{n.actor.name}</b>
                 {:else}
-                  <b class="system">The system</b>
+                  <b class="system">{tx('The system')}</b>
                 {/if}
                 {verbPhrase(n)}
                 {#if n.entity_name}
@@ -185,7 +186,7 @@
                     <span class="entity">{n.entity_name}</span>
                   {/if}
                 {:else}
-                  <span class="entity v2-muted">a ticket that no longer has a name</span>
+                  <span class="entity v2-muted">{tx('a ticket that no longer has a name')}</span>
                 {/if}
               </p>
 
@@ -205,14 +206,14 @@
                        The broken link is NOT flagged per row: it is true of
                        every row, so a badge on each one is a badge that says
                        nothing. It is counted once, below the list. -->
-                  <span class="tag"><code>{n.verb}</code> has no producer</span>
+                  <span class="tag"><code>{n.verb}</code> {tx('has no producer')}</span>
                 {/if}
               </p>
             </div>
 
             {#if n.read_at === null}
               <button class="v2-btn v2-btn-sm read-btn" type="button" onclick={() => markRead(n)}>
-                Mark read
+                {tx('Mark read')}
               </button>
             {/if}
           </li>
@@ -225,9 +226,12 @@
           become the loudest thing on a page about other people's messages.
         -->
         <p class="footnote">
-          <span class="v2-num">{data.totals.broken_links}</span> of these were written before the
-          producer was fixed and still carry a <code>/cases/…</code> link, which no client serves.
-          They open as <code>/v2/tickets/…</code> here. New ones are written correctly at source by
+          <span class="v2-num">{data.totals.broken_links}</span>
+          {tx('of these were written before the producer was fixed and still carry a')}
+          <code>/cases/…</code>
+          {tx('link, which no client serves. They open as')}
+          <code>/v2/tickets/…</code>
+          {tx('here. New ones are written correctly at source by')}
           <code>cases/notifications.py</code>.
         </p>
       {/if}

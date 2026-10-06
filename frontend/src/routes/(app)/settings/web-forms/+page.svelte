@@ -40,6 +40,8 @@
   import { enhance } from '$app/forms';
   import { Plus, ShieldAlert } from '@lucide/svelte';
   import { WEBFORM_TARGETS } from '$lib/v2/webform-fields.js';
+  import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -73,16 +75,16 @@
   );
 </script>
 
-<PageHeader title="Web forms">
+<PageHeader title={tx('Web forms')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    <span class="v2-num">{count(totals.published)}</span> published of
+    <span class="v2-num">{count(totals.published)}</span> {tx('published of')}
     <span class="v2-num">{count(totals.count)}</span>
   {/snippet}
   {#snippet actions()}
     {#if data.canManage}
       <button class="v2-btn v2-btn-primary" onclick={() => (creating = !creating)}>
-        <Plus />New form
+        <Plus />{tx('New form')}
       </button>
     {/if}
   {/snippet}
@@ -90,19 +92,19 @@
 
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <div class="v2-stats">
-    <StatCard label="Published" value={count(totals.published)} tone="ink" />
+    <StatCard label={tx('Published')} value={count(totals.published)} tone="ink" />
     <StatCard
-      label="Drafts"
+      label={tx('Drafts')}
       value={count(drafts)}
       tone="slate"
-      detail={drafts ? 'Collecting nothing yet' : 'None'}
+      detail={drafts ? tx('Collecting nothing yet') : tx('None')}
     />
-    <StatCard label="Accepted, 30 days" value={count(totals.submissions_30d)} tone="ink" />
+    <StatCard label={tx('Accepted, 30 days')} value={count(totals.submissions_30d)} tone="ink" />
     <StatCard
-      label="Spam blocked, 30 days"
+      label={tx('Spam blocked, 30 days')}
       value={count(totals.spam_30d)}
       tone="slate"
-      detail={totals.spam_30d ? 'Never reached a lead or ticket' : 'None'}
+      detail={totals.spam_30d ? tx('Never reached a lead or ticket') : tx('None')}
     />
   </div>
 </div>
@@ -111,7 +113,7 @@
   <div class="v2-pad" style="padding-bottom:32px">
     {#if actionError}
       <div style="margin-bottom:16px">
-        <NextAction label="That did not work" text={actionError} tone="rust" />
+        <NextAction label={tx('That did not work')} text={actionError} tone="rust" />
       </div>
     {/if}
 
@@ -131,7 +133,7 @@
       >
         <div style="flex:1;min-width:220px">
           <label class="v2-label" for="form-name" style="display:block;margin-bottom:4px">
-            What is this form for?
+            {tx('What is this form for?')}
           </label>
           <input
             id="form-name"
@@ -140,37 +142,37 @@
             maxlength="255"
             class="v2-input"
             style="width:100%"
-            placeholder="e.g. Contact us"
+            placeholder={tx('e.g. Contact us')}
           />
         </div>
         <div style="min-width:160px">
           <label class="v2-label" for="form-target" style="display:block;margin-bottom:4px">
-            Each submission creates
+            {tx('Each submission creates')}
           </label>
           <select id="form-target" name="target" class="v2-input" style="width:100%">
             {#each WEBFORM_TARGETS as t (t.value)}
-              <option value={t.value}>A {t.label.toLowerCase()}</option>
+              <option value={t.value}>{t.value === 'ticket' ? tx('A ticket') : tx('A lead')}</option>
             {/each}
           </select>
         </div>
-        <button class="v2-btn v2-btn-primary" disabled={busy}>Create and add fields</button>
+        <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Create and add fields')}</button>
         <button type="button" class="v2-btn" disabled={busy} onclick={() => (creating = false)}>
-          Cancel
+          {tx('Cancel')}
         </button>
       </form>
     {/if}
 
     {#if !data.forms.length}
       <EmptyState
-        title="No web forms yet"
+        title={tx('No web forms yet')}
         body={data.canManage
-          ? 'A web form is a page you embed on your own site. What people fill in becomes a lead or a ticket here, with no login and no copy-pasting.'
-          : 'Nobody has built a web form for this organisation yet. An admin can create one.'}
+          ? tx('A web form is a page you embed on your own site. What people fill in becomes a lead or a ticket here, with no login and no copy-pasting.')
+          : tx('Nobody has built a web form for this organisation yet. An admin can create one.')}
       >
         {#snippet actions()}
           {#if data.canManage}
             <button class="v2-btn v2-btn-primary" onclick={() => (creating = true)}>
-              <Plus />New form
+              <Plus />{tx('New form')}
             </button>
           {/if}
         {/snippet}
@@ -180,11 +182,11 @@
         <table class="v2-table">
           <thead>
             <tr>
-              <th>Form</th>
-              <th>State</th>
-              <th class="v2-r">Submissions</th>
-              <th data-m="hide">Created</th>
-              {#if data.canManage}<th class="v2-r">Actions</th>{/if}
+              <th>{tx('Form')}</th>
+              <th>{tx('State')}</th>
+              <th class="v2-r">{tx('Submissions')}</th>
+              <th data-m="hide">{tx('Created')}</th>
+              {#if data.canManage}<th class="v2-r">{tx('Actions')}</th>{/if}
             </tr>
           </thead>
           <tbody>
@@ -205,12 +207,12 @@
                          count cell is `.v2-num`, and mono is numerals only;
                          prose inheriting that face reads as a typo. -->
                     <div class="v2-table-secondary">
-                      {f.target === 'ticket' ? 'Tickets' : 'Leads'} ·
+                      {f.target === 'ticket' ? tx('Tickets') : tx('Leads')} ·
                       {f.field_count}
-                      {f.field_count === 1 ? 'field' : 'fields'}
+                      {f.field_count === 1 ? tx('field') : tx('fields')}
                       {#if quiet}
                         <span style="color:var(--v2-clay);font-weight:600">
-                          · live but silent
+                          · {tx('live but silent')}
                         </span>
                       {/if}
                     </div>
@@ -218,10 +220,10 @@
                 </td>
                 <td data-m="tag">
                   <Pill tone={f.is_published ? 'moss' : 'slate'}>
-                    {f.is_published ? 'Published' : 'Draft'}
+                    {f.is_published ? tx('Published') : tx('Draft')}
                   </Pill>
                 </td>
-                <td class="v2-r v2-num" data-m="meta" data-l="submissions">
+                <td class="v2-r v2-num" data-m="meta" data-l={tx('Submissions')}>
                   {count(f.submission_count)}
                 </td>
                 <td data-m="hide" class="v2-muted">{shortDate(f.created_at)}</td>
@@ -234,22 +236,22 @@
                              submission from then on is refused. -->
                         <ConfirmAction
                           action="?/unpublish"
-                          label="Unpublish"
-                          confirmLabel="Unpublish it"
-                          explain="Stops accepting submissions. The embed stays on the site and starts refusing people."
+                          label={tx('Unpublish')}
+                          confirmLabel={tx('Unpublish it')}
+                          explain={tx('Stops accepting submissions. The embed stays on the site and starts refusing people.')}
                           hidden={{ id: f.id }}
                         />
                       {:else}
                         <form method="POST" action="?/publish" use:enhance={working}>
                           <input type="hidden" name="id" value={f.id} />
-                          <button class="v2-btn v2-btn-sm" disabled={busy}>Publish</button>
+                          <button class="v2-btn v2-btn-sm" disabled={busy}>{tx('Publish')}</button>
                         </form>
                       {/if}
                       <ConfirmAction
                         action="?/delete"
-                        label="Delete"
-                        confirmLabel="Delete permanently"
-                        explain="Removes the form and its submission history. Leads and tickets already created stay."
+                        label={tx('Delete')}
+                        confirmLabel={tx('Delete permanently')}
+                        explain={tx('Removes the form and its submission history. Leads and tickets already created stay.')}
                         hidden={{ id: f.id }}
                       />
                     </span>
@@ -263,8 +265,8 @@
 
       {#if data.truncated}
         <p class="v2-sub" style="font-size:12px;margin:12px 0 0">
-          Showing the {data.forms.length} most recent of
-          <span class="v2-num">{count(totals.count)}</span>. The rest are reachable through the API.
+          {tx('Showing the {n} most recent of', { n: count(data.forms.length) })}
+          <span class="v2-num">{count(totals.count)}</span>. {tx('The rest are reachable through the API.')}
         </p>
       {/if}
     {/if}
@@ -274,13 +276,9 @@
     >
       <ShieldAlert size={16} style="color:var(--v2-clay);flex:none;margin-top:1px" />
       <div>
-        <div style="font-weight:600;font-size:13px">A published form accepts posts from anyone</div>
+        <div style="font-weight:600;font-size:13px">{tx('A published form accepts posts from anyone')}</div>
         <p class="v2-sub" style="font-size:12px;margin:4px 0 0">
-          It has to: the whole point is that a stranger can fill it in without an account. A
-          honeypot field, per-form and per-address rate limits, and disposable-address rejection are
-          always on, and each form can add a Cloudflare Turnstile challenge of its own. Publish only
-          the forms you are embedding, and unpublish one the moment you take its snippet off your
-          site.
+          {tx('It has to: the whole point is that a stranger can fill it in without an account. A honeypot field, per-form and per-address rate limits, and disposable-address rejection are always on, and each form can add a Cloudflare Turnstile challenge of its own. Publish only the forms you are embedding, and unpublish one the moment you take its snippet off your site.')}
         </p>
       </div>
     </div>

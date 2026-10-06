@@ -48,7 +48,8 @@
   import ConfirmAction from '$lib/v2/components/ConfirmAction.svelte';
   import { count, relativeTime, shortDate } from '$lib/v2/format.js';
   import { LEAD_SOURCES, LEAD_SOURCE_LABEL, CASE_PRIORITIES, CASE_TYPES } from '$lib/v2/enums.js';
-  import { inactiveOptionLabel } from '$lib/v2/pickers.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
   import {
     moveField,
     withOrder,
@@ -67,7 +68,6 @@
   let isTicket = $derived(wf.target === 'ticket');
   /** The built-in field vocabulary for this form's target. */
   let builtin = $derived(builtinFor(wf.target));
-  let recordNoun = $derived(isTicket ? 'ticket' : 'lead');
 
   /**
    * The editable field list, seeded from the server ONCE and owned by the
@@ -134,15 +134,15 @@
    * URL typed but not yet saved would not be there when the server looked.
    */
   let publishBlocker = $derived.by(() => {
-    if (!fields.length) return 'Add at least one field first.';
+    if (!fields.length) return tx('Add at least one field first.');
     if (!hasRequiredField(fields, wf.target)) {
       return isTicket
-        ? 'Add an email field before publishing. It is how each ticket finds its contact, or creates one.'
-        : 'Add an email field before publishing. It is what lets a repeat submission update the existing lead instead of failing.';
+        ? tx('Add an email field before publishing. It is how each ticket finds its contact, or creates one.')
+        : tx('Add an email field before publishing. It is what lets a repeat submission update the existing lead instead of failing.');
     }
-    if (!complete) return 'Every field needs a label and something to write into.';
+    if (!complete) return tx('Every field needs a label and something to write into.');
     if (wf.success_mode === 'redirect' && !wf.redirect_url) {
-      return 'This form redirects on success but has no redirect URL set.';
+      return tx('This form redirects on success but has no redirect URL set.');
     }
     return null;
   });
@@ -262,29 +262,29 @@
     status === 'accepted' || status === 'accepted_duplicate' ? 'moss' : 'slate';
 
   /** @param {string} status */
-  const statusLabel = (status) =>
-    ({
-      accepted: isTicket ? 'Ticket opened' : 'Lead created',
-      accepted_duplicate: 'Merged into an existing lead',
-      rejected_spam: 'Rejected as spam',
-      rejected_invalid: 'Rejected, invalid',
-      rejected_captcha: 'Rejected, captcha'
-    })[status] ?? status;
+  const statusLabel = (status) => {
+    if (status === 'accepted') return isTicket ? tx('Ticket opened') : tx('Lead created');
+    if (status === 'accepted_duplicate') return tx('Merged into an existing lead');
+    if (status === 'rejected_spam') return tx('Rejected as spam');
+    if (status === 'rejected_invalid') return tx('Rejected, invalid');
+    if (status === 'rejected_captcha') return tx('Rejected, captcha');
+    return status;
+  };
 </script>
 
 <PageHeader title={wf.name} record>
   {#snippet crumb()}
-    <a href={resolve('/settings/web-forms')}>Web forms</a>
+    <a href={resolve('/settings/web-forms')}>{tx('Web forms')}</a>
   {/snippet}
   {#snippet sub()}
     <Pill tone={wf.is_published ? 'moss' : 'slate'}>
-      {wf.is_published ? 'Published' : 'Draft'}
+      {wf.is_published ? tx('Published') : tx('Draft')}
     </Pill>
     <span style="margin-left:8px">
-      Creates {recordNoun}s.
+      {isTicket ? tx('Creates tickets.') : tx('Creates leads.')}
       {wf.is_published
-        ? 'Accepting submissions from anyone with the embed.'
-        : 'Collecting nothing until it is published.'}
+        ? tx('Accepting submissions from anyone with the embed.')
+        : tx('Collecting nothing until it is published.')}
     </span>
   {/snippet}
   {#snippet actions()}
@@ -292,14 +292,14 @@
       {#if wf.is_published}
         <ConfirmAction
           action="?/unpublish"
-          label="Unpublish"
-          confirmLabel="Unpublish it"
-          explain="The embed stays on the site and starts refusing people."
+          label={tx('Unpublish')}
+          confirmLabel={tx('Unpublish it')}
+          explain={tx('The embed stays on the site and starts refusing people.')}
         />
       {:else}
         <form method="POST" action="?/publish" use:enhance={working}>
           <button class="v2-btn v2-btn-primary" disabled={busy || Boolean(publishBlocker)}>
-            Publish
+            {tx('Publish')}
           </button>
         </form>
       {/if}
@@ -311,15 +311,15 @@
   <div class="v2-pad wf-body">
     {#if actionError}
       <div style="margin-bottom:18px">
-        <NextAction label="That did not work" text={actionError} tone="rust" />
+        <NextAction label={tx('That did not work')} text={actionError} tone="rust" />
       </div>
     {:else if form?.saved}
-      <p class="v2-sub wf-ok">Saved.</p>
+      <p class="v2-sub wf-ok">{tx('Saved.')}</p>
     {/if}
 
     {#if !wf.is_published && publishBlocker && canManage}
       <div style="margin-bottom:18px">
-        <NextAction label="Before you can publish" text={publishBlocker} />
+        <NextAction label={tx('Before you can publish')} text={publishBlocker} />
       </div>
     {/if}
 
@@ -332,15 +332,14 @@
       <!-- ============ Fields ============ -->
       <section class="wf-section">
         <div class="wf-section-head">
-          <h2 class="v2-section">Fields</h2>
+          <h2 class="v2-section">{tx('Fields')}</h2>
           <p class="v2-sub wf-section-sub">
-            What a visitor is asked, in the order they are asked it. An email field is required
-            before the form can be published.
+            {tx('What a visitor is asked, in the order they are asked it. An email field is required before the form can be published.')}
           </p>
         </div>
 
         {#if !fields.length}
-          <p class="v2-sub wf-empty">No fields yet. A form with no fields collects nothing.</p>
+          <p class="v2-sub wf-empty">{tx('No fields yet. A form with no fields collects nothing.')}</p>
         {/if}
 
         <ul class="wf-fields">
@@ -363,7 +362,7 @@
 
               <div class="wf-row-body">
                 <div class="wf-row-line">
-                  <label class="wf-sr" for="src-{field.key}">Field type</label>
+                  <label class="wf-sr" for="src-{field.key}">{tx('Field type')}</label>
                   <select
                     id="src-{field.key}"
                     class="v2-input wf-narrow"
@@ -377,15 +376,15 @@
                     }}
                   >
                     <option value={builtin.source}
-                      >{isTicket ? 'Ticket field' : 'Lead field'}</option
+                      >{isTicket ? tx('Ticket field') : tx('Lead field')}</option
                     >
                     <option value="custom" disabled={!data.customFields.length}>
-                      Custom field{data.customFields.length ? '' : ' (none defined)'}
+                      {tx('Custom field')}{data.customFields.length ? '' : tx(' (none defined)')}
                     </option>
                   </select>
 
                   {#if field.source === 'custom'}
-                    <label class="wf-sr" for="tgt-{field.key}">Custom field</label>
+                    <label class="wf-sr" for="tgt-{field.key}">{tx('Custom field')}</label>
                     <select
                       id="tgt-{field.key}"
                       class="v2-input wf-narrow"
@@ -393,14 +392,14 @@
                       value={field.custom_field ?? ''}
                       onchange={(e) => pickCustomField(i, e.currentTarget.value)}
                     >
-                      <option value="">Choose one…</option>
+                      <option value="">{tx('Choose one…')}</option>
                       {#each data.customFields as c (c.id)}
                         <option value={c.id}>{c.label}</option>
                       {/each}
                     </select>
                   {:else}
                     <label class="wf-sr" for="tgt-{field.key}"
-                      >{isTicket ? 'Ticket field' : 'Lead field'}</label
+                      >{isTicket ? tx('Ticket field') : tx('Lead field')}</label
                     >
                     <select
                       id="tgt-{field.key}"
@@ -409,38 +408,38 @@
                       value={/** @type {any} */ (field)[builtin.key]}
                       onchange={(e) => pickBuiltinField(i, e.currentTarget.value)}
                     >
-                      <option value="">Choose one…</option>
+                      <option value="">{tx('Choose one…')}</option>
                       {#each builtin.choices as f (f.value)}
-                        <option value={f.value}>{f.label}</option>
+                        <option value={f.value}>{tx(f.label)}</option>
                       {/each}
                     </select>
                   {/if}
                 </div>
 
                 <div class="wf-row-line">
-                  <label class="wf-sr" for="lbl-{field.key}">Label</label>
+                  <label class="wf-sr" for="lbl-{field.key}">{tx('Label')}</label>
                   <input
                     id="lbl-{field.key}"
                     class="v2-input"
                     disabled={!canManage}
                     maxlength="255"
-                    placeholder="Label the visitor sees"
+                    placeholder={tx('Label the visitor sees')}
                     bind:value={field.label}
                   />
-                  <label class="wf-sr" for="ph-{field.key}">Placeholder</label>
+                  <label class="wf-sr" for="ph-{field.key}">{tx('Placeholder')}</label>
                   <input
                     id="ph-{field.key}"
                     class="v2-input"
                     disabled={!canManage}
                     maxlength="255"
-                    placeholder="Placeholder (optional)"
+                    placeholder={tx('Placeholder (optional)')}
                     bind:value={field.placeholder}
                   />
                 </div>
 
                 <label class="wf-check">
                   <input type="checkbox" disabled={!canManage} bind:checked={field.is_required} />
-                  Required
+                  {tx('Required')}
                 </label>
               </div>
 
@@ -453,7 +452,7 @@
                       type="button"
                       class="wf-move-btn"
                       disabled={i === 0}
-                      aria-label="Move {field.label || 'this field'} up"
+                      aria-label={tx('Move {name} up', { name: field.label || tx('this field') })}
                       onclick={() => (fields = moveField(fields, i, -1))}
                     >
                       <ChevronUp size={16} />
@@ -462,7 +461,7 @@
                       type="button"
                       class="wf-move-btn"
                       disabled={i === fields.length - 1}
-                      aria-label="Move {field.label || 'this field'} down"
+                      aria-label={tx('Move {name} down', { name: field.label || tx('this field') })}
                       onclick={() => (fields = moveField(fields, i, 1))}
                     >
                       <ChevronDown size={16} />
@@ -471,7 +470,7 @@
                   <button
                     type="button"
                     class="wf-move-btn"
-                    aria-label="Remove {field.label || 'this field'}"
+                    aria-label={tx('Remove {name}', { name: field.label || tx('this field') })}
                     onclick={() => removeField(i)}
                   >
                     <Trash2 size={15} />
@@ -484,7 +483,7 @@
 
         {#if canManage}
           <button type="button" class="v2-btn v2-btn-sm wf-add" onclick={addField}>
-            <Plus size={13} />Add a field
+            <Plus size={13} />{tx('Add a field')}
           </button>
         {/if}
       </section>
@@ -492,15 +491,17 @@
       <!-- ============ Behaviour ============ -->
       <section class="wf-section">
         <div class="wf-section-head">
-          <h2 class="v2-section">Behaviour</h2>
+          <h2 class="v2-section">{tx('Behaviour')}</h2>
           <p class="v2-sub wf-section-sub">
-            What the visitor sees after they submit, and where the {recordNoun} lands.
+            {isTicket
+              ? tx('What the visitor sees after they submit, and where the ticket lands.')
+              : tx('What the visitor sees after they submit, and where the lead lands.')}
           </p>
         </div>
 
         <div class="wf-grid">
           <div class="v2-field">
-            <label for="name">Name</label>
+            <label for="name">{tx('Name')}</label>
             <input
               id="name"
               name="name"
@@ -510,11 +511,11 @@
               disabled={!canManage}
               value={wf.name}
             />
-            <p class="v2-hint">Internal only. The visitor never sees it.</p>
+            <p class="v2-hint">{tx('Internal only. The visitor never sees it.')}</p>
           </div>
 
           <div class="v2-field">
-            <label for="submit_button_label">Submit button</label>
+            <label for="submit_button_label">{tx('Submit button')}</label>
             <input
               id="submit_button_label"
               name="submit_button_label"
@@ -526,7 +527,7 @@
           </div>
 
           <div class="v2-field">
-            <label for="success_mode">After a successful submission</label>
+            <label for="success_mode">{tx('After a successful submission')}</label>
             <select
               id="success_mode"
               name="success_mode"
@@ -534,14 +535,14 @@
               disabled={!canManage}
               bind:value={successMode}
             >
-              <option value="message">Show a message</option>
-              <option value="redirect">Redirect to a URL</option>
+              <option value="message">{tx('Show a message')}</option>
+              <option value="redirect">{tx('Redirect to a URL')}</option>
             </select>
           </div>
 
           {#if successMode === 'redirect'}
             <div class="v2-field">
-              <label for="redirect_url">Redirect URL</label>
+              <label for="redirect_url">{tx('Redirect URL')}</label>
               <input
                 id="redirect_url"
                 name="redirect_url"
@@ -553,13 +554,12 @@
                 placeholder="https://example.com/thanks"
               />
               <p class="v2-hint">
-                http or https only. The embed navigates the visitor's browser here, so any other
-                scheme would be a script running on your own site.
+                {tx("http or https only. The embed navigates the visitor's browser here, so any other scheme would be a script running on your own site.")}
               </p>
             </div>
           {:else}
             <div class="v2-field wf-wide">
-              <label for="success_message">Success message</label>
+              <label for="success_message">{tx('Success message')}</label>
               <textarea
                 id="success_message"
                 name="success_message"
@@ -572,7 +572,7 @@
 
           {#if !isTicket}
             <div class="v2-field">
-              <label for="assignment_mode">Assign new leads</label>
+              <label for="assignment_mode">{tx('Assign new leads')}</label>
               <select
                 id="assignment_mode"
                 name="assignment_mode"
@@ -580,12 +580,11 @@
                 disabled={!canManage}
                 bind:value={assignmentMode}
               >
-                <option value="person">To one person</option>
-                <option value="rotation">Rotate between members</option>
+                <option value="person">{tx('To one person')}</option>
+                <option value="rotation">{tx('Rotate between members')}</option>
               </select>
               <p class="v2-hint">
-                A repeat submission from the same email updates the existing lead and keeps its
-                owner.
+                {tx('A repeat submission from the same email updates the existing lead and keeps its owner.')}
               </p>
             </div>
           {/if}
@@ -593,7 +592,7 @@
           <!-- Hidden rather than removed in rotation mode, so the stored person
                still travels with every save and switching back restores them. -->
           <div class="v2-field" hidden={!isTicket && assignmentMode === 'rotation'}>
-            <label for="assign_to">Assign new {recordNoun}s to</label>
+            <label for="assign_to">{isTicket ? tx('Assign new tickets to') : tx('Assign new leads to')}</label>
             <select
               id="assign_to"
               name="assign_to"
@@ -601,14 +600,14 @@
               disabled={!canManage}
               value={wf.assign_to ?? ''}
             >
-              <option value="">Nobody</option>
+              <option value="">{tx('Nobody')}</option>
               {#if data.missingAssignee}
                 <!-- The stored assignee, deactivated since, so absent from the
                      people list. Without this option the select matches nothing
                      and saving any other change would clear the assignee. -->
                 <option value={data.missingAssignee.id}>
                   {data.missingAssignee.is_active === false
-                    ? inactiveOptionLabel(data.missingAssignee.name)
+                    ? tx('{name} (no longer active)', { name: data.missingAssignee.name || tx('Unnamed') })
                     : data.missingAssignee.name}
                 </option>
               {/if}
@@ -618,10 +617,11 @@
             </select>
             {#if data.missingAssignee?.is_active === false}
               <p class="v2-hint">
-                Deactivated users are not assigned.
+                {tx('Deactivated users are not assigned.')}
                 {isTicket
-                  ? 'New tickets from this form are left to your routing rules'
-                  : 'New leads from this form stay unassigned'} until you choose someone else.
+                  ? tx('New tickets from this form are left to your routing rules')
+                  : tx('New leads from this form stay unassigned')}
+                {tx('until you choose someone else.')}
               </p>
             {/if}
           </div>
@@ -630,7 +630,7 @@
             <!-- Hidden rather than removed in person mode, for the same reason
                  as the person select above. -->
             <div class="v2-field" hidden={assignmentMode !== 'rotation'}>
-              <label for="rotation_members">Rotate between</label>
+              <label for="rotation_members">{tx('Rotate between')}</label>
               <select
                 id="rotation_members"
                 name="rotation_members"
@@ -643,7 +643,7 @@
                   <!-- A stored member the people list cannot offer. Without it
                        the next save would drop them from the rotation. -->
                   <option value={m.id} selected>
-                    {m.is_active === false ? inactiveOptionLabel(m.name) : m.name}
+                    {m.is_active === false ? tx('{name} (no longer active)', { name: m.name || tx('Unnamed') }) : m.name}
                   </option>
                 {/each}
                 {#each data.profiles as p (p.id)}
@@ -653,18 +653,20 @@
                 {/each}
               </select>
               <p class="v2-hint">
-                Each new lead goes to the next member in turn. Deactivated members are skipped.
+                {tx('Each new lead goes to the next member in turn. Deactivated members are skipped.')}
                 {#if wf.assignment_mode === 'rotation'}
-                  Last assigned: {wf.rotation_last_assigned_details
-                    ? wf.rotation_last_assigned_details.name ||
-                      wf.rotation_last_assigned_details.email
-                    : 'nobody yet'}.
+                  {tx('Last assigned: {name}.', {
+                    name: wf.rotation_last_assigned_details
+                      ? wf.rotation_last_assigned_details.name ||
+                        wf.rotation_last_assigned_details.email
+                      : tx('nobody yet')
+                  })}
                 {/if}
               </p>
             </div>
 
             <div class="v2-field" hidden={assignmentMode !== 'rotation'}>
-              <label for="rotation_cap">Most open leads per member</label>
+              <label for="rotation_cap">{tx('Most open leads per member')}</label>
               <input
                 id="rotation_cap"
                 name="rotation_cap"
@@ -673,20 +675,19 @@
                 min="1"
                 step="1"
                 inputmode="numeric"
-                placeholder="No limit"
+                placeholder={tx('No limit')}
                 disabled={!canManage}
                 value={wf.rotation_cap ?? ''}
               />
               <p class="v2-hint">
-                Optional. A member holding this many open leads is passed over until one is
-                converted or closed. When everyone is passed over, the lead stays unassigned.
+                {tx('Optional. A member holding this many open leads is passed over until one is converted or closed. When everyone is passed over, the lead stays unassigned.')}
               </p>
             </div>
           {/if}
 
           {#if isTicket}
             <div class="v2-field">
-              <label for="ticket_priority">Ticket priority</label>
+              <label for="ticket_priority">{tx('Ticket priority')}</label>
               <select
                 id="ticket_priority"
                 name="ticket_priority"
@@ -695,14 +696,14 @@
                 value={wf.ticket_priority}
               >
                 {#each CASE_PRIORITIES as p (p)}
-                  <option value={p}>{p}</option>
+                  <option value={p}>{choiceLabel(p)}</option>
                 {/each}
               </select>
-              <p class="v2-hint">Set by the form, never by the visitor.</p>
+              <p class="v2-hint">{tx('Set by the form, never by the visitor.')}</p>
             </div>
 
             <div class="v2-field">
-              <label for="ticket_type">Ticket type</label>
+              <label for="ticket_type">{tx('Ticket type')}</label>
               <select
                 id="ticket_type"
                 name="ticket_type"
@@ -710,15 +711,15 @@
                 disabled={!canManage}
                 value={wf.ticket_type ?? ''}
               >
-                <option value="">No type</option>
+                <option value="">{tx('No type')}</option>
                 {#each CASE_TYPES as t (t)}
-                  <option value={t}>{t}</option>
+                  <option value={t}>{choiceLabel(t)}</option>
                 {/each}
               </select>
             </div>
           {:else}
             <div class="v2-field">
-              <label for="lead_source">Record the source as</label>
+              <label for="lead_source">{tx('Record the source as')}</label>
               <select
                 id="lead_source"
                 name="lead_source"
@@ -731,13 +732,13 @@
                 {/each}
               </select>
               <p class="v2-hint">
-                Which form a lead came from is recorded separately, so this can stay broad.
+                {tx('Which form a lead came from is recorded separately, so this can stay broad.')}
               </p>
             </div>
           {/if}
 
           <div class="v2-field">
-            <label for="notify_profiles">Email these people on each {recordNoun}</label>
+            <label for="notify_profiles">{isTicket ? tx('Email these people on each ticket') : tx('Email these people on each lead')}</label>
             <select
               id="notify_profiles"
               name="notify_profiles"
@@ -752,13 +753,13 @@
             </select>
             <p class="v2-hint">
               {isTicket
-                ? 'The assignee above is emailed as well.'
-                : 'Whoever each lead is assigned to is emailed as well.'}
+                ? tx('The assignee above is emailed as well.')
+                : tx('Whoever each lead is assigned to is emailed as well.')}
             </p>
           </div>
 
           <div class="v2-field">
-            <label for="tags">Tag every {recordNoun} with</label>
+            <label for="tags">{isTicket ? tx('Tag every ticket with') : tx('Tag every lead with')}</label>
             <select
               id="tags"
               name="tags"
@@ -778,16 +779,15 @@
       <!-- ============ Spam ============ -->
       <section class="wf-section">
         <div class="wf-section-head">
-          <h2 class="v2-section">Spam</h2>
+          <h2 class="v2-section">{tx('Spam')}</h2>
           <p class="v2-sub wf-section-sub">
-            A hidden honeypot field, a per-address rate limit and a per-form one are always on and
-            are not configurable. These are the parts you choose.
+            {tx('A hidden honeypot field, a per-address rate limit and a per-form one are always on and are not configurable. These are the parts you choose.')}
           </p>
         </div>
 
         <div class="wf-grid">
           <div class="v2-field wf-wide">
-            <label for="allowed_origins">Allowed origins</label>
+            <label for="allowed_origins">{tx('Allowed origins')}</label>
             <textarea
               id="allowed_origins"
               name="allowed_origins"
@@ -797,10 +797,7 @@
               placeholder="https://example.com">{(wf.allowed_origins ?? []).join('\n')}</textarea
             >
             <p class="v2-hint">
-              One per line, scheme and host only, no path. Leave empty and the iframe embed works
-              anywhere. <strong>The script embed needs the site's origin listed here</strong>: the
-              browser refuses a cross-origin POST that we have not permitted, and a form with no
-              listed origins permits none.
+              {tx("One per line, scheme and host only, no path. Leave empty and the iframe embed works anywhere. The script embed needs the site's origin listed here: the browser refuses a cross-origin POST that we have not permitted, and a form with no listed origins permits none.")}
             </p>
           </div>
 
@@ -812,12 +809,12 @@
                 disabled={!canManage}
                 checked={wf.reject_disposable_email}
               />
-              Reject throwaway email addresses
+              {tx('Reject throwaway email addresses')}
             </label>
           </div>
 
           <div class="v2-field">
-            <label for="captcha_provider">Challenge</label>
+            <label for="captcha_provider">{tx('Challenge')}</label>
             <select
               id="captcha_provider"
               name="captcha_provider"
@@ -825,14 +822,14 @@
               disabled={!canManage}
               bind:value={captchaProvider}
             >
-              <option value="">None</option>
-              <option value="turnstile">Cloudflare Turnstile</option>
+              <option value="">{tx('None')}</option>
+              <option value="turnstile">{tx('Cloudflare Turnstile')}</option>
             </select>
           </div>
 
           {#if captchaProvider === 'turnstile'}
             <div class="v2-field">
-              <label for="captcha_site_key">Turnstile site key</label>
+              <label for="captcha_site_key">{tx('Turnstile site key')}</label>
               <input
                 id="captcha_site_key"
                 name="captcha_site_key"
@@ -844,7 +841,7 @@
             </div>
 
             <div class="v2-field wf-wide">
-              <label for="captcha_secret">Turnstile secret</label>
+              <label for="captcha_secret">{tx('Turnstile secret')}</label>
               <input
                 id="captcha_secret"
                 name="captcha_secret"
@@ -854,16 +851,14 @@
                 maxlength="255"
                 disabled={!canManage}
                 placeholder={wf.has_captcha_secret
-                  ? 'Stored. Leave blank to keep it.'
-                  : 'Paste the secret from Cloudflare'}
+                  ? tx('Stored. Leave blank to keep it.')
+                  : tx('Paste the secret from Cloudflare')}
               />
               <p class="v2-hint">
-                Never shown again once saved; we only send it to Cloudflare. Leaving this blank
-                keeps whatever is stored rather than clearing it.
+                {tx('Never shown again once saved; we only send it to Cloudflare. Leaving this blank keeps whatever is stored rather than clearing it.')}
                 {#if !wf.has_captcha_secret}
                   <strong>
-                    No secret is stored yet. Verification fails closed, so publishing with Turnstile
-                    on and no secret would refuse every submission.
+                    {tx('No secret is stored yet. Verification fails closed, so publishing with Turnstile on and no secret would refuse every submission.')}
                   </strong>
                 {/if}
               </p>
@@ -874,7 +869,7 @@
 
       {#if canManage}
         <div class="wf-save">
-          <button class="v2-btn v2-btn-primary" disabled={busy}>Save changes</button>
+          <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Save changes')}</button>
         </div>
       {/if}
     </form>
@@ -882,23 +877,22 @@
     <!-- ============ Embed ============ -->
     <section class="wf-section">
       <div class="wf-section-head">
-        <h2 class="v2-section">Embed</h2>
+        <h2 class="v2-section">{tx('Embed')}</h2>
         <p class="v2-sub wf-section-sub">
-          Paste one of these into your own site. Both are built by the server, because they need
-          this API's address and a browser only knows your site's.
+          {tx("Paste one of these into your own site. Both are built by the server, because they need this API's address and a browser only knows your site's.")}
         </p>
       </div>
 
       <div class="wf-snippet">
         <div class="wf-snippet-head">
           <b>iframe</b>
-          <span class="v2-sub">Works anywhere, no origin list needed.</span>
+          <span class="v2-sub">{tx('Works anywhere, no origin list needed.')}</span>
           <button
             type="button"
             class="v2-btn v2-btn-sm"
             onclick={() => copy(wf.embed_html, 'html')}
           >
-            {#if copied === 'html'}<Check size={13} />Copied{:else}<Copy size={13} />Copy{/if}
+            {#if copied === 'html'}<Check size={13} />{tx('Copied')}{:else}<Copy size={13} />{tx('Copy')}{/if}
           </button>
         </div>
         <pre>{wf.embed_html}</pre>
@@ -907,16 +901,15 @@
       <div class="wf-snippet">
         <div class="wf-snippet-head">
           <b>script</b>
-          <span class="v2-sub">Inherits your site's styling.</span>
+          <span class="v2-sub">{tx("Inherits your site's styling.")}</span>
           <button type="button" class="v2-btn v2-btn-sm" onclick={() => copy(wf.embed_js, 'js')}>
-            {#if copied === 'js'}<Check size={13} />Copied{:else}<Copy size={13} />Copy{/if}
+            {#if copied === 'js'}<Check size={13} />{tx('Copied')}{:else}<Copy size={13} />{tx('Copy')}{/if}
           </button>
         </div>
         <pre>{wf.embed_js}</pre>
         {#if !(wf.allowed_origins ?? []).length}
           <p class="v2-hint wf-warn">
-            This one will not work yet. Add the site's origin under Spam first: the browser blocks a
-            cross-origin POST unless we permit that origin, and this form permits none.
+            {tx("This one will not work yet. Add the site's origin under Spam first: the browser blocks a cross-origin POST unless we permit that origin, and this form permits none.")}
           </p>
         {/if}
       </div>
@@ -925,50 +918,48 @@
     <!-- ============ Activity ============ -->
     <section class="wf-section">
       <div class="wf-section-head">
-        <h2 class="v2-section">Activity</h2>
+        <h2 class="v2-section">{tx('Activity')}</h2>
         <p class="v2-sub wf-section-sub">
-          The last 30 days. A view is counted when the embed loads, whether or not anyone fills it
-          in.
+          {tx('The last 30 days. A view is counted when the embed loads, whether or not anyone fills it in.')}
         </p>
       </div>
 
       {#if totals}
         <div class="v2-stats" style="margin-bottom:16px">
-          <StatCard label="Views" value={count(totals.views)} tone="slate" />
+          <StatCard label={tx('Views')} value={count(totals.views)} tone="slate" />
           <StatCard
-            label={isTicket ? 'Tickets' : 'Leads'}
+            label={isTicket ? tx('Tickets') : tx('Leads')}
             value={count(totals.submissions)}
             tone="ink"
           />
           <StatCard
-            label="Conversion"
+            label={tx('Conversion')}
             value={totals.views ? `${Math.round(totals.conversion_rate * 100)}%` : '-'}
             tone="slate"
-            detail={totals.views ? null : 'No views yet'}
+            detail={totals.views ? null : tx('No views yet')}
           />
           <StatCard
-            label="Spam blocked"
+            label={tx('Spam blocked')}
             value={count(totals.spam)}
             tone="slate"
-            detail={totals.spam ? `Never reached a ${recordNoun}` : 'None'}
+            detail={totals.spam ? (isTicket ? tx('Never reached a ticket') : tx('Never reached a lead')) : tx('None')}
           />
         </div>
       {/if}
 
       {#if !submissions.length}
         <p class="v2-sub wf-empty">
-          Nothing submitted yet. Rejected attempts would be listed here too, so an empty list means
-          nobody has reached the form at all.
+          {tx('Nothing submitted yet. Rejected attempts would be listed here too, so an empty list means nobody has reached the form at all.')}
         </p>
       {:else}
         <div class="v2-table-wrap">
           <table class="v2-table">
             <thead>
               <tr>
-                <th>Submitted</th>
-                <th>Outcome</th>
-                <th data-m="hide">{isTicket ? 'Ticket' : 'Lead'}</th>
-                <th data-m="hide">From</th>
+                <th>{tx('Submitted')}</th>
+                <th>{tx('Outcome')}</th>
+                <th data-m="hide">{isTicket ? tx('Ticket') : tx('Lead')}</th>
+                <th data-m="hide">{tx('From')}</th>
               </tr>
             </thead>
             <tbody>
@@ -987,7 +978,7 @@
                     {:else if s.lead}
                       <a href={resolve(`/leads/${s.lead}`)}>{s.lead_name}</a>
                     {:else}
-                      <span class="v2-muted">No {recordNoun}</span>
+                      <span class="v2-muted">{isTicket ? tx('No ticket') : tx('No lead')}</span>
                     {/if}
                   </td>
                   <td data-m="hide" class="v2-muted">{s.referer || s.submitted_ip || '—'}</td>
@@ -998,7 +989,7 @@
         </div>
         {#if data.count > submissions.length}
           <p class="v2-sub" style="margin-top:10px;font-size:12px">
-            Showing the {submissions.length} most recent of
+            {tx('Showing the {shown} most recent of', { shown: count(submissions.length) })}
             <span class="v2-num">{count(data.count)}</span>.
           </p>
         {/if}
@@ -1008,17 +999,18 @@
     {#if canManage}
       <section class="wf-section wf-danger">
         <div>
-          <b>Delete this form</b>
+          <b>{tx('Delete this form')}</b>
           <p class="v2-sub" style="font-size:12px;margin:4px 0 0;max-width:60ch">
-            Removes the form and its submission history. The {recordNoun}s it already created stay
-            where they are. Any embed still on your site will stop working.
+            {isTicket
+              ? tx('Removes the form and its submission history. The tickets it already created stay where they are. Any embed still on your site will stop working.')
+              : tx('Removes the form and its submission history. The leads it already created stay where they are. Any embed still on your site will stop working.')}
           </p>
         </div>
         <ConfirmAction
           action="?/delete"
-          label="Delete"
-          confirmLabel="Delete permanently"
-          explain="This cannot be undone."
+          label={tx('Delete')}
+          confirmLabel={tx('Delete permanently')}
+          explain={tx('This cannot be undone.')}
         />
       </section>
     {/if}

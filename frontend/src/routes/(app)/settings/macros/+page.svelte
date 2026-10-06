@@ -36,6 +36,8 @@
   import { count, relativeDays } from '$lib/v2/format.js';
   import { MACRO_SCOPE_LABEL, CASE_PRIORITIES } from '$lib/v2/enums.js';
   import { Plus, TriangleAlert } from '@lucide/svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -106,30 +108,30 @@
   }
 </script>
 
-<PageHeader title="Macros">
+<PageHeader title={tx('Macros')}>
   {#snippet crumb()}<SettingsCrumb />{/snippet}
   {#snippet sub()}
-    <span class="v2-num">{count(totals.org)}</span> shared ·
-    <span class="v2-num">{count(totals.personal)}</span> yours
+    <span class="v2-num">{count(totals.org)}</span> {tx('shared ·')}
+    <span class="v2-num">{count(totals.personal)}</span> {tx('yours')}
   {/snippet}
   {#snippet actions()}
     {#if !editing}
-      <button class="v2-btn v2-btn-primary" onclick={openCreate}><Plus />New macro</button>
+      <button class="v2-btn v2-btn-primary" onclick={openCreate}><Plus />{tx('New macro')}</button>
     {/if}
   {/snippet}
 </PageHeader>
 
 <div class="v2-pad" style="padding-top:16px;flex:none">
   <div class="v2-stats">
-    <StatCard label="Shared with everyone" value={count(totals.org)} tone="ink" />
-    <StatCard label="Only yours" value={count(totals.personal)} tone="slate" />
+    <StatCard label={tx('Shared with everyone')} value={count(totals.org)} tone="ink" />
+    <StatCard label={tx('Only yours')} value={count(totals.personal)} tone="slate" />
     <StatCard
-      label="Broken placeholders"
+      label={tx('Broken placeholders')}
       value={count(totals.with_unknown_placeholders)}
       tone={totals.with_unknown_placeholders > 0 ? 'rust' : 'slate'}
-      detail="Sent to customers as typed"
+      detail={tx('Sent to customers as typed')}
     />
-    <StatCard label="Turned off" value={count(totals.inactive)} tone="slate" />
+    <StatCard label={tx('Turned off')} value={count(totals.inactive)} tone="slate" />
   </div>
 </div>
 
@@ -137,10 +139,10 @@
   <div class="v2-pad" style="padding-bottom:32px">
     {#if editing}
       <SettingsFormPanel
-        title={editing === 'new' ? 'New macro' : `Edit ${editing.title}`}
+        title={editing === 'new' ? tx('New macro') : tx('Edit {name}', { name: editing.title })}
         action={editing === 'new' ? '?/create' : '?/update'}
         error={editing === 'new' ? form?.create?.error : form?.update?.error}
-        submitLabel={editing === 'new' ? 'Add macro' : 'Save macro'}
+        submitLabel={editing === 'new' ? tx('Add macro') : tx('Save macro')}
         oncancel={() => (editing = null)}
         ondone={() => (editing = null)}
       >
@@ -150,7 +152,7 @@
           {/if}
 
           <div class="v2-field">
-            <label for="m-title">Title</label>
+            <label for="m-title">{tx('Title')}</label>
             <input
               id="m-title"
               class="v2-input"
@@ -162,58 +164,56 @@
           </div>
 
           <div class="v2-field">
-            <label for="m-scope">Who sees it</label>
+            <label for="m-scope">{tx('Who sees it')}</label>
             <select id="m-scope" class="v2-input" name="scope" bind:value={scope}>
-              <option value="personal">Just me</option>
+              <option value="personal">{tx('Just me')}</option>
               {#if data.can_create_org}
-                <option value="org">Everyone in the org</option>
+                <option value="org">{tx('Everyone in the org')}</option>
               {/if}
             </select>
             {#if !data.can_create_org}
-              <p class="v2-hint">Only an admin can share a macro with everyone.</p>
+              <p class="v2-hint">{tx('Only an admin can share a macro with everyone.')}</p>
             {/if}
           </div>
 
           <div class="v2-field v2-sfp-wide">
-            <label for="m-body">Body</label>
+            <label for="m-body">{tx('Body')}</label>
             <textarea id="m-body" class="v2-input" name="body" rows="5"
               >{editing === 'new' ? '' : editing.body}</textarea
             >
             <p class="v2-hint">
-              Placeholders like %customer_name% are substituted when the macro is sent. The seven
-              supported tokens are listed to the right; anything else goes to the customer exactly
-              as typed. Leave it empty for a macro that only changes the ticket.
+              {tx('Placeholders like %customer_name% are substituted when the macro is sent. The seven supported tokens are listed to the right; anything else goes to the customer exactly as typed. Leave it empty for a macro that only changes the ticket.')}
             </p>
           </div>
 
           <!-- The actions, applied to the ticket right after the reply is
                sent. Blank or nothing selected means "leave it alone". -->
           <div class="v2-field">
-            <label for="m-status">Set status</label>
+            <label for="m-status">{tx('Set status')}</label>
             <select id="m-status" class="v2-input" name="set_status">
-              <option value="">No change</option>
+              <option value="">{tx('No change')}</option>
               {#each data.statuses as s (s)}
                 <option value={s} selected={editing !== 'new' && editing.set_status === s}
-                  >{s}</option
+                  >{choiceLabel(s)}</option
                 >
               {/each}
             </select>
           </div>
 
           <div class="v2-field">
-            <label for="m-priority">Set priority</label>
+            <label for="m-priority">{tx('Set priority')}</label>
             <select id="m-priority" class="v2-input" name="set_priority">
-              <option value="">No change</option>
+              <option value="">{tx('No change')}</option>
               {#each CASE_PRIORITIES as p (p)}
                 <option value={p} selected={editing !== 'new' && editing.set_priority === p}
-                  >{p}</option
+                  >{choiceLabel(p)}</option
                 >
               {/each}
             </select>
           </div>
 
           <div class="v2-field">
-            <label for="m-assignees">Assign to</label>
+            <label for="m-assignees">{tx('Assign to')}</label>
             <select
               id="m-assignees"
               class="v2-input m-multi"
@@ -229,11 +229,11 @@
                 >
               {/each}
             </select>
-            <p class="v2-hint">Replaces whoever the ticket is assigned to.</p>
+            <p class="v2-hint">{tx('Replaces whoever the ticket is assigned to.')}</p>
           </div>
 
           <div class="v2-field">
-            <label for="m-tags">Add tags</label>
+            <label for="m-tags">{tx('Add tags')}</label>
             <select id="m-tags" class="v2-input m-multi" name="add_tags" multiple size="4">
               {#each editing === 'new' ? data.tags : editing.tag_options as t (t.id)}
                 <option value={t.id} selected={editing !== 'new' && editing.add_tags.includes(t.id)}
@@ -241,7 +241,7 @@
                 >
               {/each}
             </select>
-            <p class="v2-hint">Added to the ticket's own tags.</p>
+            <p class="v2-hint">{tx("Added to the ticket's own tags.")}</p>
           </div>
         {/snippet}
       </SettingsFormPanel>
@@ -256,27 +256,26 @@
 
     <div class="v2-split-wide">
       <div>
-        <div class="v2-label" style="margin-bottom:10px">Shared with everyone</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Shared with everyone')}</div>
         <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:24px">
           {#each orgMacros as m (m.id)}
             {@render macro(m)}
           {/each}
         </div>
 
-        <div class="v2-label" style="margin-bottom:10px">Only yours</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Only yours')}</div>
         <div style="display:flex;flex-direction:column;gap:9px">
           {#each personalMacros as m (m.id)}
             {@render macro(m)}
           {/each}
         </div>
         <p class="v2-sub" style="font-size:11.5px;margin-top:11px">
-          Personal macros are visible only to you. Nobody else in the organisation, admins included,
-          sees this list.
+          {tx('Personal macros are visible only to you. Nobody else in the organisation, admins included, sees this list.')}
         </p>
       </div>
 
       <div>
-        <div class="v2-label" style="margin-bottom:10px">Placeholders that work</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Placeholders that work')}</div>
         <div class="v2-card" style="overflow:hidden">
           {#each data.placeholders as p (p.token)}
             <div class="v2-setting" style="padding:10px 15px">
@@ -288,9 +287,7 @@
           {/each}
         </div>
         <p class="v2-sub" style="font-size:11.5px;margin-top:11px;line-height:1.5">
-          These seven are the whole set. Anything else between percent signs is left exactly as
-          written and goes out that way. The server does not guess, on purpose, so a typo is visible
-          in the composer rather than a blank in the customer's inbox.
+          {tx("These seven are the whole set. Anything else between percent signs is left exactly as written and goes out that way. The server does not guess, on purpose, so a typo is visible in the composer rather than a blank in the customer's inbox.")}
         </p>
       </div>
     </div>
@@ -301,10 +298,10 @@
   <div class="v2-card" style="padding:14px 16px;opacity:{m.is_active ? 1 : 0.62}">
     <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
       <b style="font-size:13.5px">{m.title}</b>
-      {#if !m.is_active}<Pill tone="slate">Off</Pill>{/if}
-      {#if m.unknown_placeholders.length}<Pill tone="rust">Broken placeholder</Pill>{/if}
+      {#if !m.is_active}<Pill tone="slate">{tx('Off')}</Pill>{/if}
+      {#if m.unknown_placeholders.length}<Pill tone="rust">{tx('Broken placeholder')}</Pill>{/if}
       <span class="v2-sub" style="font-size:11.5px;margin-left:auto">
-        used <span class="v2-num">{count(m.usage_count)}</span> times · {relativeDays(m.updated_at)}
+        {tx('used')} <span class="v2-num">{count(m.usage_count)}</span> {tx('times')} · {relativeDays(m.updated_at)}
       </span>
     </div>
 
@@ -324,12 +321,12 @@
       <div class="v2-macro-flag">
         <TriangleAlert size={14} style="color:var(--v2-rust);flex:none" />
         <span>
-          {m.unknown_placeholders.join(' and ')}
-          {m.unknown_placeholders.length === 1 ? 'is not a placeholder' : 'are not placeholders'},
-          {m.unknown_placeholders.length === 1 ? 'it goes' : 'they go'} to the customer exactly as written.
+          {m.unknown_placeholders.length === 1
+            ? tx('{tokens} is not a placeholder, it goes to the customer exactly as written.', { tokens: m.unknown_placeholders[0] })
+            : tx('{tokens} are not placeholders, they go to the customer exactly as written.', { tokens: m.unknown_placeholders.join(` ${tx('and')} `) })}
           {#if m.usage_count > 0}
-            This macro has been sent
-            <span class="v2-num">{count(m.usage_count)}</span> times.
+            {tx('This macro has been sent')}
+            <span class="v2-num">{count(m.usage_count)}</span> {tx('times')}.
           {/if}
         </span>
       </div>
@@ -337,7 +334,7 @@
 
     {#if m.chips.length}
       <div class="v2-macro-acts">
-        <span class="v2-sub">On send:</span>
+        <span class="v2-sub">{tx('On send:')}</span>
         {#each m.chips as chip (chip.key)}
           <Pill tone="slate">{chip.label}</Pill>
         {/each}
@@ -352,7 +349,7 @@
 
     {#if canWrite(m)}
       <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:10px">
-        <button class="v2-btn v2-btn-sm" type="button" onclick={() => openEdit(m)}>Edit</button>
+        <button class="v2-btn v2-btn-sm" type="button" onclick={() => openEdit(m)}>{tx('Edit')}</button>
         {#if !m.is_active}
           <!-- Turning a macro back on restores nothing that was destroyed, so
                unlike "Turn off"/"Delete" this doesn't need the two-click
@@ -367,7 +364,7 @@
                this can never write a row `canWrite` above disagrees with. -->
           <form method="POST" action="?/activate" use:enhance>
             <input type="hidden" name="id" value={m.id} />
-            <button class="v2-btn v2-btn-sm" type="submit">Turn on</button>
+            <button class="v2-btn v2-btn-sm" type="submit">{tx('Turn on')}</button>
           </form>
         {:else if m.scope === 'org'}
           <!-- `MacroDetailView.delete` soft-deletes an org macro: it flips
@@ -375,9 +372,9 @@
                "Turn off", not "Delete", says what actually happens. -->
           <ConfirmAction
             action="?/delete"
-            label="Turn off"
-            confirmLabel="Turn off"
-            explain="Turns it off for everyone. It stops appearing in the picker."
+            label={tx('Turn off')}
+            confirmLabel={tx('Turn off')}
+            explain={tx('Turns it off for everyone. It stops appearing in the picker.')}
             hidden={{ id: m.id }}
           />
         {:else}
@@ -386,9 +383,9 @@
                nothing left to turn back on. -->
           <ConfirmAction
             action="?/delete"
-            label="Delete"
-            confirmLabel="Delete"
-            explain="Deletes it permanently."
+            label={tx('Delete')}
+            confirmLabel={tx('Delete')}
+            explain={tx('Deletes it permanently.')}
             hidden={{ id: m.id }}
           />
         {/if}
