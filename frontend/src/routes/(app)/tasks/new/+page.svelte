@@ -81,13 +81,13 @@
         </select>
       </label>
       <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">{tx('Due')}</span>
+        <span class="v2-label">{tx('When it should be done')}</span>
         <input class="v2-input" type="date" name="due_date" value={values.due_date ?? ''} />
       </label>
     </div>
     <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px">
       {tx(
-        'A task with no due date never becomes overdue and never appears in "due this week". It is a real choice, not a blank you forgot.'
+        'The day this task should be done. Leave it empty and it never counts as late, and it never appears in this week. That is a real choice, not a blank you forgot.'
       )}
     </p>
 

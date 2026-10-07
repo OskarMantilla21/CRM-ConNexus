@@ -1,6 +1,6 @@
 # First sign-in
 
-BottleCRM issues sessions as JWT access/refresh pairs (`rest_framework_simplejwt`), not
+ConNexus-CRM issues sessions as JWT access/refresh pairs (`rest_framework_simplejwt`), not
 server-side sessions or cookies set by a traditional username/password login endpoint. There is
 no such endpoint. `backend/common/urls.py` registers exactly three ways to obtain a token pair.
 

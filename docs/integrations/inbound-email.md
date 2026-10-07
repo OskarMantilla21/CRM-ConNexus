@@ -1,8 +1,8 @@
 # Inbound email
 
-BottleCRM can turn email sent to a support address into a case (support ticket), and thread
-replies onto the same case automatically. This is an inbound webhook: BottleCRM *receives* mail
-through it. To have BottleCRM push events to a URL you configure (a ticket created, a public reply
+ConNexus-CRM can turn email sent to a support address into a case (support ticket), and thread
+replies onto the same case automatically. This is an inbound webhook: ConNexus-CRM *receives* mail
+through it. To have ConNexus-CRM push events to a URL you configure (a ticket created, a public reply
 added, and so on), see [Webhooks](webhooks.md).
 
 ## How inbound email becomes a ticket
@@ -131,7 +131,7 @@ POST /api/cases/inbound/<mailbox_id>/
 ```
 
 This route is deliberately public: `authentication_classes = ()`, `permission_classes =
-(AllowAny,)`, because SNS has no way to send your BottleCRM credentials. The `<mailbox_id>` in the
+(AllowAny,)`, because SNS has no way to send your ConNexus-CRM credentials. The `<mailbox_id>` in the
 URL is what scopes each notification to one org, in this order:
 
 1. **The route is reachable without an org claim.** `RequireOrgContext`
@@ -253,7 +253,7 @@ itself, in two layers, and it takes both:
    - **Self-hosting:** set `INBOUND_SNS_ACCOUNT_IDS` to the AWS account that owns your SES
      receipt-rule topics, then subscribe each mailbox URL and it pins itself. Or leave it unset
      and paste each topic's ARN into the mailbox before subscribing.
-   - **Hosted BottleCRM:** the platform sets its own AWS account, so mailboxes wired up by the
+   - **Hosted ConNexus-CRM:** the platform sets its own AWS account, so mailboxes wired up by the
      platform pin themselves. An org that routes mail through a topic in its own AWS account
      enters that Topic ARN on the mailbox instead.
 

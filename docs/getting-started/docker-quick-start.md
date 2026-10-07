@@ -1,6 +1,6 @@
 # Docker quick start
 
-The fastest way to run BottleCRM locally is Docker Compose. It brings up PostgreSQL, Redis, the
+The fastest way to run ConNexus-CRM locally is Docker Compose. It brings up PostgreSQL, Redis, the
 Django API, two Celery processes and the SvelteKit frontend from one file, using the checked-in
 `.env.docker` for configuration.
 

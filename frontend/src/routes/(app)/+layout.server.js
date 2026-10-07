@@ -121,7 +121,8 @@ const LIVE_COUNTS = {
  */
 export async function load(event) {
   const permissions = permissionsFromClaims(event.locals.profile);
-  if (!pathAllowed(event.url.pathname, permissions)) {
+  const role = event.locals.profile?.role || 'USER';
+  if (!pathAllowed(event.url.pathname, permissions, role)) {
     const dest = landingPath(permissions);
     if (dest !== event.url.pathname) throw redirect(303, dest);
   }
@@ -129,7 +130,7 @@ export async function load(event) {
   const shell = {
     counts: /** @type {Record<string, number>} */ ({}),
     org: {
-      name: event.locals.org?.name || 'BottleCRM',
+      name: event.locals.org?.name || 'ConNexus-CRM',
       terminology: /** @type {Record<string, string> | undefined} */ (undefined),
       // The currency for figures that are sums rather than one record: pipeline
       // totals, invoice ageing, goal progress. A per-record currency cannot
@@ -157,7 +158,11 @@ export async function load(event) {
     // control. The non-admin view when the claim is absent.
     is_organization_admin: isOrgAdmin(event.locals.profile),
     permissions,
-    role: event.locals.profile?.role || 'USER'
+    role,
+    user: {
+      name: event.locals.user?.name || '',
+      email: event.locals.user?.email || ''
+    }
   };
 
   // countKeys' fetches and the terminology fetch are pushed into ONE

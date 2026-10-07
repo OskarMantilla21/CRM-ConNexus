@@ -20,6 +20,7 @@
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { mergeSideLabel } from '$lib/v2/merge-label.js';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /** @typedef {{ id: string, name: string, can_delete: boolean, fields: Array<{ label: string, value: string }> }} Side */
   /** @type {{ data: { module: 'leads' | 'contacts' | 'accounts', singular: string, current: Side, other: Side }, form: any }} */
@@ -42,6 +43,13 @@
   let possible = $derived(keepable(current) || keepable(other));
   /** How the copy names a record; see `mergeSideLabel`. @param {Side} side */
   const label = (side) => mergeSideLabel(side, current, other);
+  /** Stored statuses stay lowercase; the catalog keys are the words a person reads. */
+  const showField = (/** @type {string} */ name, /** @type {string} */ value) => {
+    if (!value) return '—';
+    if (name !== 'Status') return value;
+    const key = value === 'in process' ? 'In process' : value.charAt(0).toUpperCase() + value.slice(1);
+    return choiceLabel(key);
+  };
   let result = $derived(
     kept.fields.map((field, i) => ({
       label: field.label,
@@ -51,16 +59,16 @@
   );
 </script>
 
-<PageHeader title="Merge {singular}s" center width="820px">
+<PageHeader title={tx('Merge {kind}s', { kind: tx(singular) })} center width="820px">
   {#snippet crumb()}
-    <a href={resolve(`/${module}`)}>{module[0].toUpperCase() + module.slice(1)}</a>
+    <a href={resolve(`/${module}`)}>{tx(module[0].toUpperCase() + module.slice(1))}</a>
     <ChevronRight size={12} />
     <a href={resolve(`/${module}/${current.id}`)}>{current.name}</a>
     <ChevronRight size={12} />
-    <span>Merge</span>
+    <span>{tx('Merge')}</span>
   {/snippet}
   {#snippet sub()}
-    Pick the one to keep. The other is deleted once everything linked to it has moved over.
+    {tx('Pick the one to keep. The other is deleted once everything linked to it has moved over.')}
   {/snippet}
 </PageHeader>
 
@@ -83,14 +91,14 @@
       <div class="v2-next refusal" role="alert">
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
-          <div style="font-weight:600">Nothing was merged</div>
-          <div class="v2-sub" style="margin-top:2px">{form.error}</div>
+          <div style="font-weight:600">{tx('Nothing was merged')}</div>
+          <div class="v2-sub" style="margin-top:2px">{tx(form.error)}</div>
         </div>
       </div>
     {/if}
 
     <fieldset class="sides">
-      <legend class="v2-sr-only">Which {singular} to keep</legend>
+      <legend class="v2-sr-only">{tx('Which {kind} to keep', { kind: tx(singular) })}</legend>
       {#each [current, other] as side (side.id)}
         <label class="v2-card side" class:chosen={keep === side.id} class:off={!keepable(side)}>
           <span class="pick">
@@ -101,17 +109,19 @@
               bind:group={keep}
               disabled={!keepable(side)}
             />
-            <span style="font-weight:600">Keep {label(side)}</span>
+            <span style="font-weight:600">{tx('Keep {name}', { name: label(side) })}</span>
           </span>
           {#if !keepable(side)}
             <span class="v2-sub" style="font-size:11.5px">
-              Keeping this one would delete the other, which only an admin or its creator may do.
+              {tx(
+                'Keeping this one would delete the other, which only an admin or its creator may do.'
+              )}
             </span>
           {/if}
           <dl>
             {#each side.fields as field (field.label)}
-              <dt>{field.label}</dt>
-              <dd>{field.value || '—'}</dd>
+              <dt>{tx(field.label)}</dt>
+              <dd>{showField(field.label, field.value)}</dd>
             {/each}
           </dl>
         </label>
@@ -120,42 +130,48 @@
 
     {#if possible}
       <section class="v2-card after" aria-labelledby="after-title">
-        <div id="after-title" class="v2-label" style="margin-bottom:6px">After the merge</div>
+        <div id="after-title" class="v2-label" style="margin-bottom:6px">{tx('After the merge')}</div>
         <dl>
           {#each result as field (field.label)}
-            <dt>{field.label}</dt>
+            <dt>{tx(field.label)}</dt>
             <dd>
-              {field.value || '—'}
-              {#if field.filled}<span class="v2-sub"> (from {label(dropped)})</span>{/if}
+              {showField(field.label, field.value)}
+              {#if field.filled}<span class="v2-sub"> {tx('(from {name})', { name: label(dropped) })}</span>{/if}
             </dd>
           {/each}
         </dl>
         <p class="v2-sub" style="margin:8px 0 0;font-size:12px;line-height:1.55">
-          Notes, files, activity and every link to {label(dropped)} move to {label(kept)}. Tags are
-          combined; owners stay {label(kept)}'s unless it has none.
+          {tx(
+            "Notes, files, activity and every link to {dropped} move to {kept}. Tags are combined; owners stay {kept}'s unless it has none.",
+            { dropped: label(dropped), kept: label(kept) }
+          )}
         </p>
       </section>
 
       <label class="confirm">
         <input type="checkbox" name="confirm" bind:checked={confirmed} />
         <span>
-          Delete <strong>{label(dropped)}</strong> for good once it is merged. This cannot be undone.
+          {tx('Delete {name} for good once it is merged. This cannot be undone.', {
+            name: label(dropped)
+          })}
         </span>
       </label>
 
       <div class="actions">
         <button class="v2-btn v2-btn-primary" type="submit" disabled={!confirmed || busy}>
-          Merge into {label(kept)}
+          {tx('Merge into {name}', { name: label(kept) })}
         </button>
-        <a class="v2-btn" href={resolve(`/${module}/${current.id}`)}>Cancel</a>
+        <a class="v2-btn" href={resolve(`/${module}/${current.id}`)}>{tx('Cancel')}</a>
       </div>
     {:else}
       <p class="v2-sub" style="font-size:12.5px">
-        You cannot merge these two: keeping either would delete the other, and only an admin or the
-        person who created a {singular} may delete it.
+        {tx(
+          'You cannot merge these two: keeping either would delete the other, and only an admin or the person who created a {kind} may delete it.',
+          { kind: tx(singular) }
+        )}
       </p>
       <div class="actions">
-        <a class="v2-btn" href={resolve(`/${module}/${current.id}`)}>Back</a>
+        <a class="v2-btn" href={resolve(`/${module}/${current.id}`)}>{tx('Back')}</a>
       </div>
     {/if}
   </form>

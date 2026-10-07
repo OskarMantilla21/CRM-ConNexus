@@ -1,6 +1,6 @@
 # Google OAuth
 
-BottleCRM supports signing in with Google from both the web app (an authorization-code exchange
+ConNexus-CRM supports signing in with Google from both the web app (an authorization-code exchange
 with PKCE) and the mobile app (a Google ID token posted directly to the backend). Both are optional:
 the deployment works without them, using [magic-link email sign-in](../getting-started/first-sign-in.md)
 instead, until you configure a Google OAuth client.
@@ -65,7 +65,7 @@ The web flow is the standard OAuth Authorization Code flow with PKCE, split acro
    trusting the email address at all, an unverified address never provisions or signs in to an
    account.
 5. It gets-or-creates a `User` by email, rejects with 403 if the account is deactivated
-   (`user.is_active`), and issues BottleCRM's own JWT pair via
+   (`user.is_active`), and issues ConNexus-CRM's own JWT pair via
    `OrgAwareRefreshToken.for_user_and_org(user, None)`. The `None` org means this token carries no
    `org_id` claim: the user still has to pick an organization ([Org
    switching](../getting-started/first-sign-in.md#choosing-an-organization)) before any org-scoped

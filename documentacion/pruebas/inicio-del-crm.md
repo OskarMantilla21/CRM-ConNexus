@@ -1,6 +1,6 @@
 # Cómo iniciar el CRM para trabajar
 
-El CRM de este proyecto es **BottleCRM** (Django + SvelteKit). El código está en `C:\ConNexus-Gen\CRM` y el repositorio propio es [OskarMantilla21/CRM-ConNexus](https://github.com/OskarMantilla21/CRM-ConNexus).
+El CRM de este proyecto es **ConNexus-CRM** (Django + SvelteKit). El código está en `C:\ConNexus-Gen\CRM` y el repositorio propio es [OskarMantilla21/CRM-ConNexus](https://github.com/OskarMantilla21/CRM-ConNexus).
 
 No hace falta XAMPP ni SuiteCRM para este proyecto. Esos sirven para otra instalación. Aquí todo corre con Docker.
 

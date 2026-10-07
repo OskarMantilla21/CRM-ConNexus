@@ -1,11 +1,11 @@
 # AI agents
 
-An AI agent talks to BottleCRM the same way any other program does: over the REST API under
+An AI agent talks to ConNexus-CRM the same way any other program does: over the REST API under
 `/api/`, authenticated with a personal access token. There is no separate agent protocol, no
 agent-specific endpoint, and no service account. The agent is a normal API client, so RLS, RBAC
 and field validation apply to it exactly as they apply to the web app and the mobile app.
 
-This is a deliberate choice. BottleCRM previously shipped a Model Context Protocol (MCP) server at
+This is a deliberate choice. ConNexus-CRM previously shipped a Model Context Protocol (MCP) server at
 `/mcp`, a thin proxy that re-issued each tool call as an HTTP request to this same API. It covered
 eight entities out of the full product and added no capability the API did not already have, so it
 was removed. Point your agent at the API directly and it can reach everything.

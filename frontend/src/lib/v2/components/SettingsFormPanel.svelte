@@ -20,6 +20,7 @@
    * `{#if}`.
    */
   import { enhance } from '$app/forms';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{
    *   title: string,
@@ -53,10 +54,10 @@
       };
     }}
   >
-    <div class="v2-sfp-head">{title}</div>
+    <div class="v2-sfp-head">{tx(title)}</div>
 
     {#if error}
-      <p class="v2-error" style="margin:0 0 12px">{error}</p>
+      <p class="v2-error" style="margin:0 0 12px">{tx(error)}</p>
     {/if}
 
     <div class="v2-sfp-fields">
@@ -64,8 +65,8 @@
     </div>
 
     <div class="v2-sfp-foot">
-      <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>{submitLabel}</button>
-      <button class="v2-btn" type="button" disabled={busy} onclick={oncancel}>Cancel</button>
+      <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>{tx(submitLabel)}</button>
+      <button class="v2-btn" type="button" disabled={busy} onclick={oncancel}>{tx('Cancel')}</button>
     </div>
   </form>
 </div>

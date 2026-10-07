@@ -159,7 +159,7 @@
   };
 </script>
 
-<PageHeader title="Edit {deal.name}" center>
+<PageHeader title={tx('Edit {name}', { name: deal.name })} center>
   {#snippet crumb()}
     <a href={resolve('/pipeline')}>{tx('Pipeline')}</a>
     <ChevronRight size={12} />
@@ -167,7 +167,7 @@
   {/snippet}
   {#snippet sub()}
     {deal.account.name} · <span class="v2-num">{money(deal.amount, deal.currency)}</span> ·
-    {deal.stage_label} for <span class="v2-num">{server.days_in_current_stage}</span> {tx('days')}
+    {tx('{n} days in {stage}', { n: server.days_in_current_stage, stage: tx(deal.stage_label) })}
   {/snippet}
 </PageHeader>
 
@@ -302,7 +302,7 @@
       {#if stageChanged}
         <div class="consequence" style="--edge:var(--v2-clay)" id="stage-effect">
           <div style="font-weight:600">
-            {deal.stage_label} → {chosen?.label ?? form.stage}
+            {tx(deal.stage_label)} → {tx(chosen?.label ?? form.stage)}
           </div>
           <p>
             The stage clock restarts. This deal currently reads

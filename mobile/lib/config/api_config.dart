@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// API Configuration for BottleCRM
+/// API Configuration for ConNexus-CRM
 ///
 /// Provides centralized configuration for API endpoints.
 /// Update [_developmentUrl] with your ngrok URL for development.
@@ -404,7 +404,7 @@ class ApiConfig {
   static String csvImportCommit(String moduleUrl) =>
       '${moduleUrl}import/commit/';
 
-  /// BottleCRM product support tickets opened by the signed-in user.
+  /// ConNexus-CRM product support tickets opened by the signed-in user.
   static String get supportTickets => '$apiBaseUrl/support/';
 
   static String supportTicket(String id) => '$apiBaseUrl/support/$id/';

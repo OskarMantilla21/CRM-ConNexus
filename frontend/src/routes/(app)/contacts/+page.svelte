@@ -20,7 +20,7 @@
   let importOpen = $state(false);
 </script>
 
-<PageHeader title={tx('Contacts')}>
+<PageHeader title={tx('Contacts')} count={totals.count}>
   {#snippet sub()}
     <span class="v2-num">{count(totals.count)}</span> {tx('people')}
     {#if !data.includeInactive && totals.inactive}

@@ -42,7 +42,7 @@
   };
 </script>
 
-<PageHeader title={tx('Tasks')}>
+<PageHeader title={tx('Tasks')} count={totals.open}>
   {#snippet sub()}
     <span class="v2-num">{count(totals.open)}</span> {tx('open')} ·
     <span class="v2-num" style="color:var(--v2-rust)">{count(totals.overdue)}</span> {tx('overdue')}

@@ -68,13 +68,11 @@ describe('password sign-in (the sign-in audit row records the address)', () => {
     body.set('username', 'ada');
     body.set('password', 'secret');
     const request = visit('http://app.test/login', { method: 'POST', body });
-    return ignoringRedirect(() =>
-      login.actions.default(/** @type {any} */ ({ request, getClientAddress, cookies: cookies() }))
-    );
+    return login.actions.default(/** @type {any} */ ({ request, cookies: cookies(), getClientAddress }));
   };
 
   it('sends the signed visitor address', async () => {
-    await submit();
+    await ignoringRedirect(submit);
     const [url, payload, config] = vi.mocked(axios.post).mock.calls[0];
     expect(url).toMatch(/\/api\/auth\/password\/$/);
     expect(payload).toEqual({ username: 'ada', password: 'secret' });
@@ -83,7 +81,7 @@ describe('password sign-in (the sign-in audit row records the address)', () => {
 
   it('sends only the unsigned, pre-1.12 address without a secret', async () => {
     delete privateEnv.RELAY_SECRET;
-    await submit();
+    await ignoringRedirect(submit);
     expect(vi.mocked(axios.post).mock.calls[0][2]?.headers).toEqual({
       'Content-Type': 'application/json',
       'X-Forwarded-For': VISITOR
@@ -217,5 +215,73 @@ describe('org switch (the audit row records the address)', () => {
     );
     const [, , config] = /** @type {any[]} */ (callTo('/api/auth/switch-org/'));
     expect(config.headers).toMatchObject(SIGNED);
+  });
+});
+
+describe('creating an organisation assigns the chosen role', () => {
+  const ORG = '11111111-2222-3333-4444-555555555555';
+  /** @param {Record<string, string>} fields @param {Record<string, string[]>} [lists] */
+  const form = (fields, lists = {}) => {
+    const body = new FormData();
+    for (const [k, v] of Object.entries(fields)) body.set(k, v);
+    for (const [k, values] of Object.entries(lists)) {
+      for (const value of values) body.append(k, value);
+    }
+    return visit('http://app.test/org/new', { method: 'POST', body });
+  };
+  const submit = (fields, lists) =>
+    newOrg.actions.default(
+      /** @type {any} */ ({
+        request: form(fields, lists),
+        cookies: cookies(),
+        locals: { user: { id: 'u' } },
+        getClientAddress
+      })
+    );
+
+  it('leaves the role off when the form does not send one', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { org: { id: ORG } } });
+    await submit({ org_name: 'Acme' });
+    const [url, payload] = vi.mocked(axios.post).mock.calls[0];
+    expect(url).toMatch(/\/api\/org\/$/);
+    expect(payload).toEqual({ name: 'Acme' });
+    expect(vi.mocked(axios.post)).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends the role, and an administrador only the ticked areas', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { org: { id: ORG } } });
+    await submit({ org_name: 'Acme', role: 'CEO' });
+    expect(vi.mocked(axios.post).mock.calls[0][1]).toEqual({ name: 'Acme', role: 'CEO' });
+
+    vi.mocked(axios.post).mockClear();
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { org: { id: ORG } } });
+    await submit({ org_name: 'Acme', role: 'ADMIN' }, { permissions: ['daily_work', 'nope', 'sell'] });
+    expect(vi.mocked(axios.post).mock.calls[0][1]).toEqual({
+      name: 'Acme',
+      role: 'ADMIN',
+      permissions: ['daily_work', 'sell']
+    });
+  });
+
+  it('refuses a role the product does not have', async () => {
+    const result = await submit({ org_name: 'Acme', role: 'OWNER' });
+    expect(vi.mocked(axios.post)).not.toHaveBeenCalled();
+    expect(result).toEqual({ error: { name: 'Pick a valid role.' } });
+  });
+
+  it('refuses the member role on this screen', async () => {
+    const result = await submit({ org_name: 'Acme', role: 'USER' });
+    expect(vi.mocked(axios.post)).not.toHaveBeenCalled();
+    expect(result).toEqual({ error: { name: 'Pick a valid role.' } });
+  });
+
+  it('keeps an employee as employee and does not apply a business type', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { org: { id: ORG } } });
+    const packs = await import('$lib/server/packs.js');
+    vi.mocked(packs.applyPack).mockClear();
+    await submit({ org_name: 'Acme', role: 'EMPLOYEE', vertical: 'agency' });
+    expect(vi.mocked(axios.post)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(axios.post).mock.calls[0][1]).toEqual({ name: 'Acme', role: 'EMPLOYEE' });
+    expect(vi.mocked(packs.applyPack)).not.toHaveBeenCalled();
   });
 });

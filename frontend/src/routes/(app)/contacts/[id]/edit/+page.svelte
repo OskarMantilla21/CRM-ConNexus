@@ -104,7 +104,7 @@
   );
 </script>
 
-<PageHeader title="Edit {contact.name}" center>
+<PageHeader title={tx('Edit {name}', { name: contact.name })} center>
   {#snippet crumb()}
     <a href={resolve('/contacts')}>{tx('Contacts')}</a>
     <ChevronRight size={12} />

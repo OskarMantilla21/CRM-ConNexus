@@ -1,4 +1,4 @@
-# BottleCRM Mobile - Original Implementation Spec
+# ConNexus-CRM Mobile - Original Implementation Spec
 
 > **This tree is the brief the app was built from, not a description of the app
 > as it stands.** It was written against a SvelteKit prototype under the working

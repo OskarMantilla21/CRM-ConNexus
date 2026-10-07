@@ -999,7 +999,73 @@ export const messages = {
   'You do not have access to this': {
     es: 'No tienes acceso a esto',
     pt: 'Você não tem acesso a isto'
-  }
+  },
+  '{n}% through the period': {
+    es: '{n}% transcurrido del período',
+    pt: '{n}% decorrido do período'
+  },
+  '(team)': { es: '(equipo)', pt: '(equipe)' },
+  'Period ended {date}': {
+    es: 'El período terminó el {date}',
+    pt: 'O período terminou em {date}'
+  },
+  'Finished periods, newest first. A closed period is settled, so these are results rather than pace.':
+    {
+      es: 'Períodos terminados, los más recientes primero. Un período cerrado ya quedó, así que esto son resultados y no el ritmo.',
+      pt: 'Períodos encerrados, os mais recentes primeiro. Um período fechado já ficou, então isto são resultados e não o ritmo.'
+    },
+  'goal met': { es: 'objetivo cumplido', pt: 'meta atingida' },
+  'goals met': { es: 'objetivos cumplidos', pt: 'metas atingidas' },
+  '{n}% of target': { es: '{n}% de la meta', pt: '{n}% da meta' },
+  'Delete “{name}” for good?': {
+    es: '¿Eliminar “{name}” para siempre?',
+    pt: 'Excluir “{name}” de vez?'
+  },
+  'A finished goal is usually better paused than deleted. Paused keeps its history. Delete only when it was created by mistake.':
+    {
+      es: 'Un objetivo terminado suele ser mejor pausarlo que eliminarlo. Pausado conserva su historial. Elimínalo solo si se creó por error.',
+      pt: 'Uma meta encerrada costuma ser melhor pausada do que excluída. Pausada, ela guarda o histórico. Exclua só se foi criada por engano.'
+    },
+
+  // Today queue. The API sends these English labels; the page translates them.
+  'overdue invoices': { es: 'facturas vencidas', pt: 'faturas vencidas' },
+  'tasks due': { es: 'tareas por hacer', pt: 'tarefas a fazer' },
+  'quiet deals': { es: 'negocios en silencio', pt: 'negócios em silêncio' },
+  'tickets awaiting a reply': {
+    es: 'tickets que esperan respuesta',
+    pt: 'chamados aguardando resposta'
+  },
+  'awaiting first reply': {
+    es: 'espera la primera respuesta',
+    pt: 'aguardando a primeira resposta'
+  },
+  'Reply to the ticket': { es: 'Responder', pt: 'Responder' },
+  'Open the task': { es: 'Abrir la tarea', pt: 'Abrir a tarefa' },
+  'Send a reminder': { es: 'Enviar un recordatorio', pt: 'Enviar um lembrete' },
+  'No movement for {n} days': {
+    es: 'Sin movimiento desde hace {n} días',
+    pt: 'Sem movimento há {n} dias'
+  },
+  'Due {date}': { es: 'Vence el {date}', pt: 'Vence em {date}' },
+  Aging: { es: 'Demorado', pt: 'Demorado' },
+  Task: { es: 'Tarea', pt: 'Tarefa' },
+  '{name} expected to close': { es: '{name} debería cerrarse', pt: '{name} deve fechar' },
+  '{name} due': { es: '{name} vence', pt: '{name} vence' },
+  Mon: { es: 'lun', pt: 'seg' },
+  Tue: { es: 'mar', pt: 'ter' },
+  Wed: { es: 'mié', pt: 'qua' },
+  Thu: { es: 'jue', pt: 'qui' },
+  Fri: { es: 'vie', pt: 'sex' },
+  Sat: { es: 'sáb', pt: 'sáb' },
+  Sun: { es: 'dom', pt: 'dom' },
+  Prospecting: { es: 'Prospección', pt: 'Prospecção' },
+  Qualification: { es: 'Calificación', pt: 'Qualificação' },
+  Proposal: { es: 'Propuesta', pt: 'Proposta' },
+  Negotiation: { es: 'Negociación', pt: 'Negociação' },
+  'Closed Won': { es: 'Cerrado ganado', pt: 'Fechado ganho' },
+  'Closed Lost': { es: 'Cerrado perdido', pt: 'Fechado perdido' },
+  '{n} days in {stage}': { es: '{n} días en {stage}', pt: '{n} dias em {stage}' },
+  'Filter to see the rest.': { es: 'Filtra para ver el resto.', pt: 'Filtre para ver o resto.' }
 };
 
 addMessages(messages);

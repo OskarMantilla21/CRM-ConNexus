@@ -240,7 +240,7 @@ class AppRoutes {
 
   static String goalEditFor(String id) => '/goals/$id/edit';
 
-  /// Help: product support from the BottleCRM team. The URL says help, the
+  /// Help: product support from the ConNexus-CRM team. The URL says help, the
   /// API behind it is `/api/support/`, and the screens keep the support name.
   /// Separate from CRM customer tickets, which live at `/tickets`.
   static const String help = '/help';

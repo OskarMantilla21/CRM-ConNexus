@@ -194,7 +194,7 @@ def slack_text(payload):
     """One line for a Slack incoming webhook, from a delivery payload."""
     event = payload["event"]
     if event == PING:
-        return "BottleCRM test message: this webhook is connected."
+        return "ConNexus-CRM test message: this webhook is connected."
     data = payload.get("data") or {}
     subject = (
         data.get("name")
@@ -209,4 +209,4 @@ def slack_text(payload):
     )
     module, _, action = event.partition(".")
     what = f"{module} {action.replace('_', ' ')}".capitalize()
-    return f"BottleCRM: {what}: {_escape_slack(subject)}"
+    return f"ConNexus-CRM: {what}: {_escape_slack(subject)}"

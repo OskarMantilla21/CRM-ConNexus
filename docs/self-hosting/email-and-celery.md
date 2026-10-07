@@ -1,6 +1,6 @@
 # Email and Celery
 
-BottleCRM sends email (welcome messages, magic-link sign-in, comment mentions) and runs background
+ConNexus-CRM sends email (welcome messages, magic-link sign-in, comment mentions) and runs background
 and scheduled work (recurring invoices, SLA scanning, token cleanup) through Django's email
 framework and Celery, respectively. This page covers how to configure both and the one rule every
 background task that touches tenant data has to follow.

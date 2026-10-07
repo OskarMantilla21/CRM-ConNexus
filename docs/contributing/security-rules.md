@@ -1,6 +1,6 @@
 # Security rules
 
-BottleCRM is a multi-tenant application where every org's data sits in the same database, the same
+ConNexus-CRM is a multi-tenant application where every org's data sits in the same database, the same
 tables, next to every other org's. The rules on this page exist because the two ways that goes wrong,
 one tenant reading or writing another tenant's data, and a non-admin reaching admin- or
 platform-level actions, are the two outcomes every change touching auth, permissions, or

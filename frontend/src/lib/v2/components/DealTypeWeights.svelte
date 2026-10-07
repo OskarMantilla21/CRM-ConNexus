@@ -19,6 +19,7 @@
    */
   import { untrack } from 'svelte';
   import { DEAL_TYPE_LABEL } from '$lib/v2/enums.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{ weights?: Record<string, any>, goalType: string }} */
   let { weights = {}, goalType } = $props();
@@ -41,14 +42,14 @@
 {#if goalType !== 'ACTIVITIES'}
   <div class="v2-field">
     <button type="button" class="toggle" onclick={() => (open = !open)} aria-expanded={open}>
-      <span>Weight by deal type</span>
+      <span>{tx('Weight by deal type')}</span>
       <span class="v2-sub" style="font-size:11.5px">
         {#if weighted}
-          {weighted} adjusted
+          {tx('{n} adjusted', { n: weighted })}
         {:else}
-          Optional
+          {tx('Optional')}
         {/if}
-        · {open ? 'Hide' : 'Show'}
+        · {open ? tx('Hide') : tx('Show')}
       </span>
     </button>
 
@@ -74,8 +75,9 @@
     </div>
     {#if open}
       <p class="v2-hint">
-        A multiplier on each closed-won deal of that type. Leave a box empty to count that type in
-        full. At 0.5 a 20,000 renewal counts as 10,000; at 0 it does not count at all.
+        {tx(
+          'A multiplier on each closed-won deal of that type. Leave a box empty to count that type in full. At 0.5 a 20,000 renewal counts as 10,000; at 0 it does not count at all.'
+        )}
       </p>
     {/if}
   </div>

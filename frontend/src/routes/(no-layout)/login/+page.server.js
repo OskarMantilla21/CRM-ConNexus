@@ -189,13 +189,18 @@ export const actions = {
       cookies.set('jwt_refresh', refresh_token, getCookieOptions(60 * 60 * 24 * 365));
     } catch (/** @type {any} */ error) {
       // Do not log `error`: axios keeps the posted password on `config.data`.
-      if (error.response?.status === 429) {
+      const status = error.response?.status;
+      const apiError = error.response?.data?.error;
+      if (status === 429) {
         return fail(429, {
           error: tx('Too many sign-in attempts. Wait a few minutes and try again.')
         });
       }
+      if (status === 403 && apiError === 'User account is disabled') {
+        return fail(403, { error: tx('User account is disabled') });
+      }
       if (error.response) {
-        return fail(400, { error: refusedLogin(error.response?.data?.error) });
+        return fail(400, { error: refusedLogin(apiError) });
       }
       console.error('Password sign-in failed:', describeError(error));
       return fail(400, { error: tx('Something went wrong. Please try again.') });

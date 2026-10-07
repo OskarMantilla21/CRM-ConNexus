@@ -1,6 +1,6 @@
 # Glossary
 
-Terms used throughout this documentation that are either specific to BottleCRM's own model, or
+Terms used throughout this documentation that are either specific to ConNexus-CRM's own model, or
 that sound generic but resolve to a particular model or field in this codebase. Each entry links to
 the page that covers the concept in full; this page is the short definition, not the whole story.
 
@@ -30,7 +30,7 @@ directly. See [Permissions and roles](../architecture/permissions-and-roles.md).
 
 Not a distinct model or field in this codebase; the general term this documentation (and the wider
 industry) uses for "one organization's data, isolated from every other organization's." In
-BottleCRM, an organization *is* the tenant boundary. See
+ConNexus-CRM, an organization *is* the tenant boundary. See
 [Multi-tenancy and RLS](../architecture/multi-tenancy-and-rls.md).
 
 ### RLS context

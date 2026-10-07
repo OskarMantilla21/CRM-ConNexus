@@ -42,13 +42,21 @@ class OrgProfileCreateView(APIView):
         # auditing where org keys come from read the wrong line.
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
+            # Read before save: create() drops these because they are not
+            # columns on Org. A missing role stays ADMIN, same as before.
+            role = serializer.validated_data.get("role", "ADMIN")
+            grants = serializer.validated_data.get("permissions", None)
             org_obj = serializer.save()
 
-            # now creating the profile
-            profile_obj = self.model2.objects.create(user=request.user, org=org_obj)
-            # now the current user is the admin of the newly created organisation.
-            # `is_organization_admin` is derived from `role` in `Profile.save`.
-            profile_obj.role = "ADMIN"
+            # The creator's membership. `is_organization_admin` is derived
+            # from the role (and an administrador's grant list) in Profile.save.
+            profile_obj = self.model2(
+                user=request.user,
+                org=org_obj,
+                role=role,
+            )
+            if role == "ADMIN" and grants is not None:
+                profile_obj.granted_permissions = grants
             profile_obj.save()
 
             return Response(
@@ -58,7 +66,9 @@ class OrgProfileCreateView(APIView):
                     # The creator's membership facts ride on the org, in the
                     # shape the auth endpoints use for each org they list, so a
                     # client caching this org gates admin UI correctly at once.
-                    # Server-derived; nothing here is read from the request.
+                    # Taken from the profile just saved. A client cannot set
+                    # is_organization_admin; role is accepted only as one of
+                    # the four membership codes.
                     "org": {
                         **self.serializer_class(org_obj).data,
                         "role": profile_obj.role,

@@ -97,7 +97,7 @@ profiles it was assigned to, even when the merge moved them to the record it kep
 | Header                  | Value                                               |
 | ----------------------- | --------------------------------------------------- |
 | `Content-Type`          | `application/json`                                  |
-| `User-Agent`            | `BottleCRM-Webhooks`                                |
+| `User-Agent`            | `ConNexus-CRM-Webhooks`                                |
 | `X-BottleCRM-Event`     | the event name, for example `lead.created`          |
 | `X-BottleCRM-Delivery`  | the delivery id (new on every redelivery)           |
 | `X-BottleCRM-Signature` | `t=<unix seconds>,v1=<hex>`                         |
@@ -202,7 +202,7 @@ through a public HTTPS endpoint instead.
 
 Create an [incoming webhook](https://api.slack.com/messaging/webhooks) in Slack, paste its
 `https://hooks.slack.com/services/...` URL, and choose **Slack message** as the format. Each event
-is posted as one line of text, for example `BottleCRM: Deal won: Acme renewal`. Names are escaped,
+is posted as one line of text, for example `ConNexus-CRM: Deal won: Acme renewal`. Names are escaped,
 so a lead called `<!channel>` cannot ping your channel. Slack messages are not signed in a way Slack
 checks; the webhook URL is the secret, so treat it like a password and rotate it in Slack if it
 leaks.
@@ -211,22 +211,22 @@ leaks.
 
 1. In Zapier, create a Zap whose trigger is **Webhooks by Zapier -> Catch Hook**. Copy the custom
    webhook URL it gives you.
-2. In BottleCRM, add a webhook with that URL, format **Signed JSON**, and the events you want, for
+2. In ConNexus-CRM, add a webhook with that URL, format **Signed JSON**, and the events you want, for
    example `lead.created`.
-3. Create a lead in BottleCRM (a `ping` from **Send test** has a different shape, so a real event
+3. Create a lead in ConNexus-CRM (a `ping` from **Send test** has a different shape, so a real event
    gives Zapier a better sample). In Zapier, **Test trigger** and pick the request.
 4. Map fields from `data` (`data__first_name`, `data__email`, and so on) into your action steps.
    Filter on `event` if one hook listens for several.
 
 Catch Hook cannot check the HMAC signature, so the unguessable hook URL is what protects it. If it
-leaks, replace the hook in Zapier and update the webhook in BottleCRM.
+leaks, replace the hook in Zapier and update the webhook in ConNexus-CRM.
 
 ## n8n recipe
 
 1. Add a **Webhook** node. HTTP method `POST`, a path of your choice, **Respond**: *Immediately*.
    Use the node's **Production URL** (the test URL only listens while the editor is open), and make
    sure your n8n is reachable over public HTTPS.
-2. In BottleCRM, add a webhook with that URL, format **Signed JSON**, and your events. Activate the
+2. In ConNexus-CRM, add a webhook with that URL, format **Signed JSON**, and your events. Activate the
    workflow, then use **Send test** or change a record.
 3. To verify the signature, turn on the Webhook node's **Raw Body** option and add a **Code** node
    after it that runs the Node `verify` function above on the raw body and the

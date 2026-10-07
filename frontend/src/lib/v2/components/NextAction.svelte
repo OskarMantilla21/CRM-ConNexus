@@ -1,6 +1,7 @@
 <script>
   import { resolve } from '$app/paths';
   import { asInternalPath } from '$lib/utils/paths.js';
+  import { tx } from '$lib/i18n/translate.js';
   /**
    * The signature element. One per record, at the top, always a verb.
    * This is the one place ember earns its keep on a record page: it is
@@ -31,8 +32,8 @@
     : ''}
 >
   <div class="v2-next-body">
-    <div class="v2-label" style="color:{accent}">{label}</div>
-    <div class="v2-next-text">{text}</div>
+    <div class="v2-label" style="color:{accent}">{tx(label)}</div>
+    <div class="v2-next-text">{tx(text)}</div>
   </div>
   {#if action && href}
     <a
@@ -40,17 +41,17 @@
       href={resolve(asInternalPath(href))}
       style={tone === 'rust' ? `background:${accent};border-color:${accent}` : ''}
     >
-      {action}
+      {tx(action)}
     </a>
   {:else if action}
     <button
       class="v2-btn v2-btn-primary"
       style={tone === 'rust' ? `background:${accent};border-color:${accent}` : ''}
     >
-      {action}
+      {tx(action)}
     </button>
   {/if}
   {#if secondary}
-    <button class="v2-btn">{secondary}</button>
+    <button class="v2-btn">{tx(secondary)}</button>
   {/if}
 </div>

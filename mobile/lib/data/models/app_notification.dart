@@ -35,7 +35,7 @@ class AppNotification {
 
   bool get isUnread => readAt == null;
   String get displayActorName => verb.startsWith('support.')
-      ? 'BottleCRM Support'
+      ? 'ConNexus-CRM Support'
       : actorName ?? 'The system';
 
   /// Whether anything in the backend actually produces this verb. A row with

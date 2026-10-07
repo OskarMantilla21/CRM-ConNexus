@@ -1,51 +1,35 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   BOTTLECRM v2: "Clearing"
-   Scoped design system. Every selector is prefixed .v2- or nested under
-   .v2-root so this file cannot leak into the v1 app (which uses orange as
-   decoration and would be visually altered by any global override here).
-
-   THE ONE RULE
-   Ember (#EA580C) marks something you can act on, or something that needs
-   you. Never a heading. Never an icon tint. Never "active chrome".
-   Everything else is ink, slate and paper.
-
-   WHERE THE NUMBERS COME FROM
-   Colour is this file's own (the Ember palette). Every metric and every type
-   size below is taken from docs/design/clearing-reference.html, which is the
-   agreed reference for layout and type. That reference is built on a 14.4px
-   base and derives most sizes from it, so --v2-fs is a real variable here and
-   sizes are written as calc() against it, same as the mocks.
-
-   This supersedes the earlier "Label 9.5px mono / .12em" line: the reference
-   sets section labels and table headers in quiet sans, and mono is reserved
-   for numerals only.
+   ConNexus shell. Scoped under .v2- so it does not leak into the legacy app.
+   Azure (#0058BE) is the action and "you are here" colour from the ConNexus
+   Figma. Clay and rust stay the warning colours. Roboto is the UI face.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .v2-root {
   /* ── palette ────────────────────────────────────────────────────────── */
-  --v2-ember: #ea580c; /* primary action, due-now */
-  --v2-ember-soft: rgba(234, 88, 12, 0.09);
-  --v2-ember-line: rgba(234, 88, 12, 0.28);
-  --v2-ink: #1c1917; /* all primary text, bulk-action bar */
-  --v2-slate: #78716c; /* labels, secondary text, on-pace aging */
-  --v2-paper: #fafaf9; /* app canvas */
+  --v2-ember: #0058be; /* primary action (name kept: existing rules use it) */
+  --v2-ember-soft: #eaedff;
+  --v2-ember-line: rgba(0, 88, 190, 0.28);
+  --v2-ink: #1c1f26; /* all primary text, bulk-action bar */
+  --v2-slate: #727784; /* labels, secondary text */
+  --v2-paper: #f5f7fb; /* app canvas */
   --v2-card: #ffffff; /* cards sit on paper in pure white */
   --v2-clay: #b45309; /* aging_status "yellow": past expected_days */
   --v2-rust: #9a3412; /* aging_status "red", overdue, destructive */
+  --v2-danger: #e11d48; /* sign out */
   --v2-moss: #3f6212; /* won, completed, positive delta. Sparingly. */
 
-  --v2-line: #e7e5e4; /* stone-200 */
-  --v2-line-soft: #f5f5f4; /* stone-100 */
-  --v2-hover: rgba(28, 25, 23, 0.025);
+  --v2-line: #e2e8f0;
+  --v2-line-soft: #f1f4f9;
+  --v2-hover: rgba(28, 31, 38, 0.035);
 
   /* ── type ───────────────────────────────────────────────────────────── */
-  --v2-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --v2-sans: Roboto, Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --v2-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'DejaVu Sans Mono', Menlo, monospace;
-  --v2-fs: 14.4px; /* the base everything else is derived from */
+  --v2-fs: 15px;
 
   /* ── metrics (density dial) ─────────────────────────────────────────── */
-  --v2-row: 44px;
-  --v2-pad: 22px;
+  --v2-row: 48px;
+  --v2-pad: 32px;
   --v2-radius: 10px;
 
   background: var(--v2-paper);
@@ -57,19 +41,20 @@
 }
 
 .dark .v2-root {
-  --v2-ember: #fb8c3c;
-  --v2-ember-soft: rgba(251, 140, 60, 0.14);
-  --v2-ember-line: rgba(251, 140, 60, 0.32);
-  --v2-ink: #fafaf9;
-  --v2-slate: #a8a29e;
-  --v2-paper: #1c1917;
-  --v2-card: #262322;
+  --v2-ember: #4c8dff;
+  --v2-ember-soft: rgba(76, 141, 255, 0.16);
+  --v2-ember-line: rgba(76, 141, 255, 0.36);
+  --v2-ink: #f4f6fb;
+  --v2-slate: #a8b0c0;
+  --v2-paper: #0f1218;
+  --v2-card: #171b22;
   --v2-clay: #e0a83b;
   --v2-rust: #f2705b;
+  --v2-danger: #fb7185;
   --v2-moss: #9bcb3c;
-  --v2-line: #33302e;
-  --v2-line-soft: #2a2726;
-  --v2-hover: rgba(250, 250, 249, 0.035);
+  --v2-line: #2a3140;
+  --v2-line-soft: #222833;
+  --v2-hover: rgba(244, 246, 251, 0.04);
 }
 
 .v2-root *,
@@ -85,11 +70,28 @@
    `record` prop stays meaningful for screen readers and future divergence. */
 .v2-page-title,
 .v2-record-title {
-  font-size: calc(var(--v2-fs) + 7.5px); /* 21.9px */
-  font-weight: 640;
-  letter-spacing: -0.023em;
-  line-height: 1.2;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   margin: 0;
+}
+.v2-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.v2-title-count {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--v2-slate);
+  background: var(--v2-ember-soft);
+  border-radius: 999px;
+  padding: 4px 8px;
+  flex: none;
 }
 .v2-section {
   font-size: calc(var(--v2-fs) + 1px); /* 15.4px */
@@ -144,28 +146,211 @@
   padding-left: var(--v2-pad);
   padding-right: var(--v2-pad);
 }
+.v2-app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.v2-app > .v2-shell {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.v2-app.is-nav-hidden > .v2-shell > .v2-nav {
+  display: none;
+}
+.v2-topbar {
+  height: 64px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 0 8px;
+  background: var(--v2-card);
+  border-bottom: 1px solid var(--v2-line);
+}
+.v2-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+}
+.v2-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+.v2-brand-mark {
+  width: 40px;
+  height: 40px;
+  display: block;
+  flex: none;
+}
+.v2-brand-word {
+  height: 21px;
+  width: auto;
+  display: block;
+}
+.v2-topbar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.v2-icon-btn {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--v2-ink);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.v2-icon-btn:hover {
+  background: var(--v2-line-soft);
+}
+.v2-public {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.v2-public-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px 48px;
+}
+.v2-signin {
+  width: min(100%, 440px);
+}
+.v2-signin h1 {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.v2-signin-lead {
+  margin: 0 0 22px;
+  text-align: center;
+  color: var(--v2-slate);
+}
+.v2-signin-label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 14px;
+}
+.v2-signin-label:first-of-type {
+  margin-top: 0;
+}
+.v2-signin .v2-btn-primary {
+  display: flex;
+  justify-content: center;
+  min-width: 168px;
+  margin: 18px auto 0;
+}
+.v2-google-pill {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+.v2-google-pill a,
+.v2-google-pill span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: var(--v2-ember-soft);
+  color: var(--v2-ember);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 12px;
+}
+.v2-google-pill span {
+  opacity: 0.85;
+}
 
 /* ── sidebar ──────────────────────────────────────────────────────────── */
 .v2-nav {
-  width: 222px;
+  width: 274px;
   flex: none;
-  background: var(--v2-paper);
+  background: var(--v2-card);
   border-right: 1px solid var(--v2-line);
   display: flex;
   flex-direction: column;
-  padding: 13px 11px;
-  overflow-y: auto;
+  padding: 0;
+  overflow: hidden;
+}
+.v2-side-head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--v2-line-soft);
+  flex: none;
 }
 .v2-org {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 5px 8px 13px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 0 12px;
+  color: inherit;
+  text-decoration: none;
 }
 .v2-org b {
-  font-size: 13.5px;
-  font-weight: 650;
-  letter-spacing: -0.012em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.v2-org svg {
+  width: 16px;
+  height: 16px;
+  color: var(--v2-slate);
+  flex: none;
+}
+.v2-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.v2-who-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--v2-ember);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex: none;
+}
+.v2-who b {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.v2-who span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--v2-slate);
+  line-height: 1.2;
+}
+.v2-nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 18px 12px;
 }
 .v2-mark {
   width: 24px;
@@ -189,42 +374,69 @@
 .v2-link {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 6.5px 8px;
-  border-radius: 7px;
+  gap: 12px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
   color: var(--v2-ink);
-  font-size: 13px;
+  font-size: 15px;
   text-decoration: none;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 .v2-link svg {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   flex: none;
   color: var(--v2-slate);
   stroke-width: 1.75;
 }
 .v2-link .v2-count {
   margin-left: auto;
-  font-family: var(--v2-mono);
-  font-size: 11px;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: #5e5e62;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dark .v2-link .v2-count {
+  background: var(--v2-line);
   color: var(--v2-slate);
 }
 .v2-link:hover {
   background: var(--v2-line-soft);
 }
-/* Active is weight and ink, not ember. Where you are is not an action. */
 .v2-link[aria-current='page'] {
-  background: var(--v2-line-soft);
-  font-weight: 640;
+  background: var(--v2-ember);
+  color: #fff;
+  font-weight: 500;
 }
-.v2-link[aria-current='page'] svg {
-  color: var(--v2-ink);
+.v2-link[aria-current='page'] svg,
+.v2-link[aria-current='page'] .v2-count {
+  color: #fff;
+}
+.v2-link[aria-current='page'] .v2-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+.v2-link-out {
+  color: var(--v2-danger);
+}
+.v2-link-out svg {
+  color: var(--v2-danger);
+}
+.v2-link-out:hover {
+  background: color-mix(in srgb, var(--v2-danger) 8%, transparent);
 }
 .v2-nav-foot {
   margin-top: auto;
-  padding-top: 9px;
+  padding: 8px 18px 16px;
   border-top: 1px solid var(--v2-line);
+  flex: none;
 }
 .v2-lang {
   padding: 2px 2px 8px;
@@ -242,6 +454,29 @@
 .v2-lang select:focus {
   outline: 2px solid var(--v2-ember);
   outline-offset: -1px;
+}
+.v2-lang-compact label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.v2-lang-compact svg {
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  color: var(--v2-ember);
+  pointer-events: none;
+}
+.v2-lang-compact select {
+  width: auto;
+  appearance: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-ember);
+  padding: 6px 12px 6px 30px;
+  cursor: pointer;
 }
 
 /* ── page header ──────────────────────────────────────────────────────── */
@@ -315,10 +550,12 @@
   background: var(--v2-ember);
   border-color: var(--v2-ember);
   color: #fff;
-  font-weight: 600;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 10px 16px;
 }
 .dark .v2-btn-primary {
-  color: #1c1917;
+  color: #fff;
 }
 .v2-btn-primary:hover {
   filter: brightness(1.06);
@@ -436,16 +673,19 @@
    with the data underneath it; this recedes and lets the rows read. */
 .v2-table th {
   text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--v2-slate);
-  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3a3f4b;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--v2-line);
   white-space: nowrap;
-  background: var(--v2-card);
+  background: var(--v2-ember-soft);
   position: sticky;
   top: 0;
   z-index: 2;
+}
+.dark .v2-table th {
+  color: var(--v2-ink);
 }
 .v2-table td {
   padding: 0 14px;
@@ -514,9 +754,9 @@
   color: var(--v2-ink);
 }
 .v2-tabs a[aria-current='page'] {
-  color: var(--v2-ink);
-  font-weight: 640;
-  border-bottom-color: var(--v2-ink);
+  color: var(--v2-ember);
+  font-weight: 600;
+  border-bottom-color: var(--v2-ember);
 }
 .v2-tab-count {
   font-size: 10.5px;
@@ -732,11 +972,35 @@ a.v2-setting:hover {
 /* ── one filter system ────────────────────────────────────────────────── */
 .v2-filters {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
-  padding: 13px var(--v2-pad) 11px;
+  padding: 16px var(--v2-pad) 12px;
   flex: none;
+}
+.v2-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.v2-preset {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--v2-line);
+  background: var(--v2-card);
+  color: var(--v2-ink);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.v2-preset.is-on {
+  background: var(--v2-ember-soft);
+  border-color: transparent;
+  font-weight: 500;
+}
+.v2-preset:hover {
+  border-color: var(--v2-slate);
 }
 .v2-view {
   display: inline-flex;
@@ -1523,7 +1787,7 @@ a.v2-setting:hover {
 }
 /* Same rule as the sidebar: where you are is weight and ink, not ember. */
 .v2-tabbar a[aria-current='page'] {
-  color: var(--v2-ink);
+  color: var(--v2-ember);
   font-weight: 600;
 }
 .v2-fab {
@@ -1542,7 +1806,7 @@ a.v2-setting:hover {
   cursor: pointer;
 }
 .dark .v2-fab {
-  color: #1c1917;
+  color: #fff;
 }
 
 /* ── mobile nav drawer ────────────────────────────────────────────────── */
@@ -1667,7 +1931,17 @@ a.v2-setting:hover {
   }
   .v2-page-title,
   .v2-record-title {
-    font-size: calc(var(--v2-fs) + 4.5px);
+    font-size: 26px;
+  }
+  .v2-brand-lockup {
+    gap: 10px;
+  }
+  .v2-brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+  .v2-brand-word {
+    height: 17px;
   }
   /* Rows become cards. A seven-column table is 836px wide in a 390px viewport,
      so two thirds of every row, including the name being scanned for, sat

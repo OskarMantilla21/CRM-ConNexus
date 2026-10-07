@@ -23,8 +23,8 @@ CRLF = "\r\n"
 # the line break."
 FOLD_OCTETS = 75
 
-PRODID = "-//BottleCRM//Task calendar feed//EN"
-CALENDAR_NAME = "BottleCRM tasks"
+PRODID = "-//ConNexus-CRM//Task calendar feed//EN"
+CALENDAR_NAME = "ConNexus-CRM tasks"
 
 # Every control character except HTAB is illegal in a TEXT value (RFC 5545
 # 3.3.11). Line breaks are turned into the `\n` escape before this runs.

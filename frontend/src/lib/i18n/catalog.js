@@ -10,8 +10,9 @@ export const messages = {
   // Navigation
   Sell: { es: 'Vender', pt: 'Vender' },
   Today: { es: 'Hoy', pt: 'Hoje' },
-  Pipeline: { es: 'Embudo', pt: 'Funil' },
+  Pipeline: { es: 'Embudo', pt: 'Pipeline' },
   Leads: { es: 'Prospectos', pt: 'Leads' },
+  CRM: { es: 'CRM', pt: 'CRM' },
   Accounts: { es: 'Cuentas', pt: 'Contas' },
   Contacts: { es: 'Contactos', pt: 'Contatos' },
   Goals: { es: 'Objetivos', pt: 'Metas' },
@@ -25,13 +26,15 @@ export const messages = {
   Timesheet: { es: 'Parte de horas', pt: 'Apontamento de horas' },
   Run: { es: 'Administrar', pt: 'Administrar' },
   'Team and access': { es: 'Equipo y acceso', pt: 'Equipe e acesso' },
-  Settings: { es: 'Configuración', pt: 'Configurações' },
+  Settings: { es: 'Ajustes', pt: 'Ajustes' },
   Search: { es: 'Buscar', pt: 'Buscar' },
   Notifications: { es: 'Notificaciones', pt: 'Notificações' },
-  'Your profile': { es: 'Tu perfil', pt: 'Seu perfil' },
+  'Your profile': { es: 'Mi perfil', pt: 'Meu perfil' },
   Help: { es: 'Ayuda', pt: 'Ajuda' },
   'Download app': { es: 'Descargar la app', pt: 'Baixar o app' },
-  'Sign out': { es: 'Cerrar sesión', pt: 'Sair' },
+  'Sign out': { es: 'Salir', pt: 'Sair' },
+  'Switch organisation': { es: 'Cambiar de empresa', pt: 'Trocar de empresa' },
+  'Invoice templates': { es: 'Plantillas de factura', pt: 'Modelos de fatura' },
   Main: { es: 'Principal', pt: 'Principal' },
   Sections: { es: 'Secciones', pt: 'Seções' },
   'Open menu': { es: 'Abrir menú', pt: 'Abrir menu' },
@@ -239,6 +242,7 @@ export const messages = {
   // People and roles
   Admin: { es: 'Administrador', pt: 'Administrador' },
   Member: { es: 'Miembro', pt: 'Membro' },
+  Employee: { es: 'Empleado', pt: 'Funcionário' },
   Manager: { es: 'Gerente', pt: 'Gerente' },
   Owner: { es: 'Propietario', pt: 'Proprietário' },
   'an admin': { es: 'administrador', pt: 'administrador' },
@@ -301,10 +305,14 @@ export const messages = {
 
   // Sign-in
   'Sign in': { es: 'Iniciar sesión', pt: 'Entrar' },
-  'Sign in · BottleCRM': { es: 'Iniciar sesión · BottleCRM', pt: 'Entrar · BottleCRM' },
-  'Sign in to BottleCRM to manage your contacts, deals, and grow your business.': {
-    es: 'Entra en BottleCRM para gestionar contactos, negocios y hacer crecer tu empresa.',
-    pt: 'Entre no BottleCRM para gerenciar contatos, negócios e fazer a empresa crescer.'
+  'Sign in to your workspace': { es: 'Entra a tu espacio', pt: 'Entre no seu espaço' },
+  'Work email': { es: 'Correo de trabajo', pt: 'E-mail de trabalho' },
+  'Send link': { es: 'Enviar enlace', pt: 'Enviar link' },
+  'Google is unavailable': { es: 'Google · No disponible', pt: 'Google · Indisponível' },
+  'Sign in · ConNexus-CRM': { es: 'Iniciar sesión · ConNexus-CRM', pt: 'Entrar · ConNexus-CRM' },
+  'Sign in to ConNexus-CRM to manage your contacts, deals, and grow your business.': {
+    es: 'Entra en ConNexus-CRM para gestionar contactos, negocios y hacer crecer tu empresa.',
+    pt: 'Entre no ConNexus-CRM para gerenciar contatos, negócios e fazer a empresa crescer.'
   },
   'Welcome back. Choose how you\'d like to continue.': {
     es: 'Hola de nuevo. Elige cómo quieres continuar.',

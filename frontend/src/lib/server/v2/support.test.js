@@ -75,7 +75,7 @@ describe('support API adapter', () => {
         messages: [
           {
             id: 'm1',
-            author_label: 'BottleCRM Support',
+            author_label: 'ConNexus-CRM Support',
             author_type: 'staff',
             body: 'Please check this file.',
             attachment_name: 'steps.pdf',

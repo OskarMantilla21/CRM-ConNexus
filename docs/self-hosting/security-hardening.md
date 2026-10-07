@@ -1,6 +1,6 @@
 # Security hardening
 
-BottleCRM is multi-tenant: every deployment holds more than one organization's data behind the same
+ConNexus-CRM is multi-tenant: every deployment holds more than one organization's data behind the same
 database and the same application process. This page collects the settings and surfaces that matter
 most once you're running something other people depend on, most of which are covered in more depth
 elsewhere in Self-hosting. This page is the checklist, with pointers to the detail.
@@ -125,7 +125,7 @@ are same-origin, so their token shows up in the `Referer` of every asset they lo
 this in the `http {}` context (on Debian and Ubuntu, a new file under `/etc/nginx/conf.d/`):
 
 ```nginx
-# BottleCRM: public-link tokens are credentials; log them as [Filtered].
+# ConNexus-CRM: public-link tokens are credentials; log them as [Filtered].
 map $request_uri $bottlecrm_log_uri {
     "~^((?:/api/public/(?:calendar|csat|invoice|estimate)|/portal/(?:invoice|estimate)|/csat)/)[^/?]+(.*)$" "$1[Filtered]$2";
     default $request_uri;

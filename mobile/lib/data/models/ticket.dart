@@ -82,7 +82,7 @@ enum TicketType {
   }
 }
 
-/// Ticket model for BottleCRM
+/// Ticket model for ConNexus-CRM
 /// Statuses where somebody still owes the customer something.
 ///
 /// Mirrors `cases.views.OPEN_STATUSES` and the web's `OPEN_STATUSES` in

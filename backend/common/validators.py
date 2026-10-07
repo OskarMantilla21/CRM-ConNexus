@@ -259,7 +259,9 @@ def validate_iana_timezone(value: str) -> None:
 # names of our own routes or hosts, so `/help-center/api` or `/help-center/login`
 # would read as ours; the rest (`bottlecrm`, `support`, `help`) are the names a
 # visitor would take for the platform's own help, which is the impersonation
-# this exists to stop. Compared after lowercasing.
+# this exists to stop. Compared after lowercasing. `bottlecrm` stays reserved
+# so an old address cannot be claimed; `connexus` and `connexus-crm` are the
+# current name.
 HELP_CENTER_RESERVED_SLUGS = frozenset(
     {
         "admin",
@@ -269,6 +271,8 @@ HELP_CENTER_RESERVED_SLUGS = frozenset(
         "auth",
         "billing",
         "bottlecrm",
+        "connexus",
+        "connexus-crm",
         "dashboard",
         "help",
         "login",

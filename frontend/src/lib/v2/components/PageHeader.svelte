@@ -2,6 +2,7 @@
   /**
    * @type {{
    *   title: string,
+   *   count?: string | number | null,
    *   record?: boolean,
    *   center?: boolean,
    *   width?: string,
@@ -19,7 +20,8 @@
    * `leading` renders before the title block. An avatar or record mark. It is
    * centred against the text so it sits beside the name, not the crumb.
    */
-  let { title, record = false, center = false, width, leading, sub, crumb, actions } = $props();
+  let { title, count = null, record = false, center = false, width, leading, sub, crumb, actions } =
+    $props();
 </script>
 
 <header
@@ -29,8 +31,19 @@
 >
   {#if leading}<div style="align-self:center;flex:none">{@render leading()}</div>{/if}
   <div style="min-width:0">
-    {#if crumb}<div class="v2-crumb">{@render crumb()}</div>{/if}
-    <h1 class={record ? 'v2-record-title' : 'v2-page-title'}>{title}</h1>
+    <div class="v2-crumb">
+      {#if crumb}
+        {@render crumb()}
+      {:else}
+        <span>CRM</span>
+        <span aria-hidden="true">›</span>
+        <span>{title}</span>
+      {/if}
+    </div>
+    <div class="v2-title-row">
+      <h1 class={record ? 'v2-record-title' : 'v2-page-title'}>{title}</h1>
+      {#if count != null}<span class="v2-title-count">{count}</span>{/if}
+    </div>
     {#if sub}<div class="v2-sub" style="margin-top:5px">{@render sub()}</div>{/if}
   </div>
   {#if actions}<div class="v2-actions">{@render actions()}</div>{/if}

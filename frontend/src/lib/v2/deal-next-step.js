@@ -1,4 +1,5 @@
 import { daysSince, shortDate } from '$lib/v2/format.js';
+import { tx } from '$lib/i18n/translate.js';
 
 /**
  * A deal's next open task as a phrase for the pipeline card and list row, or
@@ -20,7 +21,10 @@ export function dealNextStep(deal, now = new Date()) {
   if (deal.stage_kind !== 'open') return null;
   const next = deal.next_activity;
   if (next === undefined) return null;
-  if (next === null) return { text: 'No next step', late: true };
-  const due = next.due_date ? shortDate(next.due_date, now) : 'no date';
-  return { text: `${next.title} · ${due}`, late: (daysSince(next.due_date, now) ?? 0) > 0 };
+  if (next === null) return { text: tx('No next step'), late: true };
+  const due = next.due_date ? shortDate(next.due_date, now) : tx('no date');
+  return {
+    text: tx('{title} · {due}', { title: next.title, due }),
+    late: (daysSince(next.due_date, now) ?? 0) > 0
+  };
 }

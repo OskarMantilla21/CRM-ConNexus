@@ -11,7 +11,7 @@
         device needs a sign-in rather than a restore.
     -->
     <application
-        android:label="BottleCRM"
+        android:label="ConNexus-CRM"
         android:name="${applicationName}"
         android:allowBackup="false"
         android:icon="@mipmap/launcher_icon">

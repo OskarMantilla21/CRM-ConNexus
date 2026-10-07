@@ -2,7 +2,7 @@
 
 Fecha de la prueba: 5 de octubre de 2026.
 
-Objetivo: comprobar que varias personas pueden tener su negocio en el mismo CRM y que ninguna ve la información de las otras. En BottleCRM cada negocio es una organización. Un usuario solo entra a las organizaciones donde tiene un perfil.
+Objetivo: comprobar que varias personas pueden tener su negocio en el mismo CRM y que ninguna ve la información de las otras. En ConNexus-CRM cada negocio es una organización. Un usuario solo entra a las organizaciones donde tiene un perfil.
 
 ## Negocios creados
 

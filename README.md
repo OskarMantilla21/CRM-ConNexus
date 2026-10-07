@@ -1,4 +1,4 @@
-# BottleCRM: Open Source Django CRM for Startups & Enterprises
+# ConNexus-CRM: Open Source Django CRM for Startups & Enterprises
 
 A free, self-hosted, multi-tenant CRM built with Django REST Framework, SvelteKit and Flutter.
 
@@ -10,7 +10,7 @@ A free, self-hosted, multi-tenant CRM built with Django REST Framework, SvelteKi
 ![Flutter](https://img.shields.io/badge/flutter-3.44+-blue.svg)
 ![Coverage](./coverage-badge.svg)
 
-**BottleCRM is an open source CRM you run on your own infrastructure.** It covers the full
+**ConNexus-CRM is an open source CRM you run on your own infrastructure.** It covers the full
 customer lifecycle: leads, accounts, contacts, opportunities, support tickets, tasks and
 invoices: through a SvelteKit web app, a native Flutter mobile app, and a documented REST API
 sharing one Django backend. PostgreSQL Row-Level Security isolates each organization's data at
@@ -23,7 +23,7 @@ your data.
 
 (That's the marketing site's product documentation. For the technical documentation (self-hosting, architecture, the API, contributing) see [Documentation](#documentation) below.)
 
-## Why BottleCRM
+## Why ConNexus-CRM
 
 - **Free forever, MIT licensed**: unlimited users and records, no subscription. A genuinely
   self-hosted CRM alternative to Salesforce, HubSpot and Pipedrive.
@@ -42,7 +42,7 @@ your data.
 
 ## How it compares
 
-| | BottleCRM | SaaS CRM (Salesforce, HubSpot) | Typical open source CRM |
+| | ConNexus-CRM | SaaS CRM (Salesforce, HubSpot) | Typical open source CRM |
 |---|---|---|---|
 | **Cost** | Free, unlimited users | Per seat, per month | Free core, often paid tiers |
 | **Hosting** | Self-hosted (managed hosting available) | Vendor cloud only | Self-hosted |
@@ -92,14 +92,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Sponsors
 
-We are grateful to the sponsors who support BottleCRM's continued development and maintenance.
+We are grateful to the sponsors who support ConNexus-CRM's continued development and maintenance.
 
 - [MicroPyramid](https://micropyramid.com/)
 
-We warmly welcome new sponsors. If you would like to support BottleCRM and help the project grow, please [get in touch](https://micropyramid.com/contact/).
+We warmly welcome new sponsors. If you would like to support ConNexus-CRM and help the project grow, please [get in touch](https://micropyramid.com/contact/).
 
 ## Contributors
 
 This project exists thanks to all the people who contributed.
 
-[View all BottleCRM contributors](https://github.com/django-crm/Django-CRM/graphs/contributors).
+[View all ConNexus-CRM contributors](https://github.com/django-crm/Django-CRM/graphs/contributors).

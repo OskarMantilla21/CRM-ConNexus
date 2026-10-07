@@ -234,14 +234,14 @@ void main() {
       ]);
     });
 
-    test('support updates are attributed to BottleCRM Support', () {
+    test('support updates are attributed to ConNexus-CRM Support', () {
       final notification = AppNotification(
         id: 'support-1',
         verb: 'support.replied',
         createdAt: DateTime.utc(2026, 8, 8),
       );
 
-      expect(notification.displayActorName, 'BottleCRM Support');
+      expect(notification.displayActorName, 'ConNexus-CRM Support');
     });
   });
 

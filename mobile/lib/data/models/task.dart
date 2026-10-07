@@ -83,7 +83,7 @@ enum TaskStatus {
   }
 }
 
-/// Task model for BottleCRM
+/// Task model for ConNexus-CRM
 class Task {
   final String id;
   final String title;

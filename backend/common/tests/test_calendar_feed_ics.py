@@ -80,7 +80,7 @@ class TestRenderCalendar:
         assert body.startswith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n")
         assert "PRODID:" in body
         assert "CALSCALE:GREGORIAN\r\n" in body
-        assert "X-WR-CALNAME:BottleCRM tasks\r\n" in body
+        assert "X-WR-CALNAME:ConNexus-CRM tasks\r\n" in body
         assert body.endswith("END:VCALENDAR\r\n")
         assert "\n" not in body.replace("\r\n", "")
 

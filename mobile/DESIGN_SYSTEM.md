@@ -1,6 +1,6 @@
-# BottleCRM Mobile Design System
+# ConNexus-CRM Mobile Design System
 
-A comprehensive design guide for the BottleCRM mobile app, inspired by modern CRM apps like HubSpot.
+A comprehensive design guide for the ConNexus-CRM mobile app, inspired by modern CRM apps like HubSpot.
 
 > **This is the authoritative design reference for the Flutter app.** Change a
 > colour or a spacing value here. There is a second, similarly named file at

@@ -20,7 +20,7 @@ Backend dependencies (`djangorestframework`, `djangorestframework-simplejwt`, `c
 `weasyprint`, `gunicorn`, and the rest) are locked in `backend/uv.lock`; `uv sync` from
 `backend/` installs the exact versions CI and this documentation were checked against.
 
-**PostgreSQL is not optional.** BottleCRM's multi-tenancy is enforced by PostgreSQL Row-Level
+**PostgreSQL is not optional.** ConNexus-CRM's multi-tenancy is enforced by PostgreSQL Row-Level
 Security (RLS), keyed on the `app.current_org` session variable. See
 [PostgreSQL and RLS](postgresql-and-rls.md) for how that works and why it matters. RLS is a
 PostgreSQL feature with no SQLite equivalent. The only place SQLite appears in this codebase is

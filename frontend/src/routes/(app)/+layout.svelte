@@ -7,11 +7,13 @@
   import { afterNavigate } from '$app/navigation';
   import Sidebar from '$lib/v2/components/Sidebar.svelte';
   import CommandPalette from '$lib/v2/components/CommandPalette.svelte';
+  import BrandMark from '$lib/v2/components/BrandMark.svelte';
+  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
   import { Search, Sun, Columns3, LifeBuoy, Receipt, Clock, Plus, Menu } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
   import { ALL_PERMISSIONS } from '$lib/access.js';
 
-  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[] }, children: import('svelte').Snippet }} */
+  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[], role?: string, user?: { name?: string, email?: string } }, children: import('svelte').Snippet }} */
   let { data, children } = $props();
 
   let permissions = $derived(data.permissions ?? ALL_PERMISSIONS);
@@ -26,7 +28,13 @@
   // the footer: profile, notifications, help, sign out. It reuses the same
   // <Sidebar>, so the two can never drift apart. Closes itself on navigation.
   let menuOpen = $state(false);
+  let navHidden = $state(false);
   afterNavigate(() => (menuOpen = false));
+
+  function onMenu() {
+    if (window.matchMedia('(max-width: 768px)').matches) menuOpen = true;
+    else navHidden = !navHidden;
+  }
 
   /** Focus the panel on open so Escape reaches it and keyboard users land inside. */
   function autofocus(/** @type {HTMLElement} */ node) {
@@ -65,48 +73,39 @@
 </script>
 
 <svelte:head>
-  <title>BottleCRM v2</title>
+  <title>ConNexus</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
 <svelte:window {onkeydown} />
 
-<div class="v2-root v2-shell">
+<div class="v2-root v2-app" class:is-nav-hidden={navHidden}>
+  <header class="v2-topbar">
+    <button class="v2-icon-btn" type="button" onclick={onMenu} aria-label={tx('Open menu')} aria-expanded={menuOpen}>
+      <Menu size={20} />
+    </button>
+    <a class="v2-brand" href={resolve('/')}>
+      <BrandMark />
+    </a>
+    <div class="v2-topbar-end">
+      {#if canSearch}
+        <button class="v2-icon-btn" type="button" onclick={() => (paletteOpen = true)} aria-label={tx('Search')}>
+          <Search size={18} />
+        </button>
+      {/if}
+      <LanguageSelect compact />
+    </div>
+  </header>
+  <div class="v2-shell">
   <Sidebar
     counts={data.counts}
     org={data.org}
+    user={data.user}
+    role={data.role}
     {permissions}
     terminology={data.org.terminology}
-    onsearch={() => (paletteOpen = true)}
   />
   <div class="v2-main">
-    <!-- Phone top bar. The sidebar is hidden below 768px; this replaces the
-         org mark and the search affordance it carried. -->
-    <div class="v2-mobile-top">
-      <button
-        class="v2-btn v2-btn-quiet"
-        type="button"
-        onclick={() => (menuOpen = true)}
-        aria-label={tx('Open menu')}
-        aria-expanded={menuOpen}
-      >
-        <Menu />
-      </button>
-      <span class="v2-mark">{data.org.name.slice(0, 1)}</span>
-      <h2>{data.org.name}</h2>
-      {#if canSearch}
-        <button
-          class="v2-btn v2-btn-quiet"
-          type="button"
-          style="margin-left:auto"
-          onclick={() => (paletteOpen = true)}
-          aria-label={tx('Search')}
-        >
-          <Search />
-        </button>
-      {/if}
-    </div>
-
     {@render children()}
 
     <nav class="v2-tabbar" aria-label={tx('Sections')}>
@@ -156,12 +155,10 @@
         <Sidebar
           counts={data.counts}
           org={data.org}
+          user={data.user}
+          role={data.role}
           {permissions}
           terminology={data.org.terminology}
-          onsearch={() => {
-            menuOpen = false;
-            paletteOpen = true;
-          }}
         />
       </div>
     </div>
@@ -170,4 +167,5 @@
   {#if canSearch}
     <CommandPalette open={paletteOpen} onclose={() => (paletteOpen = false)} />
   {/if}
+  </div>
 </div>

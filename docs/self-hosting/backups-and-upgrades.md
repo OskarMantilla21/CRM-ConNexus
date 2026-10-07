@@ -1,6 +1,6 @@
 # Backups and upgrades
 
-This page covers what actually needs backing up in a self-hosted BottleCRM instance, and what
+This page covers what actually needs backing up in a self-hosted ConNexus-CRM instance, and what
 "upgrading" means for the Docker Compose setup versus a manual install.
 
 ## What to back up

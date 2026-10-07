@@ -158,6 +158,15 @@ export const messages = {
       es: 'Una tarea sin fecha de vencimiento nunca pasa a vencida y nunca aparece en "vence esta semana". Es una decisión real, no un vacío que olvidaste.',
       pt: 'Uma tarefa sem data de vencimento nunca fica atrasada e nunca aparece em "vence esta semana". É uma escolha de verdade, não um vazio que você esqueceu.'
     },
+  'The day this task should be done. Leave it empty and it never counts as late, and it never appears in this week. That is a real choice, not a blank you forgot.':
+    {
+      es: 'El día en que se tiene que realizar. Si lo dejas vacío, no cuenta como tarde y no aparece entre las de esta semana. Es una decisión real, no un vacío que olvidaste.',
+      pt: 'O dia em que esta tarefa deve ser feita. Se ficar vazio, não conta como atrasada e não aparece entre as desta semana. É uma escolha de verdade, não um vazio que você esqueceu.'
+    },
+  'When it should be done': {
+    es: 'Cuándo se tiene que realizar',
+    pt: 'Quando deve ser feita'
+  },
   'A ticket needs a subject.': {
     es: 'Un ticket necesita un asunto.',
     pt: 'Um chamado precisa de um assunto.'
@@ -1265,9 +1274,9 @@ export const messages = {
     es: 'Este panel es para administradores.',
     pt: 'Este painel é para administradores.'
   },
-  'This deployment has no BottleCRM support queue. The help page lists the ways to reach us.': {
-    es: 'Esta instalación no tiene una cola de soporte de BottleCRM. La página de ayuda lista las formas de contactarnos.',
-    pt: 'Esta instalação não tem uma fila de suporte do BottleCRM. A página de ajuda lista as formas de falar conosco.'
+  'This deployment has no ConNexus-CRM support queue. The help page lists the ways to reach us.': {
+    es: 'Esta instalación no tiene una cola de soporte de ConNexus-CRM. La página de ayuda lista las formas de contactarnos.',
+    pt: 'Esta instalação não tem uma fila de suporte do ConNexus-CRM. A página de ajuda lista as formas de falar conosco.'
   },
   'This is a draft. Send it for review when the answer is right: somebody other than you has to approve it before it can be published.':
     {
@@ -1400,10 +1409,10 @@ export const messages = {
     es: 'Cómo lo dirías en voz alta. Tiene que ser único aquí.',
     pt: 'Como você diria em voz alta. Precisa ser único aqui.'
   },
-  'When you need help with BottleCRM, open a ticket here. Replies and status changes stay attached to it.':
+  'When you need help with ConNexus-CRM, open a ticket here. Replies and status changes stay attached to it.':
     {
-      es: 'Cuando necesites ayuda con BottleCRM, abre un ticket aquí. Las respuestas y los cambios de estado quedan en él.',
-      pt: 'Quando você precisar de ajuda com o BottleCRM, abra um chamado aqui. As respostas e as mudanças de status ficam nele.'
+      es: 'Cuando necesites ayuda con ConNexus-CRM, abre un ticket aquí. Las respuestas y los cambios de estado quedan en él.',
+      pt: 'Quando você precisar de ajuda com o ConNexus-CRM, abra um chamado aqui. As respostas e as mudanças de status ficam nele.'
     },
   'Which approval? None was given.': {
     es: '¿Qué aprobación? No se indicó ninguna.',

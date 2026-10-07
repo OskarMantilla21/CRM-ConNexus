@@ -1,6 +1,7 @@
 <script>
   import { enhance } from '$app/forms';
   import { CASE_STATUSES, CASE_PRIORITIES, CASE_TYPES } from '$lib/v2/enums.js';
+  import { tx, choiceLabel } from '$lib/i18n/translate.js';
 
   /**
    * @type {{
@@ -42,15 +43,15 @@
   }
 </script>
 
-<div class="v2-bulkbar" role="region" aria-label="Bulk actions">
-  <span class="v2-num">{ids.length} selected</span>
-  <button type="button" class="v2-btn" onclick={onclear}>Clear</button>
+<div class="v2-bulkbar" role="region" aria-label={tx('Bulk actions')}>
+  <span class="v2-num">{tx('{n} selected', { n: ids.length })}</span>
+  <button type="button" class="v2-btn" onclick={onclear}>{tx('Clear')}</button>
 
   {#if action === ''}
-    <select class="v2-input" bind:value={action} aria-label="Choose a bulk action">
-      <option value="">Actions</option>
+    <select class="v2-input" bind:value={action} aria-label={tx('Choose a bulk action')}>
+      <option value="">{tx('Actions')}</option>
       {#each ACTIONS as a (a.key)}
-        <option value={a.key}>{a.label}</option>
+        <option value={a.key}>{tx(a.label)}</option>
       {/each}
     </select>
   {:else if action === 'delete'}
@@ -66,14 +67,14 @@
       {#each ids as id (id)}<input type="hidden" name="ids" value={id} />{/each}
       {#if !armed}
         <button type="button" class="v2-btn" onclick={() => (armed = true)}>
-          Delete {ids.length}
+          {tx('Delete {n}', { n: ids.length })}
         </button>
       {:else}
-        <button type="submit" class="v2-btn v2-btn-primary">Confirm</button>
-        <button type="button" class="v2-btn" onclick={() => (armed = false)}>Cancel</button>
+        <button type="submit" class="v2-btn v2-btn-primary">{tx('Confirm')}</button>
+        <button type="button" class="v2-btn" onclick={() => (armed = false)}>{tx('Cancel')}</button>
       {/if}
       <button type="button" class="v2-btn" onclick={() => ((action = ''), (armed = false))}>
-        Back
+        {tx('Back')}
       </button>
     </form>
   {:else}
@@ -91,7 +92,7 @@
 
       {#if action === 'assigned_to'}
         <select class="v2-input" name="value" required>
-          <option value="">Choose a person</option>
+          <option value="">{tx('Choose a person')}</option>
           {#each people as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
         </select>
       {:else if action === 'tags'}
@@ -100,18 +101,18 @@
         </select>
       {:else if action === 'priority'}
         <select class="v2-input" name="value" required>
-          <option value="">Choose a priority</option>
-          {#each CASE_PRIORITIES as v (v)}<option value={v}>{v}</option>{/each}
+          <option value="">{tx('Choose a priority')}</option>
+          {#each CASE_PRIORITIES as v (v)}<option value={v}>{choiceLabel(v)}</option>{/each}
         </select>
       {:else if action === 'case_type'}
         <select class="v2-input" name="value" required>
-          <option value="">Choose a type</option>
-          {#each CASE_TYPES as v (v)}<option value={v}>{v}</option>{/each}
+          <option value="">{tx('Choose a type')}</option>
+          {#each CASE_TYPES as v (v)}<option value={v}>{choiceLabel(v)}</option>{/each}
         </select>
       {:else if action === 'status'}
         <select class="v2-input" name="value" bind:value={statusValue} required>
-          <option value="">Choose a status</option>
-          {#each SETTABLE_STATUSES as v (v)}<option value={v}>{v}</option>{/each}
+          <option value="">{tx('Choose a status')}</option>
+          {#each SETTABLE_STATUSES as v (v)}<option value={v}>{choiceLabel(v)}</option>{/each}
         </select>
         {#if statusValue === 'Closed'}
           <!-- Optional. Left empty, nothing is sent and the API dates each
@@ -120,15 +121,15 @@
             class="v2-input"
             type="date"
             name="closed_on"
-            aria-label="Closed on (optional)"
+            aria-label={tx('Closed on (optional)')}
             aria-describedby="bulk-closed-hint"
           />
-          <span class="v2-hint" id="bulk-closed-hint">Empty: dated today in the org timezone.</span>
+          <span class="v2-hint" id="bulk-closed-hint">{tx('Empty: dated today in the org timezone.')}</span>
         {/if}
       {/if}
 
-      <button type="submit" class="v2-btn v2-btn-primary">Apply</button>
-      <button type="button" class="v2-btn" onclick={() => (action = '')}>Back</button>
+      <button type="submit" class="v2-btn v2-btn-primary">{tx('Apply')}</button>
+      <button type="button" class="v2-btn" onclick={() => (action = '')}>{tx('Back')}</button>
     </form>
   {/if}
 </div>

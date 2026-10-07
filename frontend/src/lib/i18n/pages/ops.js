@@ -1406,7 +1406,85 @@ export const messages = {
       es: 'Quita el formulario y su historial de envíos. Los prospectos que ya creó se quedan donde están. Cualquier incrustado que siga en tu sitio va a dejar de funcionar.',
       pt: 'Remove o formulário e o histórico de envios. Os leads que ele já criou ficam onde estão. Qualquer embed que ainda esteja no seu site vai parar de funcionar.'
     },
-  'This cannot be undone.': { es: 'Esto no se puede deshacer.', pt: 'Isto não pode ser desfeito.' }
+  'This cannot be undone.': { es: 'Esto no se puede deshacer.', pt: 'Isto não pode ser desfeito.' },
+
+  // Ticket approval rules
+  'Approval rules': { es: 'Reglas de aprobación', pt: 'Regras de aprovação' },
+  'active ·': { es: 'activas ·', pt: 'ativas ·' },
+  'approvals waiting on them right now': {
+    es: 'aprobaciones esperando ahora',
+    pt: 'aprovações esperando agora'
+  },
+  'Approver role': { es: 'Rol que aprueba', pt: 'Papel que aprova' },
+  'Named approvers': { es: 'Aprobadores nombrados', pt: 'Aprovadores nomeados' },
+  'Named approvers are in addition to the role above. Leave this empty and anyone with that role can clear the approval.':
+    {
+      es: 'Los aprobadores nombrados se suman al rol de arriba. Si lo dejas vacío, cualquiera con ese rol puede aprobar.',
+      pt: 'Os aprovadores nomeados se somam ao papel acima. Se deixar vazio, qualquer um com esse papel pode aprovar.'
+    },
+  'One approver is no longer active. They stay named until you deselect them, and they cannot clear an approval while their account is off.':
+    {
+      es: 'Un aprobador ya no está activo. Sigue nombrado hasta que lo quites, y no puede aprobar mientras su cuenta esté desactivada.',
+      pt: 'Um aprovador não está mais ativo. Continua nomeado até você tirá-lo, e não pode aprovar enquanto a conta estiver desativada.'
+    },
+  '{n} approvers are no longer active. They stay named until you deselect them, and they cannot clear an approval while their account is off.':
+    {
+      es: '{n} aprobadores ya no están activos. Siguen nombrados hasta que los quites, y no pueden aprobar mientras su cuenta esté desactivada.',
+      pt: '{n} aprovadores não estão mais ativos. Continuam nomeados até você tirá-los, e não podem aprovar enquanto a conta estiver desativada.'
+    },
+  'Any team': { es: 'Cualquier equipo', pt: 'Qualquer equipe' },
+  'The people and teams list did not load. Reload the page to pick a team or named approvers.': {
+    es: 'No se cargó la lista de personas y equipos. Recarga la página para elegir un equipo o aprobadores.',
+    pt: 'A lista de pessoas e equipes não carregou. Recarregue a página para escolher uma equipe ou aprovadores.'
+  },
+  'The people and teams list did not load. Saving keeps the current team and approvers; reload the page to change them.':
+    {
+      es: 'No se cargó la lista de personas y equipos. Al guardar se conservan el equipo y los aprobadores actuales; recarga la página para cambiarlos.',
+      pt: 'A lista de pessoas e equipes não carregou. Ao salvar, a equipe e os aprovadores atuais se mantêm; recarregue a página para mudá-los.'
+    },
+  'Starts gating matching ticket closes as soon as it is saved.': {
+    es: 'Empieza a exigir aprobación en los cierres que coincidan en cuanto se guarde.',
+    pt: 'Passa a exigir aprovação nos fechamentos que coincidirem assim que for salva.'
+  },
+  'That rule had approval history, so it was turned off instead of deleted. The approvals it already gated have to keep pointing at it. It is still in the list below, marked Off, and gates nothing.':
+    {
+      es: 'Esa regla tenía historial de aprobaciones, así que se desactivó en lugar de eliminarse. Las aprobaciones que ya exigió tienen que seguir apuntando a ella. Sigue en la lista de abajo, marcada como apagada, y no exige nada.',
+      pt: 'Essa regra tinha histórico de aprovações, então foi desativada em vez de excluída. As aprovações que ela já exigiu têm que continuar apontando para ela. Ela segue na lista abaixo, marcada como desligada, e não exige nada.'
+    },
+  Rules: { es: 'Reglas', pt: 'Regras' },
+  'A ticket is gated by one rule, the most specific that matches it. The others are fallbacks for the tickets it misses.':
+    {
+      es: 'Un ticket lo exige una sola regla, la más específica que coincida. Las demás son el respaldo para los tickets que esa no cubre.',
+      pt: 'Um chamado é exigido por uma só regra, a mais específica que coincidir. As outras são o reserva para os chamados que essa não cobre.'
+    },
+  'Nobody can clear': { es: 'Nadie puede aprobar', pt: 'Ninguém pode aprovar' },
+  Gates: { es: 'Aplica a', pt: 'Vale para' },
+  'cleared by {who}': { es: 'la aprueba {who}', pt: 'aprova {who}' },
+  'This organisation has admins and members. There is no manager role. With no named approvers, the first ticket this gates cannot be closed by anyone. Name approvers, or set it to admin.':
+    {
+      es: 'Esta organización tiene administradores y miembros. No hay rol de gerente. Sin aprobadores nombrados, el primer ticket que esto exija no lo puede cerrar nadie. Nombra aprobadores, o ponlo en administrador.',
+      pt: 'Esta organização tem administradores e membros. Não há papel de gerente. Sem aprovadores nomeados, o primeiro chamado que isto exigir não pode ser fechado por ninguém. Nomeie aprovadores, ou defina como administrador.'
+    },
+  '{name} gates exactly the same tickets and was written later. One rule gates a close, the most specific match, and the newest wins between equals, so this one never runs. Turn it off, delete it, or narrow what it matches.':
+    {
+      es: '{name} exige exactamente los mismos tickets y se escribió después. Un cierre lo exige una sola regla, la coincidencia más específica, y entre iguales gana la más nueva, así que esta nunca se ejecuta. Desactívala, elimínala o reduce lo que coincide.',
+      pt: '{name} exige exatamente os mesmos chamados e foi escrita depois. Um fechamento é exigido por uma só regra, a coincidência mais específica, e entre iguais vence a mais nova, então esta nunca executa. Desative, exclua ou reduza o que coincide.'
+    },
+  waiting: { es: 'en espera', pt: 'em espera' },
+  'Stops gating new ticket closes. It stays in the list, off, until turned back on.': {
+    es: 'Deja de exigir el cierre de tickets nuevos. Sigue en la lista, apagada, hasta que la vuelvas a activar.',
+    pt: 'Para de exigir o fechamento de chamados novos. Continua na lista, desligada, até você ativar de novo.'
+  },
+  '{n} approvals are waiting on this rule. A rule that has ever gated a close is turned off rather than deleted, because the record has to be kept.':
+    {
+      es: '{n} aprobaciones esperan esta regla. Una regla que alguna vez exigió un cierre se desactiva en lugar de eliminarse, porque el registro tiene que conservarse.',
+      pt: '{n} aprovações esperam esta regra. Uma regra que alguma vez exigiu um fechamento é desativada em vez de excluída, porque o registro tem que ser mantido.'
+    },
+  'A rule that has never gated a close is deleted for good. One with any approval history is turned off instead, because the record has to be kept.':
+    {
+      es: 'Una regla que nunca exigió un cierre se elimina para siempre. Una con historial de aprobaciones se desactiva, porque el registro tiene que conservarse.',
+      pt: 'Uma regra que nunca exigiu um fechamento é excluída de vez. Uma com histórico de aprovações é desativada, porque o registro tem que ser mantido.'
+    }
 };
 
 addMessages(messages);

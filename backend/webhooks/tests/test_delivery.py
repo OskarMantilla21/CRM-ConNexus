@@ -70,7 +70,7 @@ class TestSignature:
 
         assert json.loads(body) == delivery.payload
         assert headers["Content-Type"] == "application/json"
-        assert headers["User-Agent"] == "BottleCRM-Webhooks"
+        assert headers["User-Agent"] == "ConNexus-CRM-Webhooks"
         assert headers["X-BottleCRM-Event"] == "lead.created"
         assert headers["X-BottleCRM-Delivery"] == str(delivery.id)
 
@@ -85,7 +85,7 @@ class TestSignature:
         text = json.loads(body)["text"]
         assert "<" not in text and ">" not in text
         assert "&lt;!channel&gt; &amp; &lt;@U1&gt;" in text
-        assert text.startswith("BottleCRM: Lead created:")
+        assert text.startswith("ConNexus-CRM: Lead created:")
 
 
 class TestAttempts:

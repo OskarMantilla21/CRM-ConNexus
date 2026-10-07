@@ -1,4 +1,4 @@
-// Dashboard data models for BottleCRM
+// Dashboard data models for ConNexus-CRM
 import 'package:flutter/foundation.dart';
 
 import 'deal_pipeline.dart';

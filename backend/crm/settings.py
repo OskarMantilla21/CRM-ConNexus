@@ -423,6 +423,7 @@ REST_FRAMEWORK = {
         # RELAY_SECRET, where every web sign-in shares the SvelteKit server's
         # bucket.
         "magic_link_ip": os.environ.get("MAGIC_LINK_THROTTLE_IP", "30/hour"),
+        "password_login_ip": os.environ.get("PASSWORD_LOGIN_THROTTLE_IP", "60/hour"),
         "portal_login_ip": os.environ.get("PORTAL_LOGIN_THROTTLE_IP", "30/hour"),
         # Username and password sign-in, per address. A person mistypes a few
         # times; the rest is room for an office behind one NAT.
@@ -510,7 +511,7 @@ if _bad_account_ids:
     )
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "BottleCRM API",
+    "TITLE": "ConNexus-CRM API",
     "DESCRIPTION": "Open source CRM application",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,

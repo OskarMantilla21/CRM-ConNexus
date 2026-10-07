@@ -4,12 +4,14 @@
   import '$lib/v2/styles/v2.css';
   import { enhance } from '$app/forms';
   import { goto } from '$app/navigation';
-  import imgLogo from '$lib/assets/images/logo.png';
   import { ArrowLeft, Check, AlertCircle } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import { ALL_PERMISSIONS, PERMISSION_LABEL } from '$lib/access.js';
+  import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data, form } = $props();
+
+  let role = $state('CEO');
 
   let packs = $derived(data?.packs ?? []);
   let timezones = $derived(data?.timezones ?? [{ name: 'UTC', label: 'UTC' }]);
@@ -43,16 +45,13 @@
 </script>
 
 <svelte:head>
-  <title>{tx('Create organisation · BottleCRM')}</title>
+  <title>{tx('Create organisation · ConNexus-CRM')}</title>
 </svelte:head>
 
-<div class="v2-root v2-auth">
+<div class="v2-root v2-public">
+  <PublicBar />
+  <div class="v2-public-body">
   <div class="v2-auth-box">
-    <a href={resolve('/')} class="v2-auth-brand">
-      <img src={imgLogo} alt="" />
-      <b>BottleCRM</b>
-    </a>
-
     <div class="v2-auth-card">
       <div class="v2-auth-head">
         <h1>{tx('Create organisation')}</h1>
@@ -81,7 +80,7 @@
             required
             disabled={isSubmitting || !!form?.data}
           />
-          <p class="v2-hint">{tx('This becomes your workspace name in BottleCRM.')}</p>
+          <p class="v2-hint">{tx('This becomes your workspace name in ConNexus-CRM.')}</p>
         </div>
 
         <div class="v2-field">
@@ -104,12 +103,52 @@
           </p>
         </div>
 
-        {#if packs.length > 0}
+        <div class="v2-field">
+          <label for="role">{tx('Your role in this organisation')}</label>
+          <select
+            id="role"
+            name="role"
+            class="v2-input"
+            bind:value={role}
+            disabled={isSubmitting || !!form?.data}
+          >
+            <option value="CEO">{tx('CEO')}</option>
+            <option value="ADMIN">{tx('Admin')}</option>
+            <option value="EMPLOYEE">{tx('Employee')}</option>
+          </select>
+          <p class="v2-hint">
+            {tx(
+              'This is the role you open this workspace with. A CEO can do everything. An administrator opens only the areas you tick. An employee only records the work done today.'
+            )}
+          </p>
+        </div>
+
+        {#if role === 'ADMIN'}
+          <fieldset class="v2-field pack-choice">
+            <legend>{tx('Permissions')}</legend>
+            {#each ALL_PERMISSIONS as key (key)}
+              <label class="pack-opt">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value={key}
+                  checked
+                  disabled={isSubmitting || !!form?.data}
+                />
+                <span class="pack-opt-body">
+                  <b>{tx(PERMISSION_LABEL[key])}</b>
+                </span>
+              </label>
+            {/each}
+          </fieldset>
+        {/if}
+
+        {#if packs.length > 0 && role !== 'EMPLOYEE'}
           <fieldset class="v2-field pack-choice">
             <legend>{tx('What kind of business is this?')}</legend>
             <p class="v2-hint" style="margin-top:0">
               {tx(
-                'Sets up a starter pipeline, tags and fields for your industry. You can change everything later.'
+                'Sets up a starter pipeline, tags and fields for your industry. It does not add example customers or messages. You can change everything later.'
               )}
             </p>
 
@@ -191,7 +230,7 @@
         <ArrowLeft size={13} /> {tx('Back to organisations')}
       </a>
     </div>
-    <LanguageSelect />
+  </div>
   </div>
 </div>
 
@@ -225,7 +264,8 @@
     cursor: not-allowed;
     opacity: 0.65;
   }
-  .pack-opt input[type='radio'] {
+  .pack-opt input[type='radio'],
+  .pack-opt input[type='checkbox'] {
     margin-top: 2px;
     accent-color: var(--v2-ember);
     flex: none;

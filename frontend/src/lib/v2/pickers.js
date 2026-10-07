@@ -30,6 +30,8 @@
  * anyway, and keeping the stored value is still the right outcome.
  */
 
+import { tx } from '$lib/i18n/translate.js';
+
 /**
  * The stored targets the options list cannot offer.
  *
@@ -62,7 +64,7 @@ export function missingOption(options, stored) {
  * @returns {string}
  */
 export function inactiveOptionLabel(name) {
-  return `${name || 'Unnamed'} (no longer active)`;
+  return tx('{name} (no longer active)', { name: name || tx('Unnamed') });
 }
 
 /**

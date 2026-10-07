@@ -12,6 +12,11 @@ import { listPacks, applyPack } from '$lib/server/packs.js';
 import { listTimezones } from '$lib/server/v2/organization.js';
 import { tx } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/public.js';
+import { ALL_PERMISSIONS } from '$lib/access.js';
+
+// Member is not a choice on this screen. CEO, an administrator, or an
+// employee. The API still accepts a member from other clients.
+const ROLES = ['CEO', 'ADMIN', 'EMPLOYEE'];
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -58,6 +63,18 @@ export const actions = {
     // Optional end to end: the field is a select with a value, but the API
     // treats a missing timezone as UTC so a submission without one still works.
     const timezone = formData.get('timezone')?.toString().trim();
+    // Absent on older clients and on the pack-apply test. The API then keeps
+    // the creator as ADMIN, which is what creating an org did before the
+    // role field existed. The screen sends CEO, ADMIN, or EMPLOYEE.
+    const role = formData.get('role')?.toString() || '';
+
+    if (role && !ROLES.includes(role)) {
+      return {
+        error: {
+          name: tx('Pick a valid role.')
+        }
+      };
+    }
 
     if (!orgName || orgName.trim().length === 0) {
       return {
@@ -79,11 +96,22 @@ export const actions = {
 
       const apiUrl = publicEnv.PUBLIC_DJANGO_API_URL;
 
+      /** @type {{ name: string, timezone?: string, role?: string, permissions?: string[] }} */
+      const body = { name: orgName.trim() };
+      if (timezone) body.timezone = timezone;
+      if (role) body.role = role;
+      if (role === 'ADMIN') {
+        body.permissions = formData
+          .getAll('permissions')
+          .map((value) => value.toString())
+          .filter((key) => ALL_PERMISSIONS.includes(key));
+      }
+
       // Create organization and profile via Django API
       // Django's OrgProfileCreateView creates both org and profile
       const response = await axios.post(
         `${apiUrl}/api/org/`,
-        timezone ? { name: orgName.trim(), timezone } : { name: orgName.trim() },
+        body,
         {
           headers: {
             Authorization: `Bearer ${jwtAccess}`,
@@ -104,9 +132,11 @@ export const actions = {
       });
 
       // Optional vertical pack, chosen in the "What kind of business is this?"
-      // group below. Empty string. The "Skip for now" option, and the
-      // default when nothing is submitted. Means do nothing.
-      const vertical = formData.get('vertical')?.toString();
+      // group. Empty string, the "Skip for now" option, and the default when
+      // nothing is submitted, means do nothing. An employee never sees that
+      // question: the workspace stays blank, and a posted vertical is ignored
+      // so the role that was saved stays employee.
+      const vertical = role === 'EMPLOYEE' ? '' : formData.get('vertical')?.toString();
       if (vertical) {
         // POST /api/packs/<id>/apply/ is ADMIN-only and derives its org from
         // request.profile.org, i.e. from the org_id claim on the JWT, never
@@ -165,7 +195,9 @@ export const actions = {
           // token is used for exactly this one outgoing request and never
           // reaches `cookies.set()`, so nothing is queued onto the response.
           const bearerOnly = { get: (name) => (name === 'jwt_access' ? access_token : undefined) };
-          await applyPack(bearerOnly, vertical);
+          // Pipelines, tags and fields only. Example customers and their
+          // messages belong in Settings, where clearing them is explicit.
+          await applyPack(bearerOnly, vertical, { sample: false });
         } catch (packErr) {
           // A pack failing to apply must never fail org creation: the org
           // and its admin profile already exist, already committed by the
@@ -203,6 +235,8 @@ export const actions = {
             name: tx(
               errors?.name?.[0] ||
                 errors?.timezone?.[0] ||
+                errors?.role?.[0] ||
+                errors?.permissions?.[0] ||
                 'Organization with this name may already exist'
             )
           }

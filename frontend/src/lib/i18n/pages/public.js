@@ -8,9 +8,9 @@ import { addMessages } from '../translate.js';
  */
 export const messages = {
   // Signed-out chrome
-  'Signing you in · BottleCRM': {
-    es: 'Entrando · BottleCRM',
-    pt: 'Entrando · BottleCRM'
+  'Signing you in · ConNexus-CRM': {
+    es: 'Entrando · ConNexus-CRM',
+    pt: 'Entrando · ConNexus-CRM'
   },
   'Signing you in…': { es: 'Entrando…', pt: 'Entrando…' },
   'Sign in with your username and password.': {
@@ -35,9 +35,9 @@ export const messages = {
     es: 'Esta cuenta está desactivada.',
     pt: 'Esta conta está desativada.'
   },
-  'Choose organisation · BottleCRM': {
-    es: 'Elegir organización · BottleCRM',
-    pt: 'Escolher organização · BottleCRM'
+  'Choose organisation · ConNexus-CRM': {
+    es: 'Elegir organización · ConNexus-CRM',
+    pt: 'Escolher organização · ConNexus-CRM'
   },
   'Choose an organisation': { es: 'Elige una organización', pt: 'Escolha uma organização' },
   "Pick the workspace you'd like to open.": {
@@ -50,14 +50,14 @@ export const messages = {
   },
   'Create new organisation': { es: 'Crear nueva organización', pt: 'Criar nova organização' },
   'No organisations yet': { es: 'Aún no hay organizaciones', pt: 'Ainda não há organizações' },
-  'Create your first workspace to start using BottleCRM.': {
-    es: 'Crea tu primer espacio de trabajo para empezar a usar BottleCRM.',
-    pt: 'Crie seu primeiro espaço de trabalho para começar a usar o BottleCRM.'
+  'Create your first workspace to start using ConNexus-CRM.': {
+    es: 'Crea tu primer espacio de trabajo para empezar a usar ConNexus-CRM.',
+    pt: 'Crie seu primeiro espaço de trabalho para começar a usar o ConNexus-CRM.'
   },
   'Create organisation': { es: 'Crear organización', pt: 'Criar organização' },
-  'Create organisation · BottleCRM': {
-    es: 'Crear organización · BottleCRM',
-    pt: 'Criar organização · BottleCRM'
+  'Create organisation · ConNexus-CRM': {
+    es: 'Crear organización · ConNexus-CRM',
+    pt: 'Criar organização · ConNexus-CRM'
   },
   'Set up a new workspace for your team.': {
     es: 'Configura un espacio de trabajo nuevo para tu equipo.',
@@ -65,9 +65,9 @@ export const messages = {
   },
   'Organisation name': { es: 'Nombre de la organización', pt: 'Nome da organização' },
   'e.g. Acme Inc.': { es: 'p. ej. Acme Inc.', pt: 'p. ex. Acme Inc.' },
-  'This becomes your workspace name in BottleCRM.': {
-    es: 'Este será el nombre de tu espacio de trabajo en BottleCRM.',
-    pt: 'Este será o nome do seu espaço de trabalho no BottleCRM.'
+  'This becomes your workspace name in ConNexus-CRM.': {
+    es: 'Este será el nombre de tu espacio de trabajo en ConNexus-CRM.',
+    pt: 'Este será o nome do seu espaço de trabalho no ConNexus-CRM.'
   },
   'Time zone': { es: 'Zona horaria', pt: 'Fuso horário' },
   'Sets when a day starts here, so "due today" and "overdue" mean what your team expects. You can change it later in Settings.':
@@ -79,12 +79,22 @@ export const messages = {
     es: '¿Qué tipo de negocio es?',
     pt: 'Que tipo de negócio é este?'
   },
-  'Sets up a starter pipeline, tags and fields for your industry. You can change everything later.':
+  'Sets up a starter pipeline, tags and fields for your industry. It does not add example customers or messages. You can change everything later.':
     {
-      es: 'Prepara un embudo, etiquetas y campos iniciales para tu sector. Puedes cambiarlo todo después.',
-      pt: 'Prepara um funil, etiquetas e campos iniciais para o seu setor. Você pode mudar tudo depois.'
+      es: 'Prepara un embudo, etiquetas y campos iniciales para tu sector. No agrega clientes ni mensajes de ejemplo. Puedes cambiarlo todo después.',
+      pt: 'Prepara um funil, etiquetas e campos iniciais para o seu setor. Não adiciona clientes nem mensagens de exemplo. Você pode mudar tudo depois.'
     },
   'Skip for now': { es: 'Omitir por ahora', pt: 'Pular por agora' },
+  'Your role in this organisation': {
+    es: 'Tu rol en esta organización',
+    pt: 'Seu papel nesta organização'
+  },
+  'This is the role you open this workspace with. A CEO can do everything. An administrator opens only the areas you tick. An employee only records the work done today.':
+    {
+      es: 'Este es el rol con el que entras a este espacio. Un CEO puede hacer todo. Un administrador abre solo las áreas que marques. Un empleado solo registra el trabajo de hoy.',
+      pt: 'Este é o papel com o qual você entra neste espaço. Um CEO pode fazer tudo. Um administrador abre só as áreas que você marcar. Um funcionário só registra o trabalho de hoje.'
+    },
+  'Pick a valid role.': { es: 'Elige un rol válido.', pt: 'Escolha um papel válido.' },
   'Start with a blank workspace.': {
     es: 'Empieza con un espacio de trabajo en blanco.',
     pt: 'Comece com um espaço de trabalho em branco.'
@@ -130,6 +140,7 @@ export const messages = {
   ADMIN: { es: 'Administrador', pt: 'Administrador' },
   USER: { es: 'Usuario', pt: 'Usuário' },
   member: { es: 'miembro', pt: 'membro' },
+  members: { es: 'miembros', pt: 'membros' },
 
   // Magic-link confirm
   'Link expired or invalid': {
@@ -137,18 +148,18 @@ export const messages = {
     pt: 'O link expirou ou é inválido'
   },
   'Back to sign in': { es: 'Volver a iniciar sesión', pt: 'Voltar para entrar' },
-  'Sign in to BottleCRM': { es: 'Entra en BottleCRM', pt: 'Entre no BottleCRM' },
+  'Sign in to ConNexus-CRM': { es: 'Entra en ConNexus-CRM', pt: 'Entre no ConNexus-CRM' },
   'Press the button to finish signing in.': {
     es: 'Pulsa el botón para terminar de entrar.',
     pt: 'Aperte o botão para concluir o acesso.'
   },
   'Signing in…': { es: 'Entrando…', pt: 'Entrando…' },
-  'Continue to BottleCRM': { es: 'Continuar a BottleCRM', pt: 'Continuar para o BottleCRM' },
+  'Continue to ConNexus-CRM': { es: 'Continuar a ConNexus-CRM', pt: 'Continuar para o ConNexus-CRM' },
 
   // Platform directory (the screen was written in Spanish; English is the source)
-  'User directory · BottleCRM': {
-    es: 'Directorio de usuarios · BottleCRM',
-    pt: 'Diretório de usuários · BottleCRM'
+  'User directory · ConNexus-CRM': {
+    es: 'Directorio de usuarios · ConNexus-CRM',
+    pt: 'Diretório de usuários · ConNexus-CRM'
   },
   'User directory': { es: 'Directorio de usuarios', pt: 'Diretório de usuários' },
   'This role sees who has an account and which company they belong to. It does not open customers, invoices, or payments.':
@@ -809,7 +820,7 @@ export const messages = {
   'received an email': { es: 'recibió un correo', pt: 'recebeu um e-mail' },
   'replied to': { es: 'respondió a', pt: 'respondeu a' },
   updated: { es: 'actualizó', pt: 'atualizou' },
-  'BottleCRM Support': { es: 'Soporte de BottleCRM', pt: 'Suporte do BottleCRM' },
+  'ConNexus-CRM Support': { es: 'Soporte de ConNexus-CRM', pt: 'Suporte do ConNexus-CRM' },
   Unknown: { es: 'Desconocido', pt: 'Desconhecido' },
   Comments: { es: 'Comentarios', pt: 'Comentários' },
   'Write a comment… type @ to mention': {
@@ -1000,6 +1011,71 @@ export const messages = {
       pt: 'Colunas de escolha, como status e origem, aceitam o valor ou o rótulo. Um e-mail já usado por um {kind} na sua organização, ou antes no arquivo, é sinalizado.'
     },
   lead: { es: 'prospecto', pt: 'lead' },
+  contact: { es: 'contacto', pt: 'contato' },
+  contacts: { es: 'contactos', pt: 'contatos' },
+  account: { es: 'cuenta', pt: 'conta' },
+  ticket: { es: 'ticket', pt: 'chamado' },
+  Preview: { es: 'Vista previa', pt: 'Pré-visualizar' },
+  'Import {kind} from CSV': {
+    es: 'Importar {kind} desde CSV',
+    pt: 'Importar {kind} de CSV'
+  },
+  "Upload a CSV of {kind}. We'll validate every row, with the same rules as adding one by hand, before writing anything.":
+    {
+      es: 'Sube un CSV de {kind}. Validaremos cada fila, con las mismas reglas que al agregar una a mano, antes de guardar nada.',
+      pt: 'Envie um CSV de {kind}. Vamos validar cada linha, com as mesmas regras de adicionar uma à mão, antes de gravar qualquer coisa.'
+    },
+  "Upload a CSV of contacts. We'll validate every row, including duplicates by email, phone, and name, before writing anything.":
+    {
+      es: 'Sube un CSV de contactos. Validaremos cada fila, incluidos los duplicados por correo, teléfono y nombre, antes de guardar nada.',
+      pt: 'Envie um CSV de contatos. Vamos validar cada linha, incluindo duplicatas por e-mail, telefone e nome, antes de gravar qualquer coisa.'
+    },
+  "Upload a CSV of tickets. We'll validate every row before writing anything. References (account, contacts, assignees) must already exist in your org.":
+    {
+      es: 'Sube un CSV de tickets. Validaremos cada fila antes de guardar nada. Las referencias (cuenta, contactos, responsables) ya tienen que existir en tu organización.',
+      pt: 'Envie um CSV de chamados. Vamos validar cada linha antes de gravar qualquer coisa. As referências (conta, contatos, responsáveis) já precisam existir na sua organização.'
+    },
+  'click to replace or drop another file': {
+    es: 'haz clic para reemplazar o suelta otro archivo',
+    pt: 'clique para substituir ou solte outro arquivo'
+  },
+  '.csv only, up to 5 MB': { es: 'solo .csv, hasta 5 MB', pt: 'apenas .csv, até 5 MB' },
+  'Total: {n}': { es: 'Total: {n}', pt: 'Total: {n}' },
+  'Showing the first 20 of {n} valid rows': {
+    es: 'Mostrando las primeras 20 de {n} filas válidas',
+    pt: 'Mostrando as primeiras 20 de {n} linhas válidas'
+  },
+  '{n} error, fix the CSV before importing': {
+    es: '{n} error. Corrige el CSV antes de importar',
+    pt: '{n} erro. Corrija o CSV antes de importar'
+  },
+  '{n} errors, fix the CSV before importing': {
+    es: '{n} errores. Corrige el CSV antes de importar',
+    pt: '{n} erros. Corrija o CSV antes de importar'
+  },
+  'Server rejected {n} row during import. The file may have changed since preview': {
+    es: 'El servidor rechazó {n} fila al importar. El archivo puede haber cambiado desde la vista previa',
+    pt: 'O servidor rejeitou {n} linha na importação. O arquivo pode ter mudado desde a pré-visualização'
+  },
+  'Server rejected {n} rows during import. The file may have changed since preview': {
+    es: 'El servidor rechazó {n} filas al importar. El archivo puede haber cambiado desde la vista previa',
+    pt: 'O servidor rejeitou {n} linhas na importação. O arquivo pode ter mudado desde a pré-visualização'
+  },
+  'Import {n} {kind}': { es: 'Importar {n} {kind}', pt: 'Importar {n} {kind}' },
+  '(dates as YYYY-MM-DD)': {
+    es: '(fechas como AAAA-MM-DD)',
+    pt: '(datas como AAAA-MM-DD)'
+  },
+  '(semicolon-separated for the last three).': {
+    es: '(los tres últimos, separados por punto y coma).',
+    pt: '(os três últimos, separados por ponto e vírgula).'
+  },
+  '(semicolon-separated), closed_on (YYYY-MM-DD).': {
+    es: '(separadas por punto y coma), closed_on (AAAA-MM-DD).',
+    pt: '(separadas por ponto e vírgula), closed_on (AAAA-MM-DD).'
+  },
+  '(yes/no)': { es: '(sí/no)', pt: '(sim/não)' },
+  '(2-letter code)': { es: '(código de 2 letras)', pt: '(código de 2 letras)' },
   'Will import {n} {kind}.': {
     es: 'Se importarán {n} {kind}.',
     pt: 'Serão importados {n} {kind}.'
@@ -1091,14 +1167,14 @@ export const messages = {
   'Unread only': { es: 'Solo sin leer', pt: 'Somente não lidas' },
   'Mark all read': { es: 'Marcar todas como leídas', pt: 'Marcar todas como lidas' },
   'No notifications': { es: 'No hay notificaciones', pt: 'Não há notificações' },
-  'Everything here has been read. Notifications arrive for CRM ticket activity and updates from BottleCRM Support.':
+  'Everything here has been read. Notifications arrive for CRM ticket activity and updates from ConNexus-CRM Support.':
     {
-      es: 'Todo lo de aquí ya se leyó. Las notificaciones llegan por la actividad de tickets del CRM y por avisos de BottleCRM Support.',
-      pt: 'Tudo aqui já foi lido. As notificações chegam pela atividade de chamados do CRM e por avisos do BottleCRM Support.'
+      es: 'Todo lo de aquí ya se leyó. Las notificaciones llegan por la actividad de tickets del CRM y por avisos de ConNexus-CRM Support.',
+      pt: 'Tudo aqui já foi lido. As notificações chegam pela atividade de chamados do CRM e por avisos do ConNexus-CRM Support.'
     },
-  'Notifications arrive for CRM ticket activity and updates from BottleCRM Support.': {
-    es: 'Las notificaciones llegan por la actividad de tickets del CRM y por avisos de BottleCRM Support.',
-    pt: 'As notificações chegam pela atividade de chamados do CRM e por avisos do BottleCRM Support.'
+  'Notifications arrive for CRM ticket activity and updates from ConNexus-CRM Support.': {
+    es: 'Las notificaciones llegan por la actividad de tickets del CRM y por avisos de ConNexus-CRM Support.',
+    pt: 'As notificações chegam pela atividade de chamados do CRM e por avisos do ConNexus-CRM Support.'
   },
   'Go to tickets': { es: 'Ir a tickets', pt: 'Ir para chamados' },
   'Get help': { es: 'Pedir ayuda', pt: 'Pedir ajuda' },
@@ -1203,6 +1279,131 @@ export const messages = {
     es: 'El CEO elige qué puede abrir este administrador.',
     pt: 'O CEO escolhe o que este administrador pode abrir.'
   },
+  'Create administrator': { es: 'Crear administrador', pt: 'Criar administrador' },
+  'Create employee': { es: 'Crear empleado', pt: 'Criar funcionário' },
+  'Create profile': { es: 'Crear perfil', pt: 'Criar perfil' },
+  'Creating an administrator': {
+    es: 'Estás creando un administrador.',
+    pt: 'Você está criando um administrador.'
+  },
+  'Creating an employee': {
+    es: 'Estás creando un empleado.',
+    pt: 'Você está criando um funcionário.'
+  },
+  'Enter a username.': { es: 'Escribe un usuario.', pt: 'Escreva um usuário.' },
+  'Use letters, numbers, dots or hyphens.': {
+    es: 'Usa letras, números, puntos o guiones.',
+    pt: 'Use letras, números, pontos ou hífens.'
+  },
+  'They sign in with this username and the password. No @ is required. An employee does not create the account.':
+    {
+      es: 'Entra con este usuario y la contraseña. No hace falta escribir @. Un empleado no crea la cuenta.',
+      pt: 'Entra com este usuário e a senha. Não precisa escrever @. Um funcionário não cria a conta.'
+    },
+  '{username} can sign in with this username and the password you set.': {
+    es: '{username} ya puede entrar con ese usuario y la contraseña que pusiste.',
+    pt: '{username} já pode entrar com esse usuário e a senha que você definiu.'
+  },
+  '{username} already had an account. They sign in with the password they already use.': {
+    es: '{username} ya tenía una cuenta. Entra con la contraseña que ya usa.',
+    pt: '{username} já tinha uma conta. Entra com a senha que já usa.'
+  },
+  'Only the CEO sees whether this account is active.': {
+    es: 'Solo el CEO ve si esta cuenta está activa.',
+    pt: 'Só o CEO vê se esta conta está ativa.'
+  },
+  'The accounts in this organisation. A CEO adds administrators and employees. An administrator adds employees.':
+    {
+      es: 'Las cuentas de esta organización. El CEO agrega administradores y empleados. Un administrador agrega empleados.',
+      pt: 'As contas desta organização. O CEO adiciona administradores e funcionários. Um administrador adiciona funcionários.'
+    },
+  'A CEO creates administrators and employees here, and sees who is active. An administrator creates employees and sees who is active, except the CEO. An employee does not create accounts. They sign in with the username and password they were given.':
+    {
+      es: 'El CEO crea aquí administradores y empleados, y ve quién está activo. Un administrador crea empleados y ve quién está activo, menos el CEO. Un empleado no crea cuentas. Entra con el usuario y la contraseña que le dieron.',
+      pt: 'O CEO cria aqui administradores e funcionários, e vê quem está ativo. Um administrador cria funcionários e vê quem está ativo, menos o CEO. Um funcionário não cria contas. Entra com o usuário e a senha que recebeu.'
+    },
+  'Save permissions': { es: 'Guardar permisos', pt: 'Salvar permissões' },
+  'Enter a name.': { es: 'Escribe un nombre.', pt: 'Escreva um nome.' },
+  'Enter a password.': { es: 'Escribe una contraseña.', pt: 'Escreva uma senha.' },
+  'Enter a password of at least 8 characters.': {
+    es: 'Escribe una contraseña de al menos 8 caracteres.',
+    pt: 'Escreva uma senha de pelo menos 8 caracteres.'
+  },
+  'Enter a password of at most 256 characters.': {
+    es: 'Escribe una contraseña de como máximo 256 caracteres.',
+    pt: 'Escreva uma senha de no máximo 256 caracteres.'
+  },
+  'A name can be at most 255 characters.': {
+    es: 'Un nombre puede tener como máximo 255 caracteres.',
+    pt: 'Um nome pode ter no máximo 255 caracteres.'
+  },
+  'Could not create that profile.': {
+    es: 'No se pudo crear ese perfil.',
+    pt: 'Não foi possível criar esse perfil.'
+  },
+  'You can only create employee profiles.': {
+    es: 'Solo puedes crear perfiles de empleado.',
+    pt: 'Você só pode criar perfis de funcionário.'
+  },
+  'You can only change employees.': {
+    es: 'Solo puedes cambiar empleados.',
+    pt: 'Você só pode alterar funcionários.'
+  },
+  'You can only activate or deactivate employees.': {
+    es: 'Solo puedes activar o desactivar empleados.',
+    pt: 'Você só pode ativar ou desativar funcionários.'
+  },
+  'That permission is not available for an employee.': {
+    es: 'Ese permiso no está disponible para un empleado.',
+    pt: 'Essa permissão não está disponível para um funcionário.'
+  },
+  'This password is too short. It must contain at least 8 characters.': {
+    es: 'Esta contraseña es demasiado corta. Tiene que tener al menos 8 caracteres.',
+    pt: 'Esta senha é curta demais. Ela precisa ter pelo menos 8 caracteres.'
+  },
+  'This password is too common.': {
+    es: 'Esta contraseña es demasiado común.',
+    pt: 'Esta senha é comum demais.'
+  },
+  'This password is entirely numeric.': {
+    es: 'Esta contraseña es solo números.',
+    pt: 'Esta senha é só números.'
+  },
+  'The password is too similar to the name.': {
+    es: 'La contraseña se parece demasiado al nombre.',
+    pt: 'A senha é parecida demais com o nome.'
+  },
+  'The password is too similar to the email address.': {
+    es: 'La contraseña se parece demasiado al correo.',
+    pt: 'A senha é parecida demais com o e-mail.'
+  },
+  'Sign-in is the email, or the part before @, and this password.': {
+    es: 'Para entrar se usa el correo, o lo que va antes de la @, y esta contraseña.',
+    pt: 'A entrada usa o e-mail, ou o que vem antes do @, e esta senha.'
+  },
+  "The CEO chooses an administrator's permissions. An administrator chooses a few functions for each employee.":
+    {
+      es: 'El CEO elige los permisos de un administrador. Un administrador elige unas pocas funciones para cada empleado.',
+      pt: 'O CEO escolhe as permissões de um administrador. Um administrador escolhe poucas funções para cada funcionário.'
+    },
+  "An employee can record the day's work, handle tickets and tasks, or work on sales. They cannot open billing, settings, or the team.":
+    {
+      es: 'Un empleado puede registrar el trabajo del día, atender tickets y tareas, o trabajar en ventas. No puede abrir cobros, ajustes ni el equipo.',
+      pt: 'Um funcionário pode registrar o trabalho do dia, atender chamados e tarefas, ou trabalhar em vendas. Não pode abrir cobrança, ajustes nem a equipe.'
+    },
+  '{email} can sign in with the password you set.': {
+    es: '{email} puede entrar con la contraseña que definiste.',
+    pt: '{email} pode entrar com a senha que você definiu.'
+  },
+  '{email} already had an account. They sign in with the password they already use.': {
+    es: '{email} ya tenía una cuenta. Entra con la contraseña que ya usa.',
+    pt: '{email} já tinha uma conta. Entra com a senha que já usa.'
+  },
+  "The CEO creates administrators and chooses what each one can open. An administrator creates employees and chooses a few functions for each one: the day's work, tickets and tasks, or sales. Nobody changes their own role, and the organization keeps at least one person who can do everything.":
+    {
+      es: 'El CEO crea administradores y elige qué puede abrir cada uno. Un administrador crea empleados y elige unas pocas funciones para cada uno: el trabajo del día, tickets y tareas, o ventas. Nadie cambia su propio rol, y la organización conserva al menos una persona que puede hacer todo.',
+      pt: 'O CEO cria administradores e escolhe o que cada um pode abrir. Um administrador cria funcionários e escolhe poucas funções para cada um: o trabalho do dia, chamados e tarefas, ou vendas. Ninguém muda o próprio papel, e a organização mantém pelo menos uma pessoa que pode fazer tudo.'
+    },
   'Save role': { es: 'Guardar rol', pt: 'Salvar papel' },
   'The CEO has every permission. An administrator has the ones the CEO saved.': {
     es: 'El CEO tiene todos los permisos. Un administrador tiene los que el CEO guardó.',

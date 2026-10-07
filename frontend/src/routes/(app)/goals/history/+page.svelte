@@ -51,14 +51,15 @@
 
   /** The owner of a goal, in the words the list page uses. */
   const owner = (g) =>
-    g.assigned_to ? g.assigned_to.name : g.team ? `${g.team.name} (team)` : tx('Whole org');
+    g.assigned_to ? g.assigned_to.name : g.team ? `${g.team.name} ${tx('(team)')}` : tx('Whole org');
 </script>
 
 <PageHeader title={tx('Goal history')}>
   {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
   {#snippet sub()}
-    Finished periods, newest first. A closed period is settled, so these are results rather than
-    pace.
+    {tx(
+      'Finished periods, newest first. A closed period is settled, so these are results rather than pace.'
+    )}
   {/snippet}
 </PageHeader>
 
@@ -91,11 +92,11 @@
                     period.goal_type
                   ]}{period.currency ? ` (${period.currency})` : ''} ·
                   <span class="v2-num">{period.attained_count}</span>
-                  of <span class="v2-num">{period.goals_count}</span>
-                  {period.goals_count === 1 ? 'goal' : 'goals'} met
+                  {tx('of')} <span class="v2-num">{period.goals_count}</span>
+                  {period.goals_count === 1 ? tx('goal met') : tx('goals met')}
                 </div>
               </div>
-              <Pill tone={tone(period.percent)}>{period.percent}% of target</Pill>
+              <Pill tone={tone(period.percent)}>{tx('{n}% of target', { n: period.percent })}</Pill>
             </header>
 
             <div class="v2-bar" style="margin-top:11px">

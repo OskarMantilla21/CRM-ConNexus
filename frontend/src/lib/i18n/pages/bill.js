@@ -622,7 +622,88 @@ export const messages = {
   'Your feed URL, copy it now': { es: 'La URL de tu feed, cópiala ahora', pt: 'A URL do seu feed, copie agora' },
   'Your open tasks, in your calendar': { es: 'Tus tareas abiertas, en tu calendario', pt: 'Suas tarefas abertas, no seu calendário' },
   'Your quota and how it is pacing': { es: 'Tu cupo y cómo va el ritmo', pt: 'Sua cota e como está o ritmo' },
-  'your-company': { es: 'tu-empresa', pt: 'sua-empresa' }
+  'your-company': { es: 'tu-empresa', pt: 'sua-empresa' },
+
+  // Settings hub. Titles that already live in another catalog stay there.
+  'People and access': { es: 'Personas y acceso', pt: 'Pessoas e acesso' },
+  'How tickets are handled': { es: 'Cómo se atienden los tickets', pt: 'Como os chamados são atendidos' },
+  'Shared words and fields': { es: 'Palabras y campos compartidos', pt: 'Palavras e campos compartilhados' },
+  'Who can sign in, and what their role lets them do.': {
+    es: 'Quién puede entrar y qué le permite hacer su rol.',
+    pt: 'Quem pode entrar e o que o papel permite fazer.'
+  },
+  'Personal access tokens for scripts, integrations and AI agents.': {
+    es: 'Tokens de acceso personal para scripts, integraciones y agentes de IA.',
+    pt: 'Tokens de acesso pessoal para scripts, integrações e agentes de IA.'
+  },
+  'Send record changes to Zapier, n8n, Slack or your own code.': {
+    es: 'Envía los cambios de los registros a Zapier, n8n, Slack o tu propio código.',
+    pt: 'Envia as mudanças dos registros para o Zapier, n8n, Slack ou o seu próprio código.'
+  },
+  'Sign-ins, API tokens, calendar feeds, merges, refused requests and paused webhooks.': {
+    es: 'Inicios de sesión, tokens de API, feeds de calendario, fusiones, solicitudes rechazadas y webhooks en pausa.',
+    pt: 'Entradas, tokens de API, feeds de calendário, mesclagens, pedidos recusados e webhooks pausados.'
+  },
+  'Forms you embed on your own site. What people fill in becomes a lead.': {
+    es: 'Formularios que incrustas en tu sitio. Lo que la gente completa se vuelve un prospecto.',
+    pt: 'Formulários que você incorpora no seu site. O que as pessoas preenchem vira um lead.'
+  },
+  'Your published articles, public for customers and search engines.': {
+    es: 'Tus artículos publicados, públicos para los clientes y los buscadores.',
+    pt: 'Seus artigos publicados, públicos para os clientes e os buscadores.'
+  },
+  'The company details printed on every invoice and estimate.': {
+    es: 'Los datos de la empresa que se imprimen en cada factura y presupuesto.',
+    pt: 'Os dados da empresa impressos em cada fatura e orçamento.'
+  },
+  'Who a new ticket lands on, in the order the rules are tried.': {
+    es: 'A quién llega un ticket nuevo, en el orden en que se prueban las reglas.',
+    pt: 'Para quem vai um chamado novo, na ordem em que as regras são tentadas.'
+  },
+  'What happens when a ticket misses its response target.': {
+    es: 'Qué pasa cuando un ticket no cumple su meta de respuesta.',
+    pt: 'O que acontece quando um chamado não cumpre a meta de resposta.'
+  },
+  'The clock every response target is measured against.': {
+    es: 'El reloj con el que se mide cada meta de respuesta.',
+    pt: 'O relógio com que cada meta de resposta é medida.'
+  },
+  'What gates a ticket close, and who can clear it.': {
+    es: 'Qué frena el cierre de un ticket y quién puede autorizarlo.',
+    pt: 'O que trava o fechamento de um chamado e quem pode autorizar.'
+  },
+  'Whether a customer reply brings a closed ticket back.': {
+    es: 'Si la respuesta de un cliente vuelve a abrir un ticket cerrado.',
+    pt: 'Se a resposta de um cliente reabre um chamado fechado.'
+  },
+  'The addresses that turn email into tickets.': {
+    es: 'Las direcciones que convierten el correo en tickets.',
+    pt: 'Os endereços que transformam e-mail em chamados.'
+  },
+  'Canned replies, and the placeholders they substitute.': {
+    es: 'Respuestas guardadas y los marcadores que sustituyen.',
+    pt: 'Respostas prontas e os marcadores que elas substituem.'
+  },
+  'Labels shared across accounts, leads, deals and tickets.': {
+    es: 'Etiquetas compartidas entre cuentas, prospectos, negocios y tickets.',
+    pt: 'Etiquetas compartilhadas entre contas, leads, negócios e chamados.'
+  },
+  'The stages leads move through on the board.': {
+    es: 'Las etapas por las que pasan los prospectos en el tablero.',
+    pt: 'As etapas pelas quais os leads passam no quadro.'
+  },
+  'The stages deals move through, and when a deal starts rotting in one.': {
+    es: 'Las etapas por las que pasan los negocios, y cuándo uno empieza a estancarse.',
+    pt: 'As etapas pelas quais os negócios passam, e quando um começa a estagnar.'
+  },
+  'Fields this organisation added to records.': {
+    es: 'Campos que esta organización añadió a los registros.',
+    pt: 'Campos que esta organização adicionou aos registros.'
+  },
+  'How an invoice looks when a customer receives it.': {
+    es: 'Cómo se ve una factura cuando la recibe un cliente.',
+    pt: 'Como uma fatura aparece quando um cliente a recebe.'
+  }
 };
 
 addMessages(messages);

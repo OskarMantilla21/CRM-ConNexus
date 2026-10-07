@@ -131,7 +131,9 @@ class TestSlugFormat:
         assert "help_center_slug" in response.json()
         assert _reload(org_a).help_center_slug is None
 
-    @pytest.mark.parametrize("slug", ["admin", "api", "help", "bottlecrm", "Support"])
+    @pytest.mark.parametrize(
+        "slug", ["admin", "api", "help", "bottlecrm", "connexus-crm", "Support"]
+    )
     def test_reserved_slug_is_refused_in_any_case(self, admin_client, org_a, slug):
         response = admin_client.patch(URL, {"help_center_slug": slug}, format="json")
         assert response.status_code == 400

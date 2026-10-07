@@ -42,7 +42,7 @@ export const actions = {
         error:
           error?.status === 404
             ? tx(
-                'This deployment has no BottleCRM support queue. The help page lists the ways to reach us.'
+                'This deployment has no ConNexus-CRM support queue. The help page lists the ways to reach us.'
               )
             : readableError(error, tx('Could not open this support ticket.'))
       });

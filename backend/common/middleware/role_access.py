@@ -18,7 +18,9 @@ class RoleAccessMiddleware:
     def __call__(self, request):
         profile = getattr(request, "profile", None)
         if is_restricted(profile) and not api_path_allowed(
-            request.path, effective_permissions(profile)
+            request.path,
+            effective_permissions(profile),
+            role=getattr(profile, "role", None),
         ):
             return JsonResponse(
                 {"detail": "You do not have permission to perform this action."},

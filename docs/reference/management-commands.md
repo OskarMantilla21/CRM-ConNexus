@@ -1,6 +1,6 @@
 # Management commands
 
-Every command below is BottleCRM's own. The entire `common/management/commands/` package holds
+Every command below is ConNexus-CRM's own. The entire `common/management/commands/` package holds
 exactly these five files. Run `uv run python manage.py help` from `backend/` and everything
 outside the `[common]` section comes from Django itself or an installed third-party package
 (`django`, `auth`, `contenttypes`, `sessions`, `staticfiles`, `django_ses`, `drf_spectacular`,

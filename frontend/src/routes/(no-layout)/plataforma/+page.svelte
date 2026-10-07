@@ -2,25 +2,21 @@
   import { resolve } from '$app/paths';
   import '../../../app.css';
   import '$lib/v2/styles/v2.css';
-  import imgLogo from '$lib/assets/images/logo.png';
   import { tx, choiceLabel } from '$lib/i18n/translate.js';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data = { users: [], error: '' } } = $props();
   let users = $derived(data?.users ?? []);
 </script>
 
 <svelte:head>
-  <title>{tx('User directory · BottleCRM')}</title>
+  <title>{tx('User directory · ConNexus-CRM')}</title>
 </svelte:head>
 
-<div class="v2-root v2-auth">
+<div class="v2-root v2-public">
+  <PublicBar href="/plataforma" />
+  <div class="v2-public-body">
   <div class="v2-auth-box" style="max-width: 46rem;">
-    <a href={resolve('/plataforma')} class="v2-auth-brand">
-      <img src={imgLogo} alt="" />
-      <b>BottleCRM</b>
-    </a>
-
     <div class="v2-auth-card">
       <div class="v2-auth-head">
         <h1>{tx('User directory')}</h1>
@@ -64,7 +60,7 @@
       <p style="margin-top: 1.25rem;">
         <a href={resolve('/logout')}>{tx('Sign out')}</a>
       </p>
-      <LanguageSelect />
     </div>
+  </div>
   </div>
 </div>

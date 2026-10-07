@@ -1,6 +1,6 @@
 # Development setup
 
-This page gets a clone of the three BottleCRM projects (`backend/`, `frontend/`, `mobile/`) running
+This page gets a clone of the three ConNexus-CRM projects (`backend/`, `frontend/`, `mobile/`) running
 locally for development. For exact required versions (Python, PostgreSQL, Node, pnpm) see
 [Requirements](../self-hosting/requirements.md); this page assumes you already have them installed.
 For a from-scratch install walkthrough (including creating the database and `.env`), see

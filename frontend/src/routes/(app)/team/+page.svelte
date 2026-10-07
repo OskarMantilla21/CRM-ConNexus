@@ -29,7 +29,7 @@
   import NextAction from '$lib/v2/components/NextAction.svelte';
   import { count, relativeDays } from '$lib/v2/format.js';
   import { ROLE_LABEL, ROLE_TONE } from '$lib/v2/enums.js';
-  import { ALL_PERMISSIONS, PERMISSION_LABEL } from '$lib/access.js';
+  import { ALL_PERMISSIONS, EMPLOYEE_PERMISSIONS, PERMISSION_LABEL } from '$lib/access.js';
   import { enhance } from '$app/forms';
   import { UserPlus, KeyRound } from '@lucide/svelte';
 
@@ -38,22 +38,62 @@
 
   let inviting = $state(false);
   let busy = $state(false);
-  let inviteRole = $state('USER');
+  let inviteRole = $state('EMPLOYEE');
+
+  /** Opens the account form for one role. The same button again closes it. */
+  function openInvite(/** @type {string} */ role) {
+    if (inviting && inviteRole === role) {
+      inviting = false;
+      return;
+    }
+    inviteRole = role;
+    inviting = true;
+  }
   /** @type {Record<string, string>} */
   let roleDraft = $state({});
+
+  let canCreateAdministrators = $derived(data.actor?.can_manage_administrators === true);
 
   /** The role the row is about to save. The select writes it; the server decides. */
   function shownRole(/** @type {any} */ m) {
     return roleDraft[m.user_id] ?? m.role;
   }
 
+  /** Areas the role can be given. Employees get the short list. */
+  function permissionKeys(/** @type {string} */ role) {
+    if (role === 'EMPLOYEE') return EMPLOYEE_PERMISSIONS;
+    if (role === 'ADMIN') return ALL_PERMISSIONS;
+    return [];
+  }
+
   /**
-   * A legacy administrator has no list, which means every area. A saved list
-   * is exactly the boxes that should start checked.
+   * Which boxes start checked.
+   *
+   * A legacy administrator has no list, which means every area. An employee
+   * with no list records the day's work only. Changing the select before
+   * saving starts from that role's usual set.
    */
-  function hasGrant(/** @type {any} */ m, /** @type {string} */ key) {
+  function grantChecked(/** @type {any} */ m, /** @type {string} */ key) {
+    const role = shownRole(m);
+    if (role !== m.role) {
+      if (role === 'EMPLOYEE') return key === 'daily_work';
+      if (role === 'ADMIN') return key === 'sell' || key === 'serve' || key === 'daily_work';
+      return false;
+    }
+    if (role === 'EMPLOYEE') {
+      if (!Array.isArray(m.granted_permissions)) return key === 'daily_work';
+      return m.granted_permissions.includes(key);
+    }
     if (!Array.isArray(m.granted_permissions)) return true;
     return m.granted_permissions.includes(key);
+  }
+
+  /** A CEO edits anyone else. An administrator edits employees only, and never a CEO. */
+  function canEditRow(/** @type {any} */ m) {
+    if (m.is_you) return false;
+    if (m.role === 'CEO' && data.actor?.role !== 'CEO') return false;
+    if (canCreateAdministrators) return true;
+    return m.role === 'EMPLOYEE';
   }
 
   /** A submit handler that flips `busy` while the action runs. */
@@ -77,7 +117,7 @@
 </script>
 
 {#if data.forbidden}
-  <PageHeader title={tx('Team and access')} />
+  <PageHeader title={tx('People')} />
   <div class="v2-pad" style="padding-top:40px">
     <NextAction
       label={tx('Admins only')}
@@ -85,15 +125,25 @@
     />
   </div>
 {:else}
-  <PageHeader title={tx('Team and access')}>
+  <PageHeader title={tx('People')}>
     {#snippet sub()}
-      <span class="v2-num">{count(data.totals.count)}</span> {tx('people ·')}
+      <span class="v2-num">{count(data.totals.people)}</span> {tx('people ·')}
       <span class="v2-num">{count(data.totals.admins)}</span> {tx('admins')}
     {/snippet}
     {#snippet actions()}
-      <button class="v2-btn v2-btn-primary" onclick={() => (inviting = !inviting)}>
-        <UserPlus />{tx('Invite')}
-      </button>
+      <span style="display:inline-flex;gap:8px;flex-wrap:wrap">
+        {#if canCreateAdministrators}
+          <button class="v2-btn v2-btn-primary" onclick={() => openInvite('ADMIN')}>
+            <UserPlus />{tx('Create administrator')}
+          </button>
+        {/if}
+        <button
+          class={canCreateAdministrators ? 'v2-btn' : 'v2-btn v2-btn-primary'}
+          onclick={() => openInvite('EMPLOYEE')}
+        >
+          <UserPlus />{tx('Create employee')}
+        </button>
+      </span>
     {/snippet}
   </PageHeader>
 
@@ -104,7 +154,9 @@
         label={tx('Admins')}
         value={count(data.totals.admins)}
         tone="clay"
-        detail={tx('The CEO has every permission. An administrator has the ones the CEO saved.')}
+        detail={tx(
+          'The CEO chooses an administrator\'s permissions. An administrator chooses a few functions for each employee.'
+        )}
       />
       <StatCard
         label={tx('Never signed in')}
@@ -124,67 +176,101 @@
           action="?/invite"
           use:enhance={inviteSubmit}
           class="v2-card"
-          style="padding:14px 15px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"
+          style="padding:14px 15px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px"
         >
-          <div style="flex:1;min-width:220px">
-            <label class="v2-label" for="invite-email" style="display:block;margin-bottom:4px">
-              Invite by email
-            </label>
-            <input
-              id="invite-email"
-              name="email"
-              type="email"
-              required
-              class="v2-input"
-              style="width:100%"
-              placeholder={tx('name@company.com')}
-            />
-          </div>
-          <div>
-            <label class="v2-label" for="invite-role" style="display:block;margin-bottom:4px">
-              Role
-            </label>
-            <select
-              id="invite-role"
-              name="role"
-              class="v2-input"
-              style="width:180px"
-              bind:value={inviteRole}
-            >
-              <option value="CEO">{tx('CEO')}</option>
-              <option value="ADMIN">{tx('Admin')}</option>
-              <option value="USER">{tx('Member')}</option>
-              <option value="EMPLOYEE">{tx('Employee')}</option>
-            </select>
-          </div>
-          {#if inviteRole === 'ADMIN'}
-            <div style="flex-basis:100%;display:flex;gap:12px;flex-wrap:wrap">
-              <span class="v2-label">{tx('Permissions')}</span>
-              {#each ALL_PERMISSIONS as key (key)}
-                <label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">
-                  <input
-                    type="checkbox"
-                    name="permissions"
-                    value={key}
-                    checked={key === 'sell' || key === 'serve' || key === 'daily_work'}
-                  />
-                  {tx(PERMISSION_LABEL[key])}
-                </label>
-              {/each}
-              <span class="v2-sub" style="flex-basis:100%;font-size:11.5px">
-                {tx('The CEO chooses what this administrator can open.')}
-              </span>
+          <b>
+            {inviteRole === 'ADMIN' ? tx('Creating an administrator') : tx('Creating an employee')}
+          </b>
+          <input type="hidden" name="role" value={inviteRole} />
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:180px">
+              <label class="v2-label" for="invite-name" style="display:block;margin-bottom:4px">
+                {tx('Name')}
+              </label>
+              <input
+                id="invite-name"
+                name="name"
+                type="text"
+                required
+                maxlength="255"
+                autocomplete="name"
+                class="v2-input"
+                style="width:100%"
+              />
             </div>
+            <div style="flex:1;min-width:180px">
+              <label class="v2-label" for="invite-username" style="display:block;margin-bottom:4px">
+                {tx('Username')}
+              </label>
+              <input
+                id="invite-username"
+                name="username"
+                type="text"
+                required
+                maxlength="254"
+                autocomplete="off"
+                class="v2-input"
+                style="width:100%"
+                placeholder="ana"
+              />
+            </div>
+            <div style="flex:1;min-width:180px">
+              <label class="v2-label" for="invite-password" style="display:block;margin-bottom:4px">
+                {tx('Password')}
+              </label>
+              <input
+                id="invite-password"
+                name="password"
+                type="password"
+                required
+                minlength="8"
+                maxlength="256"
+                autocomplete="new-password"
+                class="v2-input"
+                style="width:100%"
+              />
+            </div>
+          </div>
+          <p class="v2-sub" style="font-size:11.5px;margin:0">
+            {tx(
+              'They sign in with this username and the password. No @ is required. An employee does not create the account.'
+            )}
+          </p>
+          {#if permissionKeys(inviteRole).length}
+            {#key inviteRole}
+              <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <span class="v2-label">{tx('Permissions')}</span>
+                {#each permissionKeys(inviteRole) as key (key)}
+                  <label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">
+                    <input
+                      type="checkbox"
+                      name="permissions"
+                      value={key}
+                      checked={inviteRole === 'EMPLOYEE'
+                        ? key === 'daily_work'
+                        : key === 'sell' || key === 'serve' || key === 'daily_work'}
+                    />
+                    {tx(PERMISSION_LABEL[key])}
+                  </label>
+                {/each}
+                <span class="v2-sub" style="flex-basis:100%;font-size:11.5px">
+                  {inviteRole === 'EMPLOYEE'
+                    ? tx(
+                        'An employee can record the day\'s work, handle tickets and tasks, or work on sales. They cannot open billing, settings, or the team.'
+                      )
+                    : tx('The CEO chooses what this administrator can open.')}
+                </span>
+              </div>
+            {/key}
           {/if}
-          <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Send invite')}</button>
-          <button type="button" class="v2-btn" disabled={busy} onclick={() => (inviting = false)}>
-            Cancel
-          </button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="v2-btn v2-btn-primary" disabled={busy}>{tx('Create profile')}</button>
+            <button type="button" class="v2-btn" disabled={busy} onclick={() => (inviting = false)}>
+              {tx('Cancel')}
+            </button>
+          </div>
           {#if form?.invite?.error}
-            <p
-              class="v2-sub"
-              style="color:var(--v2-rust);font-size:12px;flex-basis:100%;margin:2px 0 0"
-            >
+            <p class="v2-sub" style="color:var(--v2-rust);font-size:12px;margin:0">
               {form.invite.error}
             </p>
           {/if}
@@ -196,8 +282,14 @@
           class="v2-sub"
           style="color:var(--v2-moss);font-size:12.5px;margin:0 0 16px;font-weight:550"
         >
-          {form.invited} is a member now. They show below as “never” signed in until they log in with
-          that email.
+          {form.reused
+            ? tx(
+                '{username} already had an account. They sign in with the password they already use.',
+                { username: form.invited }
+              )
+            : tx('{username} can sign in with this username and the password you set.', {
+                username: form.invited
+              })}
         </p>
       {:else if form?.error}
         <div style="margin-bottom:16px">
@@ -230,6 +322,7 @@
             <tr>
               <th>{tx('Person')}</th>
               <th>{tx('Role')}</th>
+              <th>{tx('Status')}</th>
               <th>{tx('Teams')}</th>
               <th data-m="hide">{tx('Tokens')}</th>
               <th class="v2-r">{tx('Last signed in')}</th>
@@ -237,9 +330,9 @@
             </tr>
           </thead>
           <tbody>
-            {#each [...data.active, ...data.inactive] as m (m.id)}
+            {#each [...(data.concealed ?? []), ...data.active, ...data.inactive] as m (m.id)}
               {@const isLastAdmin = m.user_id === data.last_admin_id}
-              <tr style={m.is_active ? '' : 'opacity:.62'}>
+              <tr style={m.activity_visible !== false && !m.is_active ? 'opacity:.62' : ''}>
                 <td>
                   <span style="display:flex;gap:9px;align-items:center">
                     <Avatar name={m.name} size={27} />
@@ -254,9 +347,20 @@
                   </span>
                 </td>
                 <td data-m="tag">
-                  <Pill tone={m.is_active ? ROLE_TONE[m.role] : 'slate'}>{ROLE_LABEL[m.role]}</Pill>
-                  {#if !m.is_active}
-                    <span class="v2-table-secondary" style="display:block">{tx('Deactivated')}</span>
+                  <Pill
+                    tone={m.activity_visible !== false && !m.is_active ? 'slate' : ROLE_TONE[m.role]}
+                    >{ROLE_LABEL[m.role]}</Pill
+                  >
+                </td>
+                <td>
+                  {#if m.activity_visible === false}
+                    <span class="v2-muted" title={tx('Only the CEO sees whether this account is active.')}
+                      >—</span
+                    >
+                  {:else if m.is_active}
+                    <Pill tone="moss">{tx('Active')}</Pill>
+                  {:else}
+                    <Pill tone="slate">{tx('Inactive')}</Pill>
                   {/if}
                 </td>
                 <td>
@@ -282,21 +386,25 @@
                   {/if}
                 </td>
                 <td class="v2-r">
-                  {#if m.last_login}
+                  {#if m.activity_visible === false}
+                    <span class="v2-muted">—</span>
+                  {:else if m.last_login}
                     {relativeDays(m.last_login)}
                   {:else}
                     <span style="color:var(--v2-clay);font-weight:600">{tx('never')}</span>
                   {/if}
                 </td>
                 <td class="v2-r">
-                  {#if m.is_you}
+                  {#if !canEditRow(m)}
                     <span class="v2-muted" style="font-size:11.5px">—</span>
                   {:else}
                     <span
                       style="display:inline-flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"
                     >
                       <!-- The last person with every permission cannot be
-                           demoted here. The server enforces that too. -->
+                           demoted here. The server enforces that too. An
+                           administrator can change an employee's functions
+                           and cannot promote them. -->
                       <form
                         method="POST"
                         action="?/setRole"
@@ -304,29 +412,36 @@
                         style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"
                       >
                         <input type="hidden" name="userId" value={m.user_id} />
-                        <span style="display:inline-flex;gap:6px;align-items:center">
-                          <select
-                            name="role"
-                            class="v2-input"
-                            style="width:150px"
-                            disabled={busy || isLastAdmin}
-                            onchange={(e) => (roleDraft[m.user_id] = e.currentTarget.value)}
-                          >
-                            {#each data.roles as role (role)}
-                              <option value={role} selected={role === m.role}>
-                                {ROLE_LABEL[role] ?? role}
-                              </option>
-                            {/each}
-                          </select>
-                          <button class="v2-btn v2-btn-sm" disabled={busy || isLastAdmin}>
-                            {tx('Save role')}
+                        {#if canCreateAdministrators}
+                          <span style="display:inline-flex;gap:6px;align-items:center">
+                            <select
+                              name="role"
+                              class="v2-input"
+                              style="width:150px"
+                              disabled={busy || isLastAdmin}
+                              onchange={(e) => (roleDraft[m.user_id] = e.currentTarget.value)}
+                            >
+                              {#each data.roles as role (role)}
+                                <option value={role} selected={role === m.role}>
+                                  {ROLE_LABEL[role] ?? role}
+                                </option>
+                              {/each}
+                            </select>
+                            <button class="v2-btn v2-btn-sm" disabled={busy || isLastAdmin}>
+                              {tx('Save role')}
+                            </button>
+                          </span>
+                        {:else}
+                          <input type="hidden" name="role" value="EMPLOYEE" />
+                          <button class="v2-btn v2-btn-sm" disabled={busy}>
+                            {tx('Save permissions')}
                           </button>
-                        </span>
-                        {#if shownRole(m) === 'ADMIN'}
+                        {/if}
+                        {#if permissionKeys(shownRole(m)).length}
                           <span
                             style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:280px"
                           >
-                            {#each ALL_PERMISSIONS as key (key)}
+                            {#each permissionKeys(shownRole(m)) as key (key)}
                               <label
                                 style="display:inline-flex;gap:4px;align-items:center;font-size:11.5px"
                               >
@@ -334,7 +449,7 @@
                                   type="checkbox"
                                   name="permissions"
                                   value={key}
-                                  checked={hasGrant(m, key)}
+                                  checked={grantChecked(m, key)}
                                   disabled={busy || isLastAdmin}
                                 />
                                 {tx(PERMISSION_LABEL[key])}
@@ -372,29 +487,31 @@
         </table>
       </div>
 
-      <div class="v2-label" style="margin-bottom:10px">{tx('Teams')}</div>
-      <div class="v2-card" style="overflow:hidden;margin-bottom:14px">
-        {#each data.teams as t (t.id)}
-          <div class="v2-setting">
-            <div class="v2-setting-body">
-              <b>{t.name}</b>
-              <span class="v2-sub" style="font-size:11.5px">{t.description}</span>
+      {#if !data.teamsForbidden}
+        <div class="v2-label" style="margin-bottom:10px">{tx('Teams')}</div>
+        <div class="v2-card" style="overflow:hidden;margin-bottom:14px">
+          {#each data.teams as t (t.id)}
+            <div class="v2-setting">
+              <div class="v2-setting-body">
+                <b>{t.name}</b>
+                <span class="v2-sub" style="font-size:11.5px">{t.description}</span>
+              </div>
+              <span class="v2-sub v2-num" style="font-size:12px">
+                {t.member_count}
+                {t.member_count === 1 ? tx('member') : tx('members')}
+              </span>
             </div>
-            <span class="v2-sub v2-num" style="font-size:12px">
-              {t.member_count}
-              {t.member_count === 1 ? 'member' : 'members'}
-            </span>
-          </div>
-        {:else}
-          <div class="v2-setting">
-            <span class="v2-sub" style="font-size:12px">{tx('No teams yet.')}</span>
-          </div>
-        {/each}
-      </div>
+          {:else}
+            <div class="v2-setting">
+              <span class="v2-sub" style="font-size:12px">{tx('No teams yet.')}</span>
+            </div>
+          {/each}
+        </div>
+      {/if}
 
       <p class="v2-sub" style="font-size:11.5px">
         {tx(
-          'Roles are CEO, administrator, member and employee. The CEO can do everything and chooses what each administrator can open. An employee can only record the work done today. Nobody can change their own role, and the organization keeps at least one person who can do everything.'
+          'A CEO creates administrators and employees here, and sees who is active. An administrator creates employees and sees who is active, except the CEO. An employee does not create accounts. They sign in with the username and password they were given.'
         )}
       </p>
     </div>

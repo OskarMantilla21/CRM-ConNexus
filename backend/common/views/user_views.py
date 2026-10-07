@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Count, ProtectedError, Q
 from django.shortcuts import get_object_or_404
@@ -16,9 +18,13 @@ from common import swagger_params
 from common.models import Comment, PersonalAccessToken, Profile, Teams, User
 from common.permissions import (
     HasOrgContext,
+    actor_may_assign_role,
+    can_manage_administrators,
+    can_manage_employees,
+    ceo_account_is_closed,
     dropping_last_unrestricted_admin,
+    sees_every_activity_status,
     has_unrestricted_admin_access,
-    is_org_admin,
     other_unrestricted_admin_exists,
 )
 from common.serializer import (
@@ -46,9 +52,60 @@ def _planned_role_and_grants(profile, validated):
         new_grants = validated.get("granted_permissions")
     else:
         new_grants = profile.granted_permissions
-    if new_role != "ADMIN":
+    if new_role not in ("ADMIN", "EMPLOYEE"):
         new_grants = None
+    elif new_role == "EMPLOYEE" and not isinstance(new_grants, list):
+        new_grants = ["daily_work"]
     return new_role, new_grants
+
+
+def _clean_name(raw):
+    """A display name for a new account, or an error sentence."""
+    if raw is None or raw == "":
+        return None, None
+    if not isinstance(raw, str):
+        return None, "Enter a name."
+    name = raw.strip()
+    if not name:
+        return None, None
+    if len(name) > 255:
+        return None, "A name can be at most 255 characters."
+    return name, None
+
+
+def _clean_password(raw, email, name):
+    """A password for a new account, or an error sentence.
+
+    Empty means the caller did not set one. An account created that way cannot
+    sign in with a password until someone sets one. A present password has to
+    pass Django's validators.
+    """
+    if raw is None or raw == "":
+        return None, None
+    if not isinstance(raw, str):
+        return None, "Enter a password."
+    if len(raw) > 256:
+        return None, "Enter a password of at most 256 characters."
+    probe = User(email=email or "", name=name or "")
+    try:
+        validate_password(raw, probe)
+    except DjangoValidationError as exc:
+        return None, exc.messages[0]
+    return raw, None
+
+
+def _role_refused():
+    return Response(
+        {"error": True, "errors": "You can only create employee profiles."},
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
+def _employee_only_refused():
+    return Response(
+        {"error": True, "errors": "You can only change employees."},
+        status=status.HTTP_403_FORBIDDEN,
+    )
 
 
 def _last_admin_response():
@@ -76,6 +133,22 @@ def _valid_token_counts_by_profile(org):
         .annotate(n=Count("id"))
     )
     return {str(r["profile_id"]): r["n"] for r in rows}
+
+
+def _conceal_ceo_row(row):
+    """Drop every field that says whether a CEO account is active.
+
+    The row stays in the directory. The profile flag, the user flag and the
+    last sign-in all answer the same question, so none of them is returned
+    to an administrator.
+    """
+    row.pop("is_active", None)
+    row["activity_visible"] = False
+    details = row.get("user_details")
+    if isinstance(details, dict):
+        details.pop("is_active", None)
+        details.pop("last_login", None)
+    return row
 
 
 class GetTeamsAndUsersView(APIView):
@@ -125,7 +198,9 @@ class UsersListView(APIView, LimitOffsetPagination):
         },
     )
     def post(self, request, format=None):
-        if not is_org_admin(self.request.profile):
+        # A CEO creates administrador profiles. An administrador creates
+        # empleado profiles. A member creates nobody.
+        if not can_manage_employees(self.request.profile):
             return Response(
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -134,8 +209,9 @@ class UsersListView(APIView, LimitOffsetPagination):
         if params:
             user_serializer = CreateUserSerializer(data=params, org=request.profile.org)
             address_serializer = BillingAddressSerializer(data=params)
-            # This POST is already gated to admins above, and inviting someone
-            # inherently means choosing their role, so role is grantable here.
+            # This POST is already gated above, and creating someone inherently
+            # means choosing their role, so role is grantable here. The view
+            # still refuses a role this actor is not allowed to hand out.
             profile_serializer = CreateProfileSerializer(
                 data=params, can_grant_privileges=True
             )
@@ -151,6 +227,31 @@ class UsersListView(APIView, LimitOffsetPagination):
                     {"error": True, "errors": data},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            role = profile_serializer.validated_data["role"]
+            if not actor_may_assign_role(request.profile, None, role):
+                return _role_refused()
+            email = user_serializer.validated_data["email"]
+            raw = params if isinstance(params, dict) else {}
+            name, name_error = _clean_name(raw.get("name"))
+            if name_error:
+                return Response(
+                    {"error": True, "errors": name_error},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # A password is checked only when this email is new. Reusing an
+            # account from another org must not replace the password they
+            # already sign in with.
+            fresh = not User.objects.filter(email__iexact=email).exists()
+            password = None
+            if fresh:
+                password, password_error = _clean_password(
+                    raw.get("password"), email, name
+                )
+                if password_error:
+                    return Response(
+                        {"error": True, "errors": password_error},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             # A concurrent invite for the same email can commit between the
             # checks above and the writes below. Keep the account, address and
             # membership in one transaction so a lost race rolls back cleanly
@@ -159,22 +260,27 @@ class UsersListView(APIView, LimitOffsetPagination):
                 with transaction.atomic():
                     # Address is org-scoped and RLS-protected, so it must carry
                     # the org. Only create one when address fields were actually
-                    # supplied -- invites from the web UI send just email + role.
+                    # supplied -- the team page sends name, email, password and role.
                     address_obj = None
                     if any(address_serializer.validated_data.values()):
                         address_obj = address_serializer.save(org=request.profile.org)
 
-                    email = user_serializer.validated_data["email"]
                     user = User.objects.filter(email__iexact=email).first()
-                    if user is None:
+                    created_account = user is None
+                    if created_account:
                         user = user_serializer.save(is_active=True)
-                    # An existing account is reused as-is: the inviting admin
+                        if name:
+                            user.name = name
+                        if password:
+                            user.set_password(password)
+                        if name or password:
+                            user.save()
+                    # An existing account is reused as-is: the inviting person
                     # gets a profile in their own org and no say over that
-                    # person's account.
+                    # person's account or password.
 
-                    role = profile_serializer.validated_data["role"]
                     grants = profile_serializer.validated_data.get("granted_permissions")
-                    if role != "ADMIN":
+                    if role not in ("ADMIN", "EMPLOYEE"):
                         grants = None
                     Profile.objects.create(
                         user=user,
@@ -190,7 +296,11 @@ class UsersListView(APIView, LimitOffsetPagination):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             return Response(
-                {"error": False, "message": "User Created Successfully"},
+                {
+                    "error": False,
+                    "message": "User Created Successfully",
+                    "reused": not created_account,
+                },
                 status=status.HTTP_201_CREATED,
             )
         return Response(
@@ -222,7 +332,7 @@ class UsersListView(APIView, LimitOffsetPagination):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not is_org_admin(self.request.profile):
+        if not can_manage_employees(self.request.profile):
             return Response(
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -234,8 +344,18 @@ class UsersListView(APIView, LimitOffsetPagination):
                 queryset = queryset.filter(user__email__icontains=params.get("email"))
             if params.get("role"):
                 queryset = queryset.filter(role=params.get("role"))
-            if params.get("status"):
-                queryset = queryset.filter(is_active=params.get("status"))
+        # An administrator sees the CEO in the directory and does not learn
+        # whether that account is active. The status filter stays on the
+        # other rows, so filtering "inactive" cannot answer the question by
+        # whether the CEO shows up.
+        if sees_every_activity_status(request.profile):
+            visible = queryset
+            concealed_qs = queryset.none()
+        else:
+            visible = queryset.exclude(role="CEO")
+            concealed_qs = queryset.filter(role="CEO")
+        if params and params.get("status"):
+            visible = visible.filter(is_active=params.get("status"))
 
         # A not-yet-revoked, unexpired token on a deactivated account is a
         # dormant liability the team page surfaces: it is rejected at login
@@ -253,13 +373,15 @@ class UsersListView(APIView, LimitOffsetPagination):
             return rows
 
         context = {}
-        queryset_active_users = queryset.filter(is_active=True)
+        queryset_active_users = visible.filter(is_active=True)
         results_active_users = self.paginate_queryset(
             queryset_active_users.distinct(), self.request, view=self
         )
         active_users = _with_token_counts(
             ProfileSerializer(results_active_users, many=True).data
         )
+        for row in active_users:
+            row["activity_visible"] = True
         if results_active_users:
             offset = queryset_active_users.filter(
                 id__gte=results_active_users[-1].id
@@ -274,13 +396,15 @@ class UsersListView(APIView, LimitOffsetPagination):
             "offset": offset,
         }
 
-        queryset_inactive_users = queryset.filter(is_active=False)
+        queryset_inactive_users = visible.filter(is_active=False)
         results_inactive_users = self.paginate_queryset(
             queryset_inactive_users.distinct(), self.request, view=self
         )
         inactive_users = _with_token_counts(
             ProfileSerializer(results_inactive_users, many=True).data
         )
+        for row in inactive_users:
+            row["activity_visible"] = True
         if results_inactive_users:
             offset = queryset_inactive_users.filter(
                 id__gte=results_inactive_users[-1].id
@@ -293,6 +417,16 @@ class UsersListView(APIView, LimitOffsetPagination):
             "inactive_users_count": self.count,
             "inactive_users": inactive_users,
             "offset": offset,
+        }
+
+        concealed_rows = _with_token_counts(
+            ProfileSerializer(concealed_qs.distinct(), many=True).data
+        )
+        for row in concealed_rows:
+            _conceal_ceo_row(row)
+        context["people_without_activity"] = {
+            "people_without_activity_count": len(concealed_rows),
+            "people_without_activity": concealed_rows,
         }
 
         context["admin_email"] = settings.ADMIN_EMAIL
@@ -310,22 +444,43 @@ class UserDetailView(APIView):
         return get_object_or_404(Profile, user__id=pk, org=self.request.profile.org)
 
     @staticmethod
-    def _may_grant_privileges(request, target_profile):
-        """May this request set role / admin / access flags on `target_profile`?
+    def _may_touch(request, target_profile):
+        """May this request edit `target_profile` at all?
 
-        Two rules, both of which the /v2/team UI already advertises as enforced:
-
-        * only an admin (or superuser) may hand out access, and
-        * nobody may change their *own* role. An admin included, so the org
-          cannot be self-locked out of its last admin and a member cannot
-          promote themselves.
-
-        Editing your own profile for contact details stays allowed; only the
-        privileged fields are withheld, by making them read_only downstream.
+        A person may edit their own contact details. A CEO may edit anyone
+        else. An administrador may edit an empleado and nobody else.
         """
-        actor_is_admin = is_org_admin(request.profile)
-        editing_self = request.profile.id == target_profile.id
-        return actor_is_admin and not editing_self
+        if ceo_account_is_closed(request.profile, target_profile):
+            return False
+        if request.profile.id == target_profile.id:
+            return True
+        if can_manage_administrators(request.profile):
+            return True
+        return (
+            getattr(request.profile, "role", None) == "ADMIN"
+            and target_profile.role == "EMPLOYEE"
+        )
+
+    @staticmethod
+    def _may_grant_privileges(request, target_profile):
+        """May this request set role / access flags on `target_profile`?
+
+        Nobody may change their own role, a CEO included, so the org cannot
+        be self-locked out of its last admin and a member cannot promote
+        themselves. A CEO may set anyone else's role. An administrador may
+        set permissions on an empleado only. The view still refuses a new
+        role that actor is not allowed to hand out.
+        """
+        if ceo_account_is_closed(request.profile, target_profile):
+            return False
+        if request.profile.id == target_profile.id:
+            return False
+        if can_manage_administrators(request.profile):
+            return True
+        return (
+            getattr(request.profile, "role", None) == "ADMIN"
+            and target_profile.role == "EMPLOYEE"
+        )
 
     @extend_schema(
         tags=["users"],
@@ -342,10 +497,7 @@ class UserDetailView(APIView):
     )
     def get(self, request, pk, format=None):
         profile_obj = self.get_object(pk)
-        if (
-            not is_org_admin(self.request.profile)
-            and self.request.profile.id != profile_obj.id
-        ):
+        if not self._may_touch(request, profile_obj):
             return Response(
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -400,10 +552,9 @@ class UserDetailView(APIView):
         params = request.data
         profile = self.get_object(pk)
         address_obj = profile.address
-        if (
-            not is_org_admin(self.request.profile)
-            and self.request.profile.id != profile.id
-        ):
+        if not self._may_touch(request, profile):
+            if getattr(request.profile, "role", None) == "ADMIN":
+                return _employee_only_refused()
             return Response(
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -444,15 +595,20 @@ class UserDetailView(APIView):
                 data,
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if address_serializer.is_valid():
-            address_obj = address_serializer.save(org=request.profile.org)
-            serializer.save()
         if profile_serializer.is_valid():
             new_role, new_grants = _planned_role_and_grants(
                 profile, profile_serializer.validated_data
             )
+            if self._may_grant_privileges(request, profile) and not actor_may_assign_role(
+                request.profile, profile, new_role
+            ):
+                return _employee_only_refused()
             if dropping_last_unrestricted_admin(profile, new_role, new_grants):
                 return _last_admin_response()
+        if address_serializer.is_valid():
+            address_obj = address_serializer.save(org=request.profile.org)
+            serializer.save()
+        if profile_serializer.is_valid():
             profile = profile_serializer.save()
             return Response(
                 {"error": False, "message": "User Updated Successfully"},
@@ -482,10 +638,9 @@ class UserDetailView(APIView):
         """Handle partial updates to a user."""
         params = request.data
         profile = self.get_object(pk)
-        if (
-            not is_org_admin(self.request.profile)
-            and self.request.profile.id != profile.id
-        ):
+        if not self._may_touch(request, profile):
+            if getattr(request.profile, "role", None) == "ADMIN":
+                return _employee_only_refused()
             return Response(
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -522,14 +677,19 @@ class UserDetailView(APIView):
             data["error"] = True
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.is_valid():
-            serializer.save()
         if profile_serializer.is_valid():
             new_role, new_grants = _planned_role_and_grants(
                 profile, profile_serializer.validated_data
             )
+            if self._may_grant_privileges(request, profile) and not actor_may_assign_role(
+                request.profile, profile, new_role
+            ):
+                return _employee_only_refused()
             if dropping_last_unrestricted_admin(profile, new_role, new_grants):
                 return _last_admin_response()
+        if serializer.is_valid():
+            serializer.save()
+        if profile_serializer.is_valid():
             profile = profile_serializer.save()
             return Response(
                 {"error": False, "message": "User Updated Successfully"},
@@ -550,7 +710,7 @@ class UserDetailView(APIView):
         },
     )
     def delete(self, request, pk, format=None):
-        if not is_org_admin(self.request.profile):
+        if not can_manage_employees(self.request.profile):
             return Response(
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -561,6 +721,14 @@ class UserDetailView(APIView):
                 {"error": True, "errors": "Permission Denied"},
                 status=status.HTTP_403_FORBIDDEN,
             )
+        # An administrador removes empleados. Only a CEO removes anyone else.
+        if ceo_account_is_closed(request.profile, self.object):
+            return _employee_only_refused()
+        if (
+            not can_manage_administrators(request.profile)
+            and self.object.role != "EMPLOYEE"
+        ):
+            return _employee_only_refused()
         deleted_by = self.request.profile.user.email
         recipient = self.object.user.email
         try:
@@ -602,7 +770,7 @@ class UserStatusView(APIView):
         },
     )
     def post(self, request, pk, format=None):
-        if not is_org_admin(self.request.profile):
+        if not can_manage_employees(self.request.profile):
             return Response(
                 {
                     "error": True,
@@ -615,6 +783,25 @@ class UserStatusView(APIView):
         # Lookup by user ID since frontend sends user.id, not profile.id.
         # get_object_or_404 (a 404), not .get() (a 500), on an unknown id.
         profile = get_object_or_404(profiles, user__id=pk)
+        if ceo_account_is_closed(request.profile, profile):
+            return Response(
+                {
+                    "error": True,
+                    "errors": "You can only activate or deactivate employees.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if (
+            not can_manage_administrators(request.profile)
+            and profile.role != "EMPLOYEE"
+        ):
+            return Response(
+                {
+                    "error": True,
+                    "errors": "You can only activate or deactivate employees.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         if params.get("status"):
             user_status = params.get("status")
@@ -638,10 +825,20 @@ class UserStatusView(APIView):
             profile.save()
 
         context = {}
-        active_profiles = profiles.filter(is_active=True)
-        inactive_profiles = profiles.filter(is_active=False)
+        if sees_every_activity_status(request.profile):
+            visible_profiles = profiles
+            concealed_profiles = profiles.none()
+        else:
+            visible_profiles = profiles.exclude(role="CEO")
+            concealed_profiles = profiles.filter(role="CEO")
+        active_profiles = visible_profiles.filter(is_active=True)
+        inactive_profiles = visible_profiles.filter(is_active=False)
         context["active_profiles"] = ProfileSerializer(active_profiles, many=True).data
         context["inactive_profiles"] = ProfileSerializer(
             inactive_profiles, many=True
         ).data
+        concealed_rows = ProfileSerializer(concealed_profiles, many=True).data
+        for row in concealed_rows:
+            _conceal_ceo_row(row)
+        context["people_without_activity"] = concealed_rows
         return Response(context)

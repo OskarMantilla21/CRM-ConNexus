@@ -10,6 +10,8 @@
  * the two ever disagree, the server is right and this file has a bug.
  */
 
+import { tx } from '$lib/i18n/translate.js';
+
 /**
  * A line as the builders edit it. A line started from a deal also carries the
  * deal line's discount (`discount_type`, `discount_value`); a typed line has
@@ -131,9 +133,9 @@ const cents = (v) => Math.round(v * 100) / 100;
  */
 function discountError(type, value, cap, capMessage) {
   const v = num(value);
-  if (v < 0) return 'A discount cannot be negative.';
-  if (type === 'PERCENTAGE') return v > 100 ? 'A percentage discount cannot exceed 100.' : '';
-  return v > cents(cap) ? capMessage : '';
+  if (v < 0) return tx('A discount cannot be negative.');
+  if (type === 'PERCENTAGE') return v > 100 ? tx('A percentage discount cannot exceed 100.') : '';
+  return v > cents(cap) ? tx(capMessage) : '';
 }
 
 /**
@@ -172,9 +174,9 @@ export const lineDiscountError = (line) =>
  */
 export function taxRateError(value) {
   const v = num(value);
-  if (v < 0) return 'Tax rate cannot be negative.';
-  return v > 100 ? 'Tax rate cannot exceed 100.' : '';
+  if (v < 0) return tx('Tax rate cannot be negative.');
+  return v > 100 ? tx('Tax rate cannot exceed 100.') : '';
 }
 
 /** @param {any} value */
-export const shippingError = (value) => (num(value) < 0 ? 'Shipping cannot be negative.' : '');
+export const shippingError = (value) => (num(value) < 0 ? tx('Shipping cannot be negative.') : '');

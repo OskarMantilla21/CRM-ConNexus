@@ -4,6 +4,7 @@
   import { page } from '$app/state';
   import { TAB_SETS } from '$lib/v2/tabs.js';
   import { isOrgAdmin } from '$lib/admin.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /**
    * Second-level navigation within one destination. Tickets has a queue, an
@@ -31,13 +32,13 @@
     exact ? page.url.pathname === href : page.url.pathname.startsWith(href);
 </script>
 
-<nav class="v2-tabs" aria-label="Section">
+<nav class="v2-tabs" aria-label={tx('Section')}>
   {#each tabs as tab (tab.href)}
     <a
       href={resolve(asInternalPath(tab.href))}
       aria-current={isActive(tab.href, tab.exact) ? 'page' : undefined}
     >
-      {tab.label}
+      {tx(tab.label)}
       {#if tab.count && counts[tab.count]}
         <span class="v2-tab-count v2-num">{counts[tab.count]}</span>
       {/if}

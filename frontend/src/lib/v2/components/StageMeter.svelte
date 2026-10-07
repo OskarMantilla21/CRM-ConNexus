@@ -1,4 +1,5 @@
 <script>
+  import { tx } from '$lib/i18n/translate.js';
   /**
    * One segment per open stage of the deal's own pipeline. A closed deal (a
    * won or lost stage, whatever an admin named it) leaves the meter entirely
@@ -18,14 +19,14 @@
 </script>
 
 {#if !closed}
-  <div class="v2-meter" role="img" aria-label="Stage: {name}">
+  <div class="v2-meter" role="img" aria-label={tx('Stage: {name}', { name: tx(name) })}>
     {#each steps as step, i (step.code)}
       <i class={i <= index ? 'on' : ''}></i>
     {/each}
   </div>
   {#if label}
-    <div class="v2-table-secondary" style="margin-top:4px">{name}</div>
+    <div class="v2-table-secondary" style="margin-top:4px">{tx(name)}</div>
   {/if}
 {:else}
-  <span class="v2-sub">{name}</span>
+  <span class="v2-sub">{tx(name)}</span>
 {/if}
