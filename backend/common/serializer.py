@@ -28,7 +28,12 @@ from common.models import (
     Teams,
     User,
 )
-from common.permissions import ALL_PERMISSIONS, effective_permissions, is_org_admin
+from common.permissions import (
+    ALL_PERMISSIONS,
+    EMPLOYEE_ASSIGNABLE,
+    effective_permissions,
+    is_org_admin,
+)
 from common.utils import CURRENCY_SYMBOLS
 from common.validators import flexible_phone_validator, validate_help_center_slug
 
@@ -560,6 +565,24 @@ class OrgProfileCreateSerializer(serializers.ModelSerializer):
     """
 
     name = serializers.CharField(max_length=255)
+    # The creator's role in the new org. Omitted stays ADMIN, which is what
+    # every existing client already got. The create screen sends it.
+    role = serializers.ChoiceField(
+        choices=["CEO", "ADMIN", "USER", "EMPLOYEE"],
+        required=False,
+        default="ADMIN",
+        write_only=True,
+    )
+    # Only read when role is ADMIN. A full list is stored as "no list"
+    # (unrestricted). Omitted on an administrador means the same.
+    # write_only: these are not columns on Org, so they must not leak into
+    # the serialized org. The view copies them onto the new profile.
+    permissions = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        allow_null=True,
+        write_only=True,
+    )
 
     class Meta:
         model = Org
@@ -576,11 +599,31 @@ class OrgProfileCreateSerializer(serializers.ModelSerializer):
         # field an installed build does not send would break org creation for
         # them with no server-side fix available. Omitted means UTC, which the
         # admin can change in settings afterwards.
-        fields = ["id", "name", "timezone"]
+        # `role` and `permissions` are not Org columns. `create` drops them
+        # before the row is written; the view applies them to the new profile.
+        fields = ["id", "name", "timezone", "role", "permissions"]
         extra_kwargs = {
             "name": {"required": True},
             "timezone": {"required": False},
         }
+
+    def validate(self, attrs):
+        role = attrs.get("role", "ADMIN")
+        permissions = attrs.get("permissions", None)
+        if role != "ADMIN" or permissions is None:
+            attrs["permissions"] = None
+            return attrs
+        unknown = [key for key in permissions if key not in ALL_PERMISSIONS]
+        if unknown:
+            raise serializers.ValidationError({"permissions": "Unknown permission."})
+        chosen = [key for key in ALL_PERMISSIONS if key in permissions]
+        attrs["permissions"] = None if len(chosen) == len(ALL_PERMISSIONS) else chosen
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop("role", None)
+        validated_data.pop("permissions", None)
+        return super().create(validated_data)
 
     def validate_name(self, name):
         if bool(re.search(r"[~\!@#\$%\^&\*\(\)\+{}\":;'/\[\]]", name)):
@@ -756,7 +799,10 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         """A list of known area keys, or null for "no list saved".
 
         Unknown keys are refused rather than stored and ignored, so a typo
-        does not look like a grant that simply failed to show up.
+        does not look like a grant that simply failed to show up. Collapsing
+        a complete administrador list to "no list" happens in ``validate``,
+        once the role is known. An empleado never stores "no list" for a
+        complete short set: that would mean daily work only.
         """
         if value is None:
             return None
@@ -765,13 +811,7 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         unknown = [key for key in value if key not in ALL_PERMISSIONS]
         if unknown:
             raise serializers.ValidationError("Unknown permission.")
-        chosen = [key for key in ALL_PERMISSIONS if key in value]
-        # Every area is the same access a legacy administrator already has,
-        # including API routes the area list does not name. Store that as
-        # "no list" so the restriction middleware stays out of their way.
-        if len(chosen) == len(ALL_PERMISSIONS):
-            return None
-        return chosen
+        return [key for key in ALL_PERMISSIONS if key in value]
 
     def validate(self, attrs):
         """Say no out loud when a privileged field was actually being changed.
@@ -786,11 +826,15 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         Only a *different* value is refused. A client echoing the whole profile
         back, including the role it already has, is asking for no change and
         gets none, the same as before.
+
+        An administrador's list of every area is stored as "no list", which is
+        the same access a legacy administrator already has. An empleado's list
+        is clipped to the short set. A key outside that set is refused, not
+        dropped, so a typo does not look like a grant that simply failed.
         """
         if self._can_grant_privileges or self.instance is None:
             role = attrs.get("role", getattr(self.instance, "role", None))
-            if role != "ADMIN":
-                attrs["granted_permissions"] = None
+            self._normalize_grants(attrs, role)
             return attrs
         submitted = self.initial_data if isinstance(self.initial_data, dict) else {}
         errors = {
@@ -802,6 +846,45 @@ class CreateProfileSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return attrs
+
+    def _normalize_grants(self, attrs, role):
+        """Store the grant list the role is allowed to carry.
+
+        A partial update that does not mention permissions leaves an existing
+        list alone. Creating an empleado, or turning someone into one, without
+        a list starts them on daily work.
+        """
+        if role == "ADMIN":
+            grants = attrs.get("granted_permissions", None)
+            if isinstance(grants, list) and len(grants) == len(ALL_PERMISSIONS):
+                attrs["granted_permissions"] = None
+            return
+        if role == "EMPLOYEE":
+            becoming = self.instance is None or getattr(self.instance, "role", None) != (
+                "EMPLOYEE"
+            )
+            if "granted_permissions" not in attrs:
+                if becoming:
+                    attrs["granted_permissions"] = ["daily_work"]
+                return
+            grants = attrs.get("granted_permissions")
+            if grants is None:
+                attrs["granted_permissions"] = ["daily_work"]
+                return
+            extra = [key for key in grants if key not in EMPLOYEE_ASSIGNABLE]
+            if extra:
+                raise serializers.ValidationError(
+                    {
+                        "granted_permissions": (
+                            "That permission is not available for an employee."
+                        )
+                    }
+                )
+            chosen = [key for key in EMPLOYEE_ASSIGNABLE if key in grants]
+            attrs["granted_permissions"] = chosen or ["daily_work"]
+            return
+        if "role" in attrs or "granted_permissions" in attrs:
+            attrs["granted_permissions"] = None
 
     @staticmethod
     def _unchanged(submitted, current):

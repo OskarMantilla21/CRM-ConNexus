@@ -10,6 +10,7 @@
    * (server-validated to this org) records where it came from.
    */
   import { money } from '$lib/v2/format.js';
+  import { tx } from '$lib/i18n/translate.js';
   import { blankLine, lineAmount, lineDiscountError, num } from '$lib/v2/line-items.js';
   import { Plus, Trash2 } from '@lucide/svelte';
 
@@ -48,17 +49,17 @@
 
 <div class="v2-card" style="padding:16px 18px;margin-top:14px">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-    <div class="v2-label">Lines</div>
+    <div class="v2-label">{tx('Lines')}</div>
     <select
       class="catalogue"
       value=""
-      aria-label="Add a line from the catalogue"
+      aria-label={tx('Add a line from the catalogue')}
       onchange={(e) => {
         addProduct(e.currentTarget.value);
         e.currentTarget.value = '';
       }}
     >
-      <option value="">Add from catalogue…</option>
+      <option value="">{tx('Add from catalogue…')}</option>
       {#each products as p (p.id)}
         <option value={p.id}>{p.name}, {money(p.price, currency)}</option>
       {/each}
@@ -71,22 +72,22 @@
         <input
           class="line-name"
           bind:value={item.name}
-          placeholder="Description"
-          aria-label="Line description"
+          placeholder={tx('Description')}
+          aria-label={tx('Line description')}
         />
         <input
           class="line-desc"
           bind:value={item.description}
-          placeholder="Detail the customer sees under the name (optional)"
-          aria-label="Line detail"
+          placeholder={tx('Detail the customer sees under the name (optional)')}
+          aria-label={tx('Line detail')}
         />
       </div>
       <label class="line-n">
-        <span>Qty</span>
+        <span>{tx('Qty')}</span>
         <input type="number" min="0" step="1" bind:value={item.quantity} />
       </label>
       <label class="line-n">
-        <span>Unit price</span>
+        <span>{tx('Unit price')}</span>
         <input type="number" min="0" step="0.01" bind:value={item.unit_price} />
       </label>
       <div class="line-total v2-num">
@@ -94,9 +95,12 @@
         {#if num(item.discount_value)}
           <!-- Carried from the deal the line came from; it counts toward the total. -->
           <span class="line-off">
-            less {item.discount_type === 'PERCENTAGE'
-              ? `${num(item.discount_value)}%`
-              : money(num(item.discount_value), currency)}
+            {tx('less {amount}', {
+              amount:
+                item.discount_type === 'PERCENTAGE'
+                  ? `${num(item.discount_value)}%`
+                  : money(num(item.discount_value), currency)
+            })}
           </span>
         {/if}
       </div>
@@ -104,20 +108,20 @@
         type="button"
         class="line-del"
         onclick={() => removeLine(i)}
-        aria-label="Remove this line"
-        title="Remove this line"
+        aria-label={tx('Remove this line')}
+        title={tx('Remove this line')}
       >
         <Trash2 size={14} />
       </button>
       {#if lineDiscountError(item)}
         <!-- The page blocks saving while this shows; the API refuses it too. -->
-        <p class="line-err" role="alert">{lineDiscountError(item)}</p>
+        <p class="line-err" role="alert">{tx(lineDiscountError(item))}</p>
       {/if}
     </div>
   {/each}
 
   <button type="button" class="v2-btn v2-btn-sm" style="margin-top:10px" onclick={addLine}>
-    <Plus size={13} />Add a line
+    <Plus size={13} />{tx('Add a line')}
   </button>
 </div>
 

@@ -278,13 +278,16 @@
           onclick={() => (confirmingDelete = true)}>{tx('Delete this goal')}</button
         >
         <p class="v2-sub" style="font-size:12px;margin-top:8px">
-          A finished goal is usually better paused than deleted. Paused keeps its history. Delete
-          only when it was created by mistake.
+          {tx(
+            'A finished goal is usually better paused than deleted. Paused keeps its history. Delete only when it was created by mistake.'
+          )}
         </p>
       {:else}
         <form method="POST" action="?/delete" use:enhance>
           <div style="display:flex;gap:8px;align-items:center">
-            <span class="v2-sub" style="font-size:13px">Delete “{data.goal.name}” for good?</span>
+            <span class="v2-sub" style="font-size:13px"
+              >{tx('Delete “{name}” for good?', { name: data.goal.name })}</span
+            >
             <button class="v2-btn v2-btn-primary" type="submit" style="background:var(--v2-rust)"
               >{tx('Yes, delete')}</button
             >

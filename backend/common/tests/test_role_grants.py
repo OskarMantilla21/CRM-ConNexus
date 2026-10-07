@@ -59,6 +59,31 @@ def test_settings_grant_passes_admin_gates_but_stays_restricted():
     assert effective_permissions(profile) == {"settings"}
 
 
+def test_empleado_with_a_short_list_opens_only_those_areas():
+    profile = _profile("EMPLOYEE", ["daily_work", "serve"])
+    assert effective_permissions(profile) == {"daily_work", "serve"}
+    assert api_path_allowed("/api/cases/", effective_permissions(profile))
+    assert api_path_allowed("/api/time-entries/log/", effective_permissions(profile))
+    assert not api_path_allowed("/api/leads/", effective_permissions(profile))
+    assert not api_path_allowed("/api/invoices/", effective_permissions(profile))
+    assert not api_path_allowed("/api/users/", effective_permissions(profile))
+
+
+def test_middleware_lets_an_administrador_reach_people_without_the_team_grant():
+    profile = _profile("ADMIN", ["sell"])
+    request = RequestFactory().get("/api/users/")
+    request.profile = profile
+    assert RoleAccessMiddleware(lambda req: None)(request) is None
+
+
+def test_middleware_still_refuses_that_administrador_billing():
+    profile = _profile("ADMIN", ["sell"])
+    request = RequestFactory().get("/api/invoices/")
+    request.profile = profile
+    response = RoleAccessMiddleware(lambda req: None)(request)
+    assert response.status_code == 403
+
+
 def test_empleado_can_only_record_daily_work():
     profile = _profile("EMPLOYEE")
     assert is_org_admin(profile) is False
@@ -112,6 +137,22 @@ def test_saving_an_empleado_does_not_make_them_an_admin(org_a, regular_user):
     assert profile.role == "EMPLOYEE"
     assert profile.is_organization_admin is False
     assert profile.granted_permissions is None
+
+
+@pytest.mark.django_db
+def test_saving_an_empleado_keeps_only_the_short_list(org_a):
+    user = User.objects.create_user(email="short@test.com", password="testpass123")
+    profile = Profile.objects.create(
+        user=user,
+        org=org_a,
+        role="EMPLOYEE",
+        granted_permissions=["settings", "serve", "bill"],
+        is_active=True,
+    )
+    profile.refresh_from_db()
+    assert profile.role == "EMPLOYEE"
+    assert profile.is_organization_admin is False
+    assert profile.granted_permissions == ["serve"]
 
 
 @pytest.mark.django_db

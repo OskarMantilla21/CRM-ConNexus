@@ -1,4 +1,5 @@
 <script>
+  import { tx } from '$lib/i18n/translate.js';
   /**
    * The line-item table and the totals ladder, shared by the invoice and
    * estimate portal pages.
@@ -57,17 +58,19 @@
    * take on faith. When the server says PERCENTAGE, say the percentage.
    */
   let discountLabel = $derived(
-    discountType === 'PERCENTAGE' ? `Discount (${discountValue}%)` : 'Discount'
+    discountType === 'PERCENTAGE'
+      ? tx('Discount ({percent}%)', { percent: discountValue })
+      : tx('Discount')
   );
 </script>
 
 <table class="v2-doc-items">
   <thead>
     <tr>
-      <th>Item</th>
-      <th class="v2-r">Qty</th>
-      <th class="v2-r">Unit price</th>
-      <th class="v2-r">Amount</th>
+      <th>{tx('Item')}</th>
+      <th class="v2-r">{tx('Qty')}</th>
+      <th class="v2-r">{tx('Unit price')}</th>
+      <th class="v2-r">{tx('Amount')}</th>
     </tr>
   </thead>
   <tbody>
@@ -94,7 +97,7 @@
        through the middle, which reads as a mistake because it is one. -->
   <dl>
     <div>
-      <dt>Subtotal</dt>
+      <dt>{tx('Subtotal')}</dt>
       <dd class="v2-num">{money(subtotal, currency)}</dd>
     </div>
 
@@ -107,20 +110,20 @@
 
     {#if taxAmount}
       <div>
-        <dt>Tax ({taxRate}%)</dt>
+        <dt>{tx('Tax ({rate}%)', { rate: taxRate })}</dt>
         <dd class="v2-num">{money(taxAmount, currency)}</dd>
       </div>
     {/if}
 
     {#if shippingAmount}
       <div>
-        <dt>Shipping</dt>
+        <dt>{tx('Shipping')}</dt>
         <dd class="v2-num">{money(shippingAmount, currency)}</dd>
       </div>
     {/if}
 
     <div class="v2-doc-total-row">
-      <dt>Total</dt>
+      <dt>{tx('Total')}</dt>
       <dd class="v2-num">{money(total, currency)}</dd>
     </div>
   </dl>

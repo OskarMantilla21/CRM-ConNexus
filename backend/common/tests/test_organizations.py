@@ -9,6 +9,7 @@ import pytest
 from rest_framework import status
 
 from common.models import Org, Profile, Teams
+from common.permissions import ALL_PERMISSIONS
 
 
 @pytest.mark.django_db
@@ -95,6 +96,139 @@ class TestOrgProfileCreateView:
             format="json",
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_create_org_as_ceo(self, admin_client, admin_user):
+        """The create screen can open the new org as CEO."""
+        response = admin_client.post(
+            self.url,
+            {"name": "Ceo Workspace", "role": "CEO"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response.data["org"]["role"] == "CEO"
+        assert response.data["org"]["is_organization_admin"] is True
+        assert "permissions" not in response.data["org"]
+        profile = Profile.objects.get(user=admin_user, org__name="Ceo Workspace")
+        assert profile.role == "CEO"
+        assert profile.granted_permissions is None
+        assert profile.is_organization_admin is True
+
+    def test_create_org_as_employee_ignores_a_grant_list(
+        self, admin_client, admin_user
+    ):
+        """An empleado records the day's work. A grant list does not apply,
+        and a client cannot mark the column admin by sending the flag."""
+        response = admin_client.post(
+            self.url,
+            {
+                "name": "Employee Workspace",
+                "role": "EMPLOYEE",
+                "permissions": ["sell", "team"],
+                "is_organization_admin": True,
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response.data["org"]["role"] == "EMPLOYEE"
+        assert response.data["org"]["is_organization_admin"] is False
+        profile = Profile.objects.get(user=admin_user, org__name="Employee Workspace")
+        assert profile.role == "EMPLOYEE"
+        assert profile.granted_permissions is None
+        assert profile.is_organization_admin is False
+
+    def test_create_org_as_member_ignores_permissions(self, admin_client, admin_user):
+        response = admin_client.post(
+            self.url,
+            {
+                "name": "Member Workspace",
+                "role": "USER",
+                "permissions": ["settings", "team"],
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        profile = Profile.objects.get(user=admin_user, org__name="Member Workspace")
+        assert profile.role == "USER"
+        assert profile.granted_permissions is None
+        assert profile.is_organization_admin is False
+        assert response.data["org"]["is_organization_admin"] is False
+
+    def test_create_org_admin_subset_stores_known_keys_in_order(
+        self, admin_client, admin_user
+    ):
+        response = admin_client.post(
+            self.url,
+            {
+                "name": "Limited Admin Org",
+                "role": "ADMIN",
+                "permissions": ["daily_work", "sell"],
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        profile = Profile.objects.get(user=admin_user, org__name="Limited Admin Org")
+        assert profile.role == "ADMIN"
+        assert profile.granted_permissions == ["sell", "daily_work"]
+        assert profile.is_organization_admin is False
+        assert response.data["org"]["role"] == "ADMIN"
+        assert response.data["org"]["is_organization_admin"] is False
+
+    def test_create_org_admin_full_list_is_unrestricted(self, admin_client, admin_user):
+        """Ticking every area is the same access a legacy administrador has."""
+        response = admin_client.post(
+            self.url,
+            {
+                "name": "Full Admin Org",
+                "role": "ADMIN",
+                "permissions": list(reversed(ALL_PERMISSIONS)),
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        profile = Profile.objects.get(user=admin_user, org__name="Full Admin Org")
+        assert profile.granted_permissions is None
+        assert profile.is_organization_admin is True
+        assert response.data["org"]["is_organization_admin"] is True
+
+    def test_create_org_admin_without_permissions_stays_unrestricted(
+        self, admin_client, admin_user
+    ):
+        response = admin_client.post(
+            self.url,
+            {"name": "Legacy Admin Org", "role": "ADMIN"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        profile = Profile.objects.get(user=admin_user, org__name="Legacy Admin Org")
+        assert profile.role == "ADMIN"
+        assert profile.granted_permissions is None
+        assert profile.is_organization_admin is True
+
+    def test_create_org_unknown_role_creates_nothing(self, admin_client):
+        before = Org.objects.count()
+        response = admin_client.post(
+            self.url,
+            {"name": "Nope Role Org", "role": "OWNER"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert Org.objects.filter(name="Nope Role Org").exists() is False
+        assert Org.objects.count() == before
+
+    def test_create_org_unknown_permission_creates_nothing(self, admin_client):
+        before = Org.objects.count()
+        response = admin_client.post(
+            self.url,
+            {
+                "name": "Nope Permission Org",
+                "role": "ADMIN",
+                "permissions": ["sell", "hack"],
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert Org.objects.filter(name="Nope Permission Org").exists() is False
+        assert Org.objects.count() == before
 
     def test_list_orgs(self, admin_client, admin_user, admin_profile, org_a):
         """List organizations the user belongs to."""

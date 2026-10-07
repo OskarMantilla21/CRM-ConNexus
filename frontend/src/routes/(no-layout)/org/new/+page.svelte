@@ -6,9 +6,12 @@
   import { goto } from '$app/navigation';
   import { ArrowLeft, Check, AlertCircle } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
+  import { ALL_PERMISSIONS, PERMISSION_LABEL } from '$lib/access.js';
   import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
   let { data, form } = $props();
+
+  let role = $state('CEO');
 
   let packs = $derived(data?.packs ?? []);
   let timezones = $derived(data?.timezones ?? [{ name: 'UTC', label: 'UTC' }]);
@@ -100,12 +103,52 @@
           </p>
         </div>
 
-        {#if packs.length > 0}
+        <div class="v2-field">
+          <label for="role">{tx('Your role in this organisation')}</label>
+          <select
+            id="role"
+            name="role"
+            class="v2-input"
+            bind:value={role}
+            disabled={isSubmitting || !!form?.data}
+          >
+            <option value="CEO">{tx('CEO')}</option>
+            <option value="ADMIN">{tx('Admin')}</option>
+            <option value="EMPLOYEE">{tx('Employee')}</option>
+          </select>
+          <p class="v2-hint">
+            {tx(
+              'This is the role you open this workspace with. A CEO can do everything. An administrator opens only the areas you tick. An employee only records the work done today.'
+            )}
+          </p>
+        </div>
+
+        {#if role === 'ADMIN'}
+          <fieldset class="v2-field pack-choice">
+            <legend>{tx('Permissions')}</legend>
+            {#each ALL_PERMISSIONS as key (key)}
+              <label class="pack-opt">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value={key}
+                  checked
+                  disabled={isSubmitting || !!form?.data}
+                />
+                <span class="pack-opt-body">
+                  <b>{tx(PERMISSION_LABEL[key])}</b>
+                </span>
+              </label>
+            {/each}
+          </fieldset>
+        {/if}
+
+        {#if packs.length > 0 && role !== 'EMPLOYEE'}
           <fieldset class="v2-field pack-choice">
             <legend>{tx('What kind of business is this?')}</legend>
             <p class="v2-hint" style="margin-top:0">
               {tx(
-                'Sets up a starter pipeline, tags and fields for your industry. You can change everything later.'
+                'Sets up a starter pipeline, tags and fields for your industry. It does not add example customers or messages. You can change everything later.'
               )}
             </p>
 
@@ -221,7 +264,8 @@
     cursor: not-allowed;
     opacity: 0.65;
   }
-  .pack-opt input[type='radio'] {
+  .pack-opt input[type='radio'],
+  .pack-opt input[type='checkbox'] {
     margin-top: 2px;
     accent-color: var(--v2-ember);
     flex: none;

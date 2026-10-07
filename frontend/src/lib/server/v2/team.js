@@ -37,6 +37,7 @@
  * people rows need it to show who is on what.
  */
 import { apiRequest } from '$lib/api-helpers.js';
+import { ALL_PERMISSIONS, permissionsFromClaims } from '$lib/access.js';
 
 /**
  * Profile.role. CEO has every permission. ADMIN has the grant list the CEO
@@ -56,16 +57,39 @@ export const ROLES = ['CEO', 'ADMIN', 'USER', 'EMPLOYEE'];
  * @param {import('@sveltejs/kit').Cookies} cookies
  * @returns {string | null}
  */
-function viewerUserId(cookies) {
+function viewerClaims(cookies) {
   const token = cookies.get('jwt_access');
   if (!token) return null;
   try {
     const payload = token.split('.')[1];
     const json = Buffer.from(payload, 'base64url').toString('utf-8');
-    return JSON.parse(json).user_id ?? null;
+    return JSON.parse(json);
   } catch {
     return null;
   }
+}
+
+/**
+ * What this signed-in person may do on the team page.
+ *
+ * A display hint. The API refuses a role they are not allowed to hand out.
+ * A CEO (or anyone who already has every permission) creates administrators.
+ * An administrator creates employees.
+ *
+ * @param {import('@sveltejs/kit').Cookies} cookies
+ */
+export function actorFromCookies(cookies) {
+  const claims = viewerClaims(cookies) ?? {};
+  const role = typeof claims.role === 'string' ? claims.role : 'USER';
+  const permissions = permissionsFromClaims(claims);
+  const hasEvery = ALL_PERMISSIONS.every((key) => permissions.includes(key));
+  const canManageAdministrators =
+    role === 'CEO' || (claims.is_organization_admin === true && hasEvery && role !== 'EMPLOYEE');
+  return {
+    role,
+    can_manage_administrators: canManageAdministrators,
+    can_manage_employees: canManageAdministrators || role === 'ADMIN'
+  };
 }
 
 /**
@@ -88,7 +112,10 @@ function toMember(p, teamsByProfile, viewerId) {
     email: details.email,
     role: p.role,
     granted_permissions: Array.isArray(p.granted_permissions) ? p.granted_permissions : null,
-    is_active: p.is_active,
+    // Null when this viewer must not learn whether the account is active.
+    // That is the CEO's row, read by an administrator.
+    is_active: p.activity_visible === false ? null : p.is_active,
+    activity_visible: p.activity_visible !== false,
     teams: teamsByProfile[p.id] ?? [],
     last_login: details.last_login ?? null,
     active_token_count: p.active_token_count ?? 0,
@@ -107,19 +134,28 @@ function toMember(p, teamsByProfile, viewerId) {
  * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
  */
 export async function listTeam({ cookies }) {
-  let usersResp, teamsResp;
+  let usersResp;
   try {
-    [usersResp, teamsResp] = await Promise.all([
-      apiRequest('/users/', {}, { cookies }),
-      apiRequest('/teams/', {}, { cookies })
-    ]);
+    usersResp = await apiRequest('/users/', {}, { cookies });
   } catch (/** @type {any} */ err) {
     if (err?.status === 403) return { forbidden: true };
     throw err;
   }
 
-  const viewerId = viewerUserId(cookies);
-  const teamRows = teamsResp?.teams ?? [];
+  // Teams are a separate admin surface. An administrator who can create
+  // employees still sees people when the teams list is refused.
+  let teamRows = [];
+  let teamsForbidden = false;
+  try {
+    const teamsResp = await apiRequest('/teams/', {}, { cookies });
+    teamRows = teamsResp?.teams ?? [];
+  } catch (/** @type {any} */ err) {
+    if (err?.status !== 403) throw err;
+    teamsForbidden = true;
+  }
+
+  const claims = viewerClaims(cookies);
+  const viewerId = claims?.user_id ?? null;
 
   // profile id -> the names of the teams it belongs to, from the teams payload.
   /** @type {Record<string, string[]>} */
@@ -136,6 +172,11 @@ export async function listTeam({ cookies }) {
   const inactive = (usersResp?.inactive_users?.inactive_users ?? []).map((/** @type {any} */ p) =>
     toMember(p, teamsByProfile, viewerId)
   );
+  // The CEO, when an administrator is reading. The row is real. Its active
+  // or inactive state is not.
+  const concealed = (usersResp?.people_without_activity?.people_without_activity ?? []).map(
+    (/** @type {any} */ p) => toMember(p, teamsByProfile, viewerId)
+  );
 
   const teams = teamRows.map((/** @type {any} */ t) => ({
     id: t.id,
@@ -144,7 +185,7 @@ export async function listTeam({ cookies }) {
     member_count: (t.users ?? []).length
   }));
 
-  const admins = active.filter(
+  const admins = [...active, ...concealed].filter(
     (/** @type {any} */ m) => m.role === 'ADMIN' || m.role === 'CEO'
   );
   const fullAdmins = active.filter(
@@ -156,10 +197,14 @@ export async function listTeam({ cookies }) {
     forbidden: false,
     active,
     inactive,
+    concealed,
     teams,
+    teamsForbidden,
     roles: ROLES,
+    actor: actorFromCookies(cookies),
     totals: {
       count: active.length,
+      people: active.length + inactive.length + concealed.length,
       admins: admins.length,
       never_signed_in: active.filter((/** @type {any} */ m) => !m.last_login).length,
       deactivated: inactive.length,
@@ -196,12 +241,15 @@ export function inviteUser({ cookies }, body) {
  * @param {string} userId  the User id, not the profile id
  * @param {string} role
  * @param {string[] | null} [granted]
- *   Sent only for an administrador. Null leaves a legacy full admin untouched.
+ *   Sent for an administrador or an empleado. Null leaves a legacy full
+ *   admin untouched.
  */
 export function setRole({ cookies }, userId, role, granted = null) {
   /** @type {Record<string, unknown>} */
   const body = { role };
-  if (role === 'ADMIN' && Array.isArray(granted)) body.granted_permissions = granted;
+  if ((role === 'ADMIN' || role === 'EMPLOYEE') && Array.isArray(granted)) {
+    body.granted_permissions = granted;
+  }
   return apiRequest(`/user/${userId}/`, { method: 'PATCH', body }, { cookies });
 }
 

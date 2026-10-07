@@ -1,4 +1,5 @@
 <script>
+  import { tx } from '$lib/i18n/translate.js';
   /**
    * Picks which deal pipeline the page shows, written to `?pipeline=` like
    * every other view setting, so the choice is shareable and survives reload.
@@ -22,7 +23,7 @@
         <input type="hidden" name={key} {value} />
       {/if}
     {/each}
-    <label class="v2-label" for="pipeline-switch">Pipeline</label>
+    <label class="v2-label" for="pipeline-switch">{tx('Pipeline')}</label>
     <select
       id="pipeline-switch"
       name="pipeline"
@@ -35,7 +36,7 @@
         <option value={p.id}>{p.name}</option>
       {/each}
     </select>
-    <noscript><button class="v2-btn" type="submit">Show</button></noscript>
+    <noscript><button class="v2-btn" type="submit">{tx('Show')}</button></noscript>
   </form>
 {/if}
 

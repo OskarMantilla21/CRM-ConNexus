@@ -45,6 +45,52 @@
       ? tx('1 deal worth {amount} has gone quiet.', { amount })
       : tx('{n} deals worth {amount} have gone quiet.', { n, amount });
 
+  /** The today API composes these sentences in English. Split the known shapes. */
+  function queueDetail(/** @type {string} */ detail) {
+    const awaiting = ' · awaiting first reply';
+    if (detail.endsWith(awaiting)) {
+      const [priority, account] = detail.slice(0, -awaiting.length).split(' · ');
+      const who = account === 'No account' ? tx('No account') : account;
+      return `${choiceLabel(priority)} · ${who} · ${tx('awaiting first reply')}`;
+    }
+    const due = detail.match(/^(.*) · (.*) · due (.+)$/);
+    if (due) {
+      const who = due[2] === 'No account' ? tx('No account') : due[2];
+      return `${due[1]} · ${who} · ${tx('due {date}', { date: due[3] })}`;
+    }
+    const quiet = detail.match(/^No movement for (\d+) days · (.*) · (.*)$/);
+    if (quiet) {
+      return `${tx('No movement for {n} days', { n: quiet[1] })} · ${quiet[2]} · ${tx(quiet[3])}`;
+    }
+    const task = detail.match(/^Due (.+) · (.+)$/);
+    if (task) return `${tx('Due {date}', { date: task[1] })} · ${choiceLabel(task[2])}`;
+    return choiceLabel(detail);
+  }
+
+  function queueAction(/** @type {string} */ action) {
+    if (action === 'Reply') return tx('Reply to the ticket');
+    return tx(action);
+  }
+
+  function laterTitle(/** @type {{ id: string, title: string }} */ row) {
+    if (row.id.startsWith('deal-') && row.title.endsWith(' expected to close')) {
+      return tx('{name} expected to close', {
+        name: row.title.slice(0, -' expected to close'.length)
+      });
+    }
+    if (row.id.startsWith('invoice-') && row.title.endsWith(' due')) {
+      return tx('{name} due', { name: row.title.slice(0, -' due'.length) });
+    }
+    return row.title;
+  }
+
+  function laterMeta(/** @type {{ id: string, meta: string }} */ row) {
+    if (row.id.startsWith('task-') && row.meta.startsWith('Task · ')) {
+      return `${tx('Task')} · ${choiceLabel(row.meta.slice('Task · '.length))}`;
+    }
+    return row.meta;
+  }
+
   // Built as one string rather than conditional markup: the "quiet deals"
   // clause only makes sense when there are any, and the numbers are often zero
   // in a real org, so the copy adapts instead of reading "0 deals … have gone
@@ -87,14 +133,14 @@
             <a href={resolve(item.href)} style="color:inherit;text-decoration:none">
               <div style="font-weight:640;letter-spacing:-0.012em">{item.title}</div>
             </a>
-            <div class="v2-sub" style="margin-top:2px">{item.detail}</div>
+            <div class="v2-sub" style="margin-top:2px">{queueDetail(item.detail)}</div>
           </div>
           <!-- On a phone these drop to their own line rather than squeezing
                the title into three words per row. -->
           <div class="v2-queue-actions">
             <Pill tone={item.tone}>{tx(item.due)}</Pill>
             <a class="v2-btn" class:v2-btn-primary={i === 0} href={resolve(item.href)}
-              >{tx(item.action)}</a
+              >{queueAction(item.action)}</a
             >
           </div>
         </div>
@@ -168,10 +214,10 @@
         >
           <!-- The day is a short word, not a label, sentence case, same as the mocks. -->
           <span class="v2-muted" style="font-size:11.5px;font-weight:650;width:26px;flex:none"
-            >{row.day}</span
+            >{tx(row.day)}</span
           >
-          <span style="flex:1;font-size:13.5px">{row.title}</span>
-          <span class="v2-sub" style="font-size:11.5px">{row.meta}</span>
+          <span style="flex:1;font-size:13.5px">{laterTitle(row)}</span>
+          <span class="v2-sub" style="font-size:11.5px">{laterMeta(row)}</span>
         </div>
       {/each}
     {/if}

@@ -12,6 +12,7 @@
    * the backend.
    */
   import { enhance } from '$app/forms';
+  import { tx } from '$lib/i18n/translate.js';
 
   /** @type {{
    *   action: string,
@@ -46,15 +47,15 @@
       <input type="hidden" {name} {value} />
     {/each}
     {#if explain}
-      <span class="v2-sub" style="font-size:11.5px">{explain}</span>
+      <span class="v2-sub" style="font-size:11.5px">{tx(explain)}</span>
     {/if}
-    <button class="v2-btn v2-btn-sm" type="submit" disabled={busy}>{confirmLabel}</button>
+    <button class="v2-btn v2-btn-sm" type="submit" disabled={busy}>{tx(confirmLabel)}</button>
     <button class="v2-btn v2-btn-sm" type="button" disabled={busy} onclick={() => (armed = false)}>
-      Cancel
+      {tx('Cancel')}
     </button>
   </form>
 {:else}
-  <button class="v2-btn v2-btn-sm" type="button" onclick={() => (armed = true)}>{label}</button>
+  <button class="v2-btn v2-btn-sm" type="button" onclick={() => (armed = true)}>{tx(label)}</button>
 {/if}
 
 <style>

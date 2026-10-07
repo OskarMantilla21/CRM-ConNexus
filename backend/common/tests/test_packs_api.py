@@ -35,6 +35,26 @@ class TestPackAPI:
         assert res.status_code == 200
         assert res.json()["report"]["created"]
 
+    def test_apply_without_sample_leaves_the_org_without_example_records(
+        self, admin_client, org_a
+    ):
+        from cases.models import Case
+        from leads.models import Lead, LeadPipeline
+
+        res = admin_client.post(
+            "/api/packs/professional-services/apply/",
+            {"sample": False},
+            format="json",
+        )
+        assert res.status_code == 200
+        created = {row["type"] for row in res.json()["report"]["created"]}
+        assert "lead_pipeline" in created
+        assert "sample_lead" not in created
+        assert "sample_ticket" not in created
+        assert LeadPipeline.objects.filter(org=org_a).count() == 1
+        assert Lead.objects.filter(org=org_a).count() == 0
+        assert Case.objects.filter(org=org_a).count() == 0
+
     def test_non_admin_cannot_apply(self, user_client):
         res = user_client.post("/api/packs/real-estate/apply/")
         assert res.status_code == 403

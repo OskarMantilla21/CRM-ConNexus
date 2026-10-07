@@ -336,9 +336,11 @@ class Profile(BaseModel):
         null=True,
     )
     role = models.CharField(max_length=50, choices=ROLES, default="USER")
-    # None means "no grant list": a legacy ADMIN still has every permission.
-    # A list (possibly empty) is the set a CEO saved for an administrador.
-    # Other roles clear it on save. The codes live in common.permissions.
+    # None on an administrador means "no grant list": a legacy ADMIN still has
+    # every permission. A list is the set a CEO saved for them.
+    # On an empleado, None means daily work only; a list is the short set an
+    # administrador saved. Other roles clear it on save.
+    # The codes live in common.permissions.
     granted_permissions = models.JSONField(null=True, blank=True, default=None)
     has_sales_access = models.BooleanField(default=False)
     has_marketing_access = models.BooleanField(default=False)
@@ -359,15 +361,36 @@ class Profile(BaseModel):
     def save(self, *args, **kwargs):
         # `role` is the fact. `is_organization_admin` is derived so a client
         # cannot grant admin by writing the column alone. A grant list exists
-        # only on an administrador; every other role drops it, so promoting
-        # someone to CEO and later back to member cannot resurrect a list.
-        if self.role != "ADMIN":
+        # on an administrador (the CEO's choice) and on an empleado (the short
+        # set an administrador may hand out). Every other role drops it, so
+        # promoting someone to CEO and later back to member cannot resurrect
+        # a list.
+        from common.permissions import (
+            ALL_PERMISSIONS,
+            EMPLOYEE_ASSIGNABLE,
+            column_is_organization_admin,
+        )
+
+        if self.role == "ADMIN":
+            if self.granted_permissions is not None and not isinstance(
+                self.granted_permissions, list
+            ):
+                self.granted_permissions = None
+            elif isinstance(self.granted_permissions, list):
+                chosen = [key for key in ALL_PERMISSIONS if key in self.granted_permissions]
+                self.granted_permissions = (
+                    None if len(chosen) == len(ALL_PERMISSIONS) else chosen
+                )
+        elif self.role == "EMPLOYEE":
+            if not isinstance(self.granted_permissions, list):
+                self.granted_permissions = None
+            else:
+                chosen = [
+                    key for key in EMPLOYEE_ASSIGNABLE if key in self.granted_permissions
+                ]
+                self.granted_permissions = chosen or ["daily_work"]
+        else:
             self.granted_permissions = None
-        elif self.granted_permissions is not None and not isinstance(
-            self.granted_permissions, list
-        ):
-            self.granted_permissions = None
-        from common.permissions import column_is_organization_admin
 
         self.is_organization_admin = column_is_organization_admin(self)
         super().save(*args, **kwargs)

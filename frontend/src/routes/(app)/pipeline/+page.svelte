@@ -62,7 +62,7 @@
     for (const p of pool) {
       for (const s of p.stages) byCode[s.code] ??= s.label;
     }
-    return Object.entries(byCode).map(([id, name]) => ({ id, name }));
+    return Object.entries(byCode).map(([id, name]) => ({ id, name: tx(name) }));
   });
 
   /* `dndzone` reorders the array it is handed, so the board renders from a
@@ -263,7 +263,7 @@
     {#each boardLanes as lane (lane.stage)}
       <section class="v2-lane">
         <div class="v2-lane-head">
-          <span class="v2-label">{lane.label}</span>
+          <span class="v2-label">{tx(lane.label)}</span>
           <span class="v2-num">{count(laneCount(lane))} · {laneMoney(lane)}</span>
         </div>
         {#if lane.truncated}
@@ -271,8 +271,8 @@
                silently stops. Outside the dndzone below, so it never becomes a
                drop target of its own. -->
           <p class="v2-sub" style="padding:0 2px 6px;font-size:11.5px">
-            Showing the first <span class="v2-num">{lane.rows.length}</span>. Filter to see the
-            rest.
+            {tx('Showing the first {n}.', { n: lane.rows.length })}
+            {tx('Filter to see the rest.')}
           </p>
         {/if}
         <div

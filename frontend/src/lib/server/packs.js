@@ -53,12 +53,19 @@ export async function listPacks(cookies) {
  *
  * @param {import('@sveltejs/kit').Cookies | CookieReader} cookies
  * @param {string} packId
+ * @param {{ sample?: boolean }} [options]
+ *   `sample: false` keeps the pipelines and leaves out example customers,
+ *   tickets and messages. Settings omits it, so applying a pack there still
+ *   includes the examples.
  * @returns {Promise<{ report: { created: any[], skipped: any[], failed: any[] } }>}
  */
-export async function applyPack(cookies, packId) {
+export async function applyPack(cookies, packId, options = {}) {
   return apiRequest(
     `/packs/${encodeURIComponent(packId)}/apply/`,
-    { method: 'POST' },
+    {
+      method: 'POST',
+      ...(options.sample === false ? { body: { sample: false } } : {})
+    },
     { cookies: /** @type {import('@sveltejs/kit').Cookies} */ (cookies) }
   );
 }

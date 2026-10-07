@@ -131,7 +131,7 @@
     {
       label: 'Run',
       items: [
-        { href: '/team', label: 'Team and access', icon: Users, permission: 'team' },
+        { href: '/team', label: 'People', icon: Users, permission: 'team' },
         { href: '/settings', label: 'Settings', icon: Settings, permission: 'settings' }
       ]
     }
@@ -153,7 +153,12 @@
       ...group,
       label: tx(group.label),
       items: group.items
-        .filter((item) => !item.permission || permissions.includes(item.permission))
+        .filter((item) => {
+          if (!item.permission || permissions.includes(item.permission)) return true;
+          // An administrator opens the team page to create employees, even
+          // when the CEO did not grant the rest of team administration.
+          return item.href === '/team' && (role === 'ADMIN' || role === 'CEO');
+        })
         .map((item) => ({
           ...item,
           label: item.termKey ? t(terminology, item.termKey, tx(item.label)) : tx(item.label)

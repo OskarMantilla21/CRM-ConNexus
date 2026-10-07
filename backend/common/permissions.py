@@ -28,7 +28,16 @@ MEMBER_PERMISSIONS = (
     "settings",
 )
 
-# An empleado records the day's work and nothing else.
+# What an administrador may hand an empleado. The day's work, tickets and
+# tasks, or sales. Billing, settings and the team stay with the CEO's choice
+# for an administrador. Order is the order the team page shows them.
+EMPLOYEE_ASSIGNABLE = (
+    "daily_work",
+    "serve",
+    "sell",
+)
+
+# An empleado with no saved list still records the day's work and nothing else.
 EMPLOYEE_PERMISSIONS = ("daily_work",)
 
 
@@ -146,8 +155,9 @@ def effective_permissions(profile):
     """The set of area keys this profile may open.
 
     CEO, legacy administrator and superuser get every key. An empleado gets
-    daily work only. An administrador gets the list the CEO saved. A member
-    gets the areas the product already showed them.
+    the short list an administrador saved, or daily work when nothing was
+    saved. An administrador gets the list the CEO saved. A member gets the
+    areas the product already showed them.
     """
     if profile is None:
         return frozenset()
@@ -155,6 +165,10 @@ def effective_permissions(profile):
         return frozenset(ALL_PERMISSIONS)
     role = getattr(profile, "role", None)
     if role == "EMPLOYEE":
+        grants = getattr(profile, "granted_permissions", None)
+        if isinstance(grants, list):
+            chosen = frozenset(key for key in grants if key in EMPLOYEE_ASSIGNABLE)
+            return chosen or frozenset(EMPLOYEE_PERMISSIONS)
         return frozenset(EMPLOYEE_PERMISSIONS)
     if role == "ADMIN":
         grants = getattr(profile, "granted_permissions", None)
@@ -162,6 +176,66 @@ def effective_permissions(profile):
             return frozenset(key for key in grants if key in ALL_PERMISSIONS)
         return frozenset()
     return frozenset(MEMBER_PERMISSIONS)
+
+
+def can_manage_administrators(profile):
+    """CEO, a legacy full administrator, or a superuser.
+
+    They create administrador profiles and choose that person's permissions.
+    """
+    return has_unrestricted_admin_access(profile)
+
+
+def can_manage_employees(profile):
+    """An administrador creates empleado profiles. A CEO can too."""
+    if profile is None:
+        return False
+    if can_manage_administrators(profile):
+        return True
+    return getattr(profile, "role", None) == "ADMIN"
+
+
+def sees_every_activity_status(profile):
+    """The CEO sees who is active. An administrator does not see the CEO's.
+
+    The administrator still sees every other person's active or inactive
+    state. Hiding that one row is the whole exception.
+    """
+    return getattr(profile, "role", None) == "CEO"
+
+
+def ceo_account_is_closed(actor, target):
+    """An administrator does not open a CEO account.
+
+    A legacy full administrator still has every other permission. The CEO's
+    activity, functions and account settings are not among them. Only another
+    CEO may change that account.
+    """
+    if getattr(target, "role", None) != "CEO":
+        return False
+    return getattr(actor, "role", None) != "CEO"
+
+
+def actor_may_assign_role(actor, target, new_role):
+    """Whether ``actor`` may leave ``target`` (None when creating) in ``new_role``.
+
+    A CEO, a legacy full administrator, or a superuser may assign any role
+    except onto a CEO: that account stays with a CEO. An administrador may
+    only create an empleado, and may only keep an existing empleado as an
+    empleado. They cannot promote anyone, and they cannot edit a CEO, another
+    administrador, or a member.
+    """
+    if actor is None or new_role not in {"CEO", "ADMIN", "USER", "EMPLOYEE"}:
+        return False
+    if ceo_account_is_closed(actor, target):
+        return False
+    if can_manage_administrators(actor):
+        return True
+    if getattr(actor, "role", None) != "ADMIN":
+        return False
+    if target is not None and getattr(target, "role", None) != "EMPLOYEE":
+        return False
+    return new_role == "EMPLOYEE"
 
 
 def is_restricted(profile):
@@ -182,17 +256,26 @@ def is_restricted(profile):
     return False
 
 
-def api_path_allowed(path, permissions):
+def api_path_allowed(path, permissions, role=None):
     """Whether a restricted profile may call ``path``.
 
     Anything that is not an ``/api/`` route is left alone (Django admin,
     static files). Unknown API routes are refused. ``/api/auth/`` and
     ``/api/profile/`` stay open so they can sign in, refresh and edit their
     own name and phone.
+
+    An administrador may open the people endpoints even without the team
+    grant. That is how they create empleados. The views still refuse every
+    role except empleado, so the open path does not let them create another
+    administrador.
     """
     if not path.startswith("/api/"):
         return True
     if path.startswith("/api/auth/") or path.startswith("/api/profile/"):
+        return True
+    if role == "ADMIN" and (
+        path.startswith("/api/users/") or path.startswith("/api/user/")
+    ):
         return True
     if path.startswith("/api/time-entries/report") or path.startswith(
         "/api/time-entries/unbilled"

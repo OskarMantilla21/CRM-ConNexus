@@ -68,7 +68,11 @@
    * finished period is reported as met or missed instead.
    */
   const statusLabel = (g) =>
-    isOver(g) ? (g.progress_percent >= 100 ? 'Target met' : 'Missed') : GOAL_STATUS_LABEL[g.status];
+    isOver(g)
+      ? g.progress_percent >= 100
+        ? tx('Target met')
+        : tx('Missed')
+      : GOAL_STATUS_LABEL[g.status];
 
   const statusTone = (g) =>
     isOver(g) ? (g.progress_percent >= 100 ? 'moss' : 'slate') : GOAL_STATUS_TONE[g.status];
@@ -266,7 +270,7 @@
                     <span
                       class="v2-bar-pace"
                       style="left:calc({elapsed}% - 1px)"
-                      title="{elapsed}% through the period"
+                      title={tx('{n}% through the period', { n: elapsed })}
                     ></span>
                   {/if}
                 </div>
@@ -275,14 +279,14 @@
                     {#if g.assigned_to}
                       {g.assigned_to.name}
                     {:else if g.team}
-                      {g.team.name} (team)
+                      {g.team.name} {tx('(team)')}
                     {:else}
-                      Whole org
+                      {tx('Whole org')}
                     {/if}
                   </span>
                   <span>
                     {#if over}
-                      Period ended {shortDate(g.period_end)}
+                      {tx('Period ended {date}', { date: shortDate(g.period_end) })}
                     {:else}
                       <span class="v2-num">{elapsed}%</span> {tx('through the period')}
                     {/if}

@@ -79,7 +79,7 @@
         </select>
       </label>
       <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">{tx('Due')}</span>
+        <span class="v2-label">{tx('When it should be done')}</span>
         <input class="v2-input" type="date" name="due_date" value={values.due_date ?? ''} />
       </label>
     </div>

@@ -27,6 +27,7 @@
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { count, shortDate } from '$lib/v2/format.js';
   import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/ops.js';
   import '$lib/i18n/pages/bill.js';
   import { isOrgAdmin } from '$lib/admin.js';
   import { ChevronRight, ShieldAlert } from '@lucide/svelte';
@@ -65,8 +66,8 @@
       items: [
         {
           href: '/team',
-          title: 'Team and access',
-          body: 'Who can sign in, and what their role lets them do.',
+          title: 'People',
+          body: 'The accounts in this organisation. A CEO adds administrators and employees. An administrator adds employees.',
           // People counts are admin-only oversight; a member's fan-out gets no
           // totals (the endpoint 403s), so the row lists the destination with
           // no value rather than a misleading zero.

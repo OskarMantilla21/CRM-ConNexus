@@ -107,12 +107,12 @@
             : 'color:var(--v2-slate);background:var(--v2-line-soft)'}
         >
           {#if i < stageIndex}<Check size={11} />{/if}
-          {stage.label}
+          {tx(stage.label)}
         </span>
       {/each}
       <span style="margin-left:auto">
         <Pill tone={AGING_TONE[deal.aging_status]} dot>
-          {`${AGING_LABEL[deal.aging_status]} · ${deal.days_in_current_stage} days in ${deal.stage_label}`}
+          {`${AGING_LABEL[deal.aging_status]} · ${tx('{n} days in {stage}', { n: deal.days_in_current_stage, stage: tx(deal.stage_label) })}`}
         </Pill>
       </span>
     </div>
@@ -184,7 +184,7 @@
         <dd>{data.pipeline.name}</dd>
       {/if}
       <dt>{tx('Stage')}</dt>
-      <dd>{deal.stage_label}</dd>
+      <dd>{tx(deal.stage_label)}</dd>
       <dt>{tx('Value')}</dt>
       <dd class="v2-num">{money(deal.amount, deal.currency)}</dd>
       <dt>{tx('Probability')}</dt>

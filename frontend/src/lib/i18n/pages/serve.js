@@ -158,6 +158,15 @@ export const messages = {
       es: 'Una tarea sin fecha de vencimiento nunca pasa a vencida y nunca aparece en "vence esta semana". Es una decisión real, no un vacío que olvidaste.',
       pt: 'Uma tarefa sem data de vencimento nunca fica atrasada e nunca aparece em "vence esta semana". É uma escolha de verdade, não um vazio que você esqueceu.'
     },
+  'The day this task should be done. Leave it empty and it never counts as late, and it never appears in this week. That is a real choice, not a blank you forgot.':
+    {
+      es: 'El día en que se tiene que realizar. Si lo dejas vacío, no cuenta como tarde y no aparece entre las de esta semana. Es una decisión real, no un vacío que olvidaste.',
+      pt: 'O dia em que esta tarefa deve ser feita. Se ficar vazio, não conta como atrasada e não aparece entre as desta semana. É uma escolha de verdade, não um vazio que você esqueceu.'
+    },
+  'When it should be done': {
+    es: 'Cuándo se tiene que realizar',
+    pt: 'Quando deve ser feita'
+  },
   'A ticket needs a subject.': {
     es: 'Un ticket necesita un asunto.',
     pt: 'Um chamado precisa de um assunto.'

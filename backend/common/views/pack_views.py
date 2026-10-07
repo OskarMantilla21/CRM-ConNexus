@@ -65,7 +65,18 @@ class PackApplyView(APIView):
                 {"error": True, "errors": "Unknown pack."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        report = apply_pack(request.profile.org, pack, request.profile)
+        # Missing means the historical behavior: example records included.
+        # Org creation sends false so a new workspace has pipelines and no
+        # example customers or messages.
+        raw = request.data if isinstance(request.data, dict) else {}
+        sample = raw.get("sample", True)
+        include_sample = sample not in (False, 0, "false", "0")
+        report = apply_pack(
+            request.profile.org,
+            pack,
+            request.profile,
+            include_sample=include_sample,
+        )
         return Response({"report": report})
 
 

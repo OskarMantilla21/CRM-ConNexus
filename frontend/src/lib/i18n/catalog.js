@@ -10,8 +10,8 @@ export const messages = {
   // Navigation
   Sell: { es: 'Vender', pt: 'Vender' },
   Today: { es: 'Hoy', pt: 'Hoje' },
-  Pipeline: { es: 'Pipeline', pt: 'Pipeline' },
-  Leads: { es: 'Leads', pt: 'Leads' },
+  Pipeline: { es: 'Embudo', pt: 'Pipeline' },
+  Leads: { es: 'Prospectos', pt: 'Leads' },
   CRM: { es: 'CRM', pt: 'CRM' },
   Accounts: { es: 'Cuentas', pt: 'Contas' },
   Contacts: { es: 'Contactos', pt: 'Contatos' },

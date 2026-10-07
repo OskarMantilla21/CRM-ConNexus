@@ -15,6 +15,12 @@ export const ALL_PERMISSIONS = ['sell', 'serve', 'bill', 'daily_work', 'settings
 /** What a member already had: everything except the team page. */
 export const MEMBER_PERMISSIONS = ['sell', 'serve', 'bill', 'daily_work', 'settings'];
 
+/**
+ * What an administrator may hand an employee. The day's work, tickets and
+ * tasks, or sales. Billing, settings and the team stay off this list.
+ */
+export const EMPLOYEE_PERMISSIONS = ['daily_work', 'serve', 'sell'];
+
 /** English source strings. Callers pass them through tx(). */
 export const PERMISSION_LABEL = {
   sell: 'Sell',
@@ -31,7 +37,11 @@ export const PERMISSION_LABEL = {
  */
 export function permissionsFromClaims(source) {
   if (Array.isArray(source?.permissions)) {
-    return source.permissions.filter((key) => ALL_PERMISSIONS.includes(key));
+    const list = source.permissions.filter((key) => ALL_PERMISSIONS.includes(key));
+    if (source?.role === 'EMPLOYEE') {
+      return list.filter((key) => EMPLOYEE_PERMISSIONS.includes(key));
+    }
+    return list;
   }
   if (source?.role === 'EMPLOYEE') return ['daily_work'];
   if (source?.role === 'CEO' || source?.is_organization_admin === true) {
@@ -61,14 +71,23 @@ const SECTIONS = [
 /**
  * @param {string} pathname
  * @param {string[]} permissions
+ * @param {string} [role]
+ *   An administrator opens the team page even without the team grant, so they
+ *   can create employees. The page itself only offers that.
  */
-export function pathAllowed(pathname, permissions) {
+export function pathAllowed(pathname, permissions, role = '') {
   if (
     pathname === '/profile' ||
     pathname.startsWith('/profile/') ||
     pathname === '/help' ||
     pathname.startsWith('/help/') ||
     pathname === '/logout'
+  ) {
+    return true;
+  }
+  if (
+    (pathname === '/team' || pathname.startsWith('/team/')) &&
+    (role === 'ADMIN' || role === 'CEO')
   ) {
     return true;
   }

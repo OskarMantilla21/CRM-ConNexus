@@ -198,7 +198,7 @@
       <section class="v2-lane">
         <div class="v2-lane-head">
           <i class="lb-dot" style="background:{lane.color}" aria-hidden="true"></i>
-          <span class="v2-label">{lane.name}</span>
+          <span class="v2-label">{tx(lane.name)}</span>
           <span class="v2-num"
             >{count(laneCount(lane))}{lane.wipLimit ? ` / ${lane.wipLimit}` : ''}</span
           >

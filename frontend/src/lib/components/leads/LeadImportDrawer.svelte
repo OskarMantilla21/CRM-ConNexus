@@ -5,6 +5,7 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import * as Dialog from '$lib/components/ui/dialog/index.js';
   import { downloadImportErrors } from '$lib/utils/csv.js';
+  import { tx } from '$lib/i18n/translate.js';
 
   /**
    * Two-step CSV import flow: upload → preview → confirm.
@@ -150,7 +151,7 @@
       const res = await fetch('?/importPreview', { method: 'POST', body: fd });
       const result = await readResult(res);
       if (result.type === 'failure') {
-        formError = String(result.data?.importError || 'Preview failed');
+        formError = String(result.data?.importError || tx('Preview failed'));
         return;
       }
       if (result.type === 'success' && result.data?.importPreview) {
@@ -164,7 +165,7 @@
         formError = 'Unexpected response from server';
       }
     } catch (err) {
-      formError = err instanceof Error ? err.message : 'Preview failed';
+      formError = err instanceof Error ? err.message : tx('Preview failed');
     } finally {
       busy = false;
     }
@@ -180,7 +181,7 @@
       const res = await fetch('?/importCommit', { method: 'POST', body: fd });
       const result = await readResult(res);
       if (result.type === 'failure') {
-        formError = String(result.data?.importError || 'Import failed');
+        formError = String(result.data?.importError || tx('Import failed'));
         const errs = result.data?.importErrors;
         if (Array.isArray(errs) && errs.length) {
           commitErrors = errs;
@@ -193,7 +194,7 @@
         await invalidateAll();
       }
     } catch (err) {
-      formError = err instanceof Error ? err.message : 'Import failed';
+      formError = err instanceof Error ? err.message : tx('Import failed');
     } finally {
       busy = false;
     }
@@ -205,11 +206,13 @@
     <Dialog.Header>
       <Dialog.Title class="flex items-center gap-2">
         <Upload class="h-4 w-4" />
-        Import {plural} from CSV
+        {tx('Import {kind} from CSV', { kind: plural })}
       </Dialog.Title>
       <Dialog.Description>
-        Upload a CSV of {plural}. We'll validate every row, with the same rules as adding one by
-        hand, before writing anything.
+        {tx(
+          "Upload a CSV of {kind}. We'll validate every row, with the same rules as adding one by hand, before writing anything.",
+          { kind: plural }
+        )}
       </Dialog.Description>
     </Dialog.Header>
 
@@ -234,11 +237,11 @@
               {#if file}
                 <p class="truncate text-sm font-medium">{file.name}</p>
                 <p class="text-xs text-[var(--text-secondary)]">
-                  {(file.size / 1024).toFixed(1)} KB · click to replace or drop another file
+                  {(file.size / 1024).toFixed(1)} KB · {tx('click to replace or drop another file')}
                 </p>
               {:else}
-                <p class="text-sm font-medium">Drop a CSV file here, or click to choose</p>
-                <p class="text-xs text-[var(--text-secondary)]">.csv only, up to 5 MB</p>
+                <p class="text-sm font-medium">{tx('Drop a CSV file here, or click to choose')}</p>
+                <p class="text-xs text-[var(--text-secondary)]">{tx('.csv only, up to 5 MB')}</p>
               {/if}
             </div>
           </div>
@@ -255,28 +258,33 @@
         <div
           class="rounded-lg border border-[var(--border-default)] bg-[var(--surface-muted)] p-3 text-xs"
         >
-          <p class="font-medium">CSV format</p>
+          <p class="font-medium">{tx('CSV format')}</p>
           <p class="mt-1 text-[var(--text-secondary)]">
-            Required headers: <code class="rounded bg-[var(--surface-default)] px-1"
+            {tx('Required headers:')} <code class="rounded bg-[var(--surface-default)] px-1"
               >first_name</code
             >,
-            <code class="rounded bg-[var(--surface-default)] px-1">last_name</code>; each row needs
-            at least one of the two. Optional: title, salutation, email, phone, job_title,
-            company_name, website, linkedin_url, status, source, industry, rating,
-            opportunity_amount, currency, probability, close_date, last_contacted, next_follow_up
-            (dates as YYYY-MM-DD), address_line, city, state, postcode, country, description,
-            assigned_emails, team_names, tags (semicolon-separated for the last three).
+            <code class="rounded bg-[var(--surface-default)] px-1">last_name</code>; {tx(
+              'each row needs at least one of the two.'
+            )}
+            {tx('Optional:')} title, salutation, email, phone, job_title, company_name, website,
+            linkedin_url, status, source, industry, rating, opportunity_amount, currency, probability,
+            close_date, last_contacted, next_follow_up {tx('(dates as YYYY-MM-DD)')}, address_line,
+            city, state, postcode, country, description, assigned_emails, team_names, tags {tx(
+              '(semicolon-separated for the last three).'
+            )}
           </p>
           <p class="mt-1 text-[var(--text-secondary)]">
-            Choice columns such as status and source accept the value or its label. An email already
-            used by a {singular} in your org, or earlier in the file, is flagged.
+            {tx(
+              'Choice columns such as status and source accept the value or its label. An email already used by a {kind} in your org, or earlier in the file, is flagged.',
+              { kind: singular }
+            )}
           </p>
           <button
             type="button"
             class="mt-2 inline-flex items-center gap-1 text-[var(--color-primary-default)] hover:underline max-md:min-h-11"
             onclick={downloadTemplate}
           >
-            <Download class="h-3.5 w-3.5" />Download CSV template
+            <Download class="h-3.5 w-3.5" />{tx('Download CSV template')}
           </button>
         </div>
 
@@ -292,11 +300,11 @@
 
       <Dialog.Footer>
         <Button class="max-md:h-11" type="button" variant="outline" onclick={() => (open = false)}
-          >Cancel</Button
+          >{tx('Cancel')}</Button
         >
         <Button class="max-md:h-11" type="button" disabled={!file || busy} onclick={submitPreview}>
           {#if busy}<Loader2 class="mr-1 h-3.5 w-3.5 animate-spin" />{/if}
-          Preview
+          {tx('Preview')}
         </Button>
       </Dialog.Footer>
     {:else if step === 'preview' && preview}
@@ -306,18 +314,18 @@
           <span
             class="inline-flex items-center gap-1 rounded-full bg-[var(--surface-muted)] px-3 py-1 text-xs font-medium"
           >
-            Total: {preview.summary.total}
+            {tx('Total: {n}', { n: preview.summary.total })}
           </span>
           <span
             class="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-800"
           >
-            <CheckCircle2 class="h-3.5 w-3.5" />Valid: {preview.summary.valid}
+            <CheckCircle2 class="h-3.5 w-3.5" />{tx('Valid: {n}', { n: preview.summary.valid })}
           </span>
           {#if preview.summary.invalid > 0}
             <span
               class="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-800"
             >
-              <AlertCircle class="h-3.5 w-3.5" />Invalid: {preview.summary.invalid}
+              <AlertCircle class="h-3.5 w-3.5" />{tx('Invalid: {n}', { n: preview.summary.invalid })}
             </span>
           {/if}
         </div>
@@ -328,10 +336,10 @@
               <thead class="sticky top-0 bg-[var(--surface-muted)]">
                 <tr>
                   <th class="px-2 py-1 text-left font-medium">#</th>
-                  <th class="px-2 py-1 text-left font-medium">Name</th>
-                  <th class="px-2 py-1 text-left font-medium">Email</th>
-                  <th class="px-2 py-1 text-left font-medium">Company</th>
-                  <th class="px-2 py-1 text-left font-medium">Status</th>
+                  <th class="px-2 py-1 text-left font-medium">{tx('Name')}</th>
+                  <th class="px-2 py-1 text-left font-medium">{tx('Email')}</th>
+                  <th class="px-2 py-1 text-left font-medium">{tx('Company')}</th>
+                  <th class="px-2 py-1 text-left font-medium">{tx('Status')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -357,7 +365,7 @@
               <div
                 class="border-t border-[var(--border-default)] bg-[var(--surface-muted)] px-2 py-1 text-center text-[10px] text-[var(--text-secondary)]"
               >
-                Showing first 20 of {preview.valid.length} valid rows
+                {tx('Showing the first 20 of {n} valid rows', { n: preview.valid.length })}
               </div>
             {/if}
           </div>
@@ -367,24 +375,25 @@
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <p class="text-sm font-medium text-red-800">
-                {preview.errors.length} error{preview.errors.length === 1 ? '' : 's'}, fix the CSV
-                before importing
+                {preview.errors.length === 1
+                  ? tx('{n} error, fix the CSV before importing', { n: preview.errors.length })
+                  : tx('{n} errors, fix the CSV before importing', { n: preview.errors.length })}
               </p>
               <button
                 type="button"
                 class="inline-flex items-center gap-1 text-xs text-[var(--color-primary-default)] hover:underline max-md:min-h-11"
                 onclick={() => downloadImportErrors(preview?.errors ?? [], 'leads')}
               >
-                <Download class="h-3 w-3" />Download errors
+                <Download class="h-3 w-3" />{tx('Download errors')}
               </button>
             </div>
             <div class="max-h-40 overflow-auto rounded-md border border-red-200 bg-red-50">
               <table class="w-full text-xs">
                 <thead class="sticky top-0 bg-red-100">
                   <tr>
-                    <th class="px-2 py-1 text-left font-medium">Row</th>
-                    <th class="px-2 py-1 text-left font-medium">Field</th>
-                    <th class="px-2 py-1 text-left font-medium">Problem</th>
+                    <th class="px-2 py-1 text-left font-medium">{tx('Row')}</th>
+                    <th class="px-2 py-1 text-left font-medium">{tx('Field')}</th>
+                    <th class="px-2 py-1 text-left font-medium">{tx('Problem')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -405,24 +414,31 @@
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <p class="text-sm font-medium text-red-800">
-                Server rejected {commitErrors.length} row{commitErrors.length === 1 ? '' : 's'} during
-                import. The file may have changed since preview
+                {commitErrors.length === 1
+                  ? tx(
+                      'Server rejected {n} row during import. The file may have changed since preview',
+                      { n: commitErrors.length }
+                    )
+                  : tx(
+                      'Server rejected {n} rows during import. The file may have changed since preview',
+                      { n: commitErrors.length }
+                    )}
               </p>
               <button
                 type="button"
                 class="inline-flex items-center gap-1 text-xs text-[var(--color-primary-default)] hover:underline max-md:min-h-11"
                 onclick={() => downloadImportErrors(commitErrors, 'leads')}
               >
-                <Download class="h-3 w-3" />Download errors
+                <Download class="h-3 w-3" />{tx('Download errors')}
               </button>
             </div>
             <div class="max-h-40 overflow-auto rounded-md border border-red-200 bg-red-50">
               <table class="w-full text-xs">
                 <thead class="sticky top-0 bg-red-100">
                   <tr>
-                    <th class="px-2 py-1 text-left font-medium">Row</th>
-                    <th class="px-2 py-1 text-left font-medium">Field</th>
-                    <th class="px-2 py-1 text-left font-medium">Problem</th>
+                    <th class="px-2 py-1 text-left font-medium">{tx('Row')}</th>
+                    <th class="px-2 py-1 text-left font-medium">{tx('Field')}</th>
+                    <th class="px-2 py-1 text-left font-medium">{tx('Problem')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -451,7 +467,7 @@
 
       <Dialog.Footer>
         <Button class="max-md:h-11" type="button" variant="outline" onclick={() => reset()}
-          >Back</Button
+          >{tx('Back')}</Button
         >
         <Button
           class="max-md:h-11"
@@ -460,8 +476,10 @@
           onclick={submitCommit}
         >
           {#if busy}<Loader2 class="mr-1 h-3.5 w-3.5 animate-spin" />{/if}
-          Import {preview.summary.valid}
-          {preview.summary.valid === 1 ? singular : plural}
+          {tx('Import {n} {kind}', {
+            n: preview.summary.valid,
+            kind: preview.summary.valid === 1 ? singular : plural
+          })}
         </Button>
       </Dialog.Footer>
     {:else if step === 'done' && commitResult}
@@ -470,15 +488,17 @@
           <CheckCircle2 class="h-6 w-6 text-green-700" />
           <div>
             <p class="text-sm font-medium text-green-900">
-              Imported {commitResult.created}
-              {commitResult.created === 1 ? singular : plural}
+              {tx('Imported {n} {kind}.', {
+                n: commitResult.created,
+                kind: commitResult.created === 1 ? singular : plural
+              })}
             </p>
-            <p class="text-xs text-green-800">The list has been refreshed.</p>
+            <p class="text-xs text-green-800">{tx('The list has been refreshed.')}</p>
           </div>
         </div>
       </div>
       <Dialog.Footer>
-        <Button class="max-md:h-11" type="button" onclick={() => (open = false)}>Close</Button>
+        <Button class="max-md:h-11" type="button" onclick={() => (open = false)}>{tx('Close')}</Button>
       </Dialog.Footer>
     {/if}
   </Dialog.Content>

@@ -595,8 +595,14 @@ def clear_sample_data(org, actor=None) -> dict:
 
 
 @transaction.atomic
-def apply_pack(org, pack: dict, actor) -> dict:
-    """Apply `pack` to `org`. Additive-only. Returns the created/skipped report."""
+def apply_pack(org, pack: dict, actor, *, include_sample=True) -> dict:
+    """Apply `pack` to `org`. Additive-only. Returns the created/skipped report.
+
+    `include_sample` defaults to true, which is what Settings does: the pack's
+    example customers, tickets and tasks come along with the pipelines. Org
+    creation passes false. A business type there only sets up the workspace.
+    A brand-new organization has no example messages to answer.
+    """
     # actor must belong to org. _apply_sample_data does
     # lead.assigned_to.add(actor) with no further org check of its own, so
     # without this guard a caller that passes a mismatched (org, actor) pair
@@ -641,7 +647,8 @@ def apply_pack(org, pack: dict, actor) -> dict:
     _apply_tags(org, pack, report)
     _apply_products(org, pack, report)
     _apply_terminology(org, pack, report)
-    _apply_sample_data(org, pack, actor, report)
+    if include_sample:
+        _apply_sample_data(org, pack, actor, report)
 
     PackApplication.objects.create(
         org=org,
