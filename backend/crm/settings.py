@@ -425,6 +425,9 @@ REST_FRAMEWORK = {
         "magic_link_ip": os.environ.get("MAGIC_LINK_THROTTLE_IP", "30/hour"),
         "password_login_ip": os.environ.get("PASSWORD_LOGIN_THROTTLE_IP", "60/hour"),
         "portal_login_ip": os.environ.get("PORTAL_LOGIN_THROTTLE_IP", "30/hour"),
+        # Username and password sign-in, per address. A person mistypes a few
+        # times; the rest is room for an office behind one NAT.
+        "password_login_ip": os.environ.get("PASSWORD_LOGIN_THROTTLE_IP", "60/hour"),
         # Magic-link requests across every caller. The backstop against a
         # sender spread over many addresses using us to mail arbitrary inboxes.
         # Reaching it pauses sign-in email for everyone, so it sits far above

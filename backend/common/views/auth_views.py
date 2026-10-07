@@ -153,7 +153,7 @@ def _users_for_login_name(raw):
 
 
 def _password_login_response(user, request):
-    """JWT pair for a password that already checked out."""
+    """JWT pair for a password that already checked out. Same cookies the web app stores."""
     from common.audit_log import audit_log
 
     user.last_login = timezone.now()
@@ -223,7 +223,12 @@ class PasswordLoginView(FirstRefusalThrottleMixin, APIView):
         if not isinstance(username, str) or not isinstance(password, str):
             return _invalid_password_login()
         username = username.strip()
-        if not username or not password or len(username) > 254 or len(password) > 256:
+        if (
+            not username
+            or not password
+            or len(username) > 254
+            or len(password) > 256
+        ):
             return _invalid_password_login()
 
         matches = list(_users_for_login_name(username)[:2])

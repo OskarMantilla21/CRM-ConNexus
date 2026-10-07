@@ -2,19 +2,24 @@
   import '../../../app.css';
   import '$lib/v2/styles/v2.css';
   import { enhance } from '$app/forms';
-
   import { tx } from '$lib/i18n/translate.js';
   import PublicBar from '$lib/v2/components/PublicBar.svelte';
 
-  let { form = null } = $props();
+  let { data = {}, form = null } = $props();
 
   let submitting = $state(false);
+  let username = $state('');
+  let password = $state('');
 
   function handleSubmit() {
     submitting = true;
-    return async ({ update }) => {
-      await update();
+    return async ({ result, update }) => {
       submitting = false;
+      if (result.type === 'redirect') {
+        await update();
+        return;
+      }
+      await update({ reset: false });
     };
   }
 </script>
@@ -41,6 +46,7 @@
           class="v2-input"
           autocomplete="username"
           required
+          bind:value={username}
           disabled={submitting}
         />
         <label class="v2-signin-label" for="password">{tx('Password')}</label>
@@ -51,6 +57,7 @@
           class="v2-input"
           autocomplete="current-password"
           required
+          bind:value={password}
           disabled={submitting}
         />
         <button type="submit" class="v2-btn v2-btn-primary" disabled={submitting}>
@@ -62,9 +69,9 @@
           {/if}
         </button>
       </form>
-      {#if form?.error}
+      {#if form?.error || data.error}
         <div class="v2-auth-note v2-auth-note-bad" style="margin-top:14px">
-          <span>{form.error}</span>
+          <span>{form?.error || data.error}</span>
         </div>
       {/if}
     </div>

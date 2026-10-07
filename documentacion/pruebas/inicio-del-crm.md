@@ -64,14 +64,13 @@ docker compose down
 
 ## Cómo entrar
 
-La pantalla de acceso pide usuario y contraseña. No pide correo.
+La pantalla pide usuario y contraseña. Las cuentas de esta máquina, incluida la que abre todas las organizaciones, están en [cuentas-de-acceso.md](cuentas-de-acceso.md).
 
 1. Abre http://127.0.0.1:5181/login
-2. Usuario `oskarmantilla1708`, contraseña `Oskar-1708`
-3. Pulsa **Iniciar sesión**
-4. Elige la organización **MicroPyramid**
+2. Entra, por ejemplo, con el usuario `oskarmantilla1708` y la contraseña de ese documento.
+3. Elige la organización **MicroPyramid**.
 
-Esa organización ya tiene datos de prueba: 20 leads, 10 cuentas, 15 contactos, 10 oportunidades, 5 tickets y 50 facturas. Esa cuenta es administrador de esa organización.
+Esa organización ya tiene datos de prueba: 20 leads, 10 cuentas, 15 contactos, 10 oportunidades, 5 tickets y 50 facturas.
 
 ### Admin de Django
 

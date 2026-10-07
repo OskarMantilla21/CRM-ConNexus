@@ -37,7 +37,7 @@ Un paquete de industria puede cambiar las palabras de la interfaz (por ejemplo, 
 
 | Pantalla | Ruta | Qué hace la persona |
 |---|---|---|
-| Entrar | `/login` | Escribe su usuario y su contraseña. No pide correo. |
+| Entrar | `/login` | Escribe su usuario y su contraseña. Las cuentas de esta máquina están en [pruebas/cuentas-de-acceso.md](pruebas/cuentas-de-acceso.md). |
 | Confirmar enlace | `/login/verify?token=…` | La página solo muestra Continuar. El enlace se gasta al pulsar, no al abrir. Caduca en unos 10 minutos. En esta máquina el mensaje sale en `docker compose logs celery-worker`, no en el buzón. |
 | Elegir empresa | `/org` | Lista las empresas de esa cuenta, con su rol. Puede crear una empresa nueva en `/org/new`. |
 | Directorio | `/plataforma` | Solo el super rol. Si entra otra persona, vuelve a `/org`. |

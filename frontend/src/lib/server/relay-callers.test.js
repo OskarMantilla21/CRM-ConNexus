@@ -62,7 +62,7 @@ afterEach(() => {
   delete privateEnv.RELAY_SECRET;
 });
 
-describe('password sign-in (records the address on the audit row)', () => {
+describe('password sign-in (the sign-in audit row records the address)', () => {
   const submit = () => {
     const body = new FormData();
     body.set('username', 'ada');

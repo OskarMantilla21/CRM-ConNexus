@@ -148,6 +148,16 @@ async function handleOAuthCallback(code, returnedState, cookies, visitor) {
   throw redirect(307, '/org');
 }
 
+/**
+ * Words the API uses for a refused sign-in. Anything else stays off the page:
+ * a token endpoint's body does not belong in the form.
+ * @param {unknown} message
+ */
+function refusedLogin(message) {
+  if (message === 'User account is disabled') return tx('User account is disabled');
+  return tx('Invalid username or password');
+}
+
 /** @type {import('@sveltejs/kit').Actions} */
 export const actions = {
   default: async ({ request, cookies, getClientAddress }) => {
@@ -165,6 +175,7 @@ export const actions = {
         `${apiUrl}/api/auth/password/`,
         { username, password },
         {
+          // The sign-in audit row records who signed in; see `$lib/server/relay.js`.
           headers: {
             'Content-Type': 'application/json',
             ...relayHeaders({ getClientAddress, request })
@@ -172,10 +183,12 @@ export const actions = {
           timeout: 10000
         }
       );
+
       const { access_token, refresh_token } = response.data;
       cookies.set('jwt_access', access_token, getCookieOptions(60 * 60 * 24));
       cookies.set('jwt_refresh', refresh_token, getCookieOptions(60 * 60 * 24 * 365));
-    } catch (error) {
+    } catch (/** @type {any} */ error) {
+      // Do not log `error`: axios keeps the posted password on `config.data`.
       const status = error.response?.status;
       const apiError = error.response?.data?.error;
       if (status === 429) {
@@ -186,7 +199,11 @@ export const actions = {
       if (status === 403 && apiError === 'User account is disabled') {
         return fail(403, { error: tx('User account is disabled') });
       }
-      return fail(400, { error: tx('Invalid username or password') });
+      if (error.response) {
+        return fail(400, { error: refusedLogin(apiError) });
+      }
+      console.error('Password sign-in failed:', describeError(error));
+      return fail(400, { error: tx('Something went wrong. Please try again.') });
     }
 
     throw redirect(303, '/org');

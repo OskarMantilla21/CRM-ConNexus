@@ -10,6 +10,7 @@ from common.views.auth_views import (
     MagicLinkRequestView,
     MagicLinkVerifyCodeView,
     MagicLinkVerifyView,
+    PasswordLoginView,
     MeView,
     PasswordLoginView,
     OrgAwareTokenRefreshView,

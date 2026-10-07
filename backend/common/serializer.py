@@ -81,6 +81,8 @@ class OrgAwareRefreshToken(RefreshToken):
         # Add user info to token (avoids extra API calls for display)
         if user:
             token["user_email"] = user.email
+            # The name they set. The email's local part only fills in an
+            # account that never got one.
             token["user_name"] = (user.name or "").strip() or (
                 user.email.split("@", 1)[0] if user.email else ""
             )
