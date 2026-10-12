@@ -48,6 +48,10 @@
 <HelpCenterShell name={data.name} slug={data.slug}>
   <h1>{tx('How can we help?')}</h1>
 
+  <p class="ask">
+    <a href={resolve(`/help-center/${data.slug}/chat`)}>{tx('Chat with us')}</a>
+  </p>
+
   <form method="GET" class="find" role="search">
     <label class="sr-only" for="q">{tx('Search help articles')}</label>
     <input
@@ -118,6 +122,20 @@
     font-size: 22px;
     font-weight: 600;
     line-height: 1.3;
+  }
+  .ask {
+    margin: -4px 0 16px;
+  }
+  .ask a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: var(--v2-ink, #111827);
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
   }
   .find {
     display: flex;

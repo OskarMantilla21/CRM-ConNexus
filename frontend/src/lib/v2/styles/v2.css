@@ -147,18 +147,27 @@
   padding-right: var(--v2-pad);
 }
 .v2-app {
+  --v2-ask: 320px;
   height: 100vh;
   height: 100dvh;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+.v2-workspace {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
-.v2-app > .v2-shell {
+.v2-workspace > .v2-shell {
   flex: 1;
   min-height: 0;
   height: auto;
 }
-.v2-app.is-nav-hidden > .v2-shell > .v2-nav {
+.v2-app.is-nav-hidden .v2-shell > .v2-nav {
   display: none;
 }
 .v2-topbar {
@@ -1792,7 +1801,7 @@ a.v2-setting:hover {
 }
 .v2-fab {
   position: fixed;
-  right: 16px;
+  right: calc(var(--v2-ask, 0px) + 16px);
   bottom: 66px;
   width: 46px;
   height: 46px;
@@ -1900,6 +1909,7 @@ a.v2-setting:hover {
   .v2-root {
     --v2-pad: 15px;
     --v2-row: 42px;
+    --v2-ask: 42vw;
   }
   .v2-nav {
     display: none;

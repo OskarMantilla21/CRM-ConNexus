@@ -273,6 +273,10 @@ def api_path_allowed(path, permissions, role=None):
         return True
     if path.startswith("/api/auth/") or path.startswith("/api/profile/"):
         return True
+    # The screen question does not read records. It comments on the page the
+    # caller already opened, so every role that can open a screen can ask.
+    if path.startswith("/api/assistants/screen/"):
+        return True
     if role == "ADMIN" and (
         path.startswith("/api/users/") or path.startswith("/api/user/")
     ):

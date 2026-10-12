@@ -395,7 +395,7 @@
       </select>
       <p class="v2-sub" style="font-size:11px;margin:6px 0 8px">
         {tx(
-          'Hold ⌘ or Ctrl to pick more than one. Clearing the list leaves the task with nobody on it.'
+          'Click one name to leave the task with that person. Hold ⌘ or Ctrl to add another. Clearing the list leaves the task with nobody on it.'
         )}
       </p>
       <button class="v2-btn" type="submit">{tx('Save')}</button>

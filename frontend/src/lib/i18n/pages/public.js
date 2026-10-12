@@ -222,6 +222,44 @@ export const messages = {
     es: '{title} | Centro de ayuda de {name}',
     pt: '{title} | Central de ajuda de {name}'
   },
+  'Chat with us': { es: 'Chatea con nosotros', pt: 'Converse conosco' },
+  'Chat | {name} help center': {
+    es: 'Chat | Centro de ayuda de {name}',
+    pt: 'Chat | Central de ajuda de {name}'
+  },
+  'Ask {name} about a product or a service.': {
+    es: 'Pregúntale a {name} por un producto o un servicio.',
+    pt: 'Pergunte a {name} sobre um produto ou um serviço.'
+  },
+  'Hello! I am with the {name} team. Tell me what you need.': {
+    es: '¡Hola! Soy del equipo de {name}. Cuéntame qué necesitas.',
+    pt: 'Olá! Sou da equipe de {name}. Conte o que você precisa.'
+  },
+  Message: { es: 'Mensaje', pt: 'Mensagem' },
+  'What do you need?': { es: '¿Qué necesitas?', pt: 'O que você precisa?' },
+  'Write a message.': { es: 'Escribe un mensaje.', pt: 'Escreva uma mensagem.' },
+  'A person from the team will continue this chat.': {
+    es: 'Una persona del equipo continuará este chat.',
+    pt: 'Uma pessoa da equipe vai continuar este chat.'
+  },
+  'The assistant did not answer. Try again shortly.': {
+    es: 'El asistente no respondió. Inténtalo de nuevo en un momento.',
+    pt: 'O assistente não respondeu. Tente de novo em instantes.'
+  },
+  'Too many requests. Try again shortly.': {
+    es: 'Demasiadas consultas. Inténtalo de nuevo en un momento.',
+    pt: 'Consultas demais. Tente de novo em instantes.'
+  },
+  'Ask Gemini': { es: 'Pregúntale a Gemini', pt: 'Pergunte ao Gemini' },
+  'Ask Grok': { es: 'Pregúntale a Grok', pt: 'Pergunte ao Grok' },
+  'An assistant has to be connected on Today before this can answer.': {
+    es: 'Para responder, un asistente tiene que estar conectado en Hoy.',
+    pt: 'Para responder, um assistente precisa estar conectado em Hoje.'
+  },
+  'Answers from what this screen shows.': {
+    es: 'Responde con lo que muestra esta pantalla.',
+    pt: 'Responde com o que esta tela mostra.'
+  },
 
   // Customer portal
   'Sign in to support': { es: 'Entrar a soporte', pt: 'Entrar no suporte' },

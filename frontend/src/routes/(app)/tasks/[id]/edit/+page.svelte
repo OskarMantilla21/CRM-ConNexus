@@ -120,7 +120,9 @@
         {/each}
       </select>
       <span class="v2-sub" style="font-size:11.5px">
-        {tx('Everyone selected here is on the task. Deselecting a name takes them off it.')}
+        {tx(
+          'Click one name to leave only that person. Everyone selected here is on the task, and deselecting a name takes them off it.'
+        )}
       </span>
     </label>
 

@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const { canonicalSlug, getHelpArticle, getHelpCenter, listAllArticles, pageNumber, sitemapXml } =
-  await import('$lib/server/help-center.js');
+const {
+  canonicalSlug,
+  getHelpArticle,
+  getHelpCenter,
+  listAllArticles,
+  pageNumber,
+  postHelpChat,
+  sitemapXml
+} = await import('$lib/server/help-center.js');
 const { env: privateEnv } = await import('$env/dynamic/private');
 
 const SECRET = 'r'.repeat(48);
@@ -95,6 +102,25 @@ describe('API calls', () => {
       Accept: 'application/json',
       'X-Forwarded-For': '198.51.100.7'
     });
+  });
+
+  it('posts the chat without a staff credential', async () => {
+    privateEnv.RELAY_SECRET = SECRET;
+    fetchMock.mockResolvedValue(
+      reply(200, { reply: '¿Cuál es el objetivo?', transferred: false, system: 'hidden' })
+    );
+    const result = await postHelpChat(event({ cookie: 'jwt_access=staff' }), 'acme', {
+      message: 'Hola',
+      history: []
+    });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('http://localhost:8000/api/public/help/acme/chat/');
+    expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBeUndefined();
+    expect(init.headers.cookie).toBeUndefined();
+    expect(init.headers['X-BottleCRM-Client-IP']).toBe('198.51.100.7');
+    expect(JSON.parse(init.body)).toEqual({ message: 'Hola', history: [] });
+    expect(result).toEqual({ reply: '¿Cuál es el objetivo?', transferred: false });
   });
 
   it('turns the API 404 into a page 404', async () => {

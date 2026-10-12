@@ -581,9 +581,9 @@ export const messages = {
   email: { es: 'correo', pt: 'e-mail' },
   'escalated {n}×': { es: 'escalado {n}×', pt: 'escalado {n}×' },
   'Every case': { es: 'Todos los tickets', pt: 'Todos os chamados' },
-  'Everyone selected here is on the task. Deselecting a name takes them off it.': {
-    es: 'Todas las personas elegidas aquí están en la tarea. Quitar un nombre lo saca de ella.',
-    pt: 'Todas as pessoas escolhidas aqui estão na tarefa. Desmarcar um nome tira a pessoa dela.'
+  'Click one name to leave only that person. Everyone selected here is on the task, and deselecting a name takes them off it.': {
+    es: 'Haz clic en un nombre para dejar solo a esa persona. Todas las personas elegidas aquí están en la tarea, y quitar un nombre lo saca de ella.',
+    pt: 'Clique em um nome para deixar só essa pessoa. Todas as pessoas escolhidas aqui estão na tarefa, e desmarcar um nome tira a pessoa dela.'
   },
   'Everything is dated': { es: 'Todo tiene fecha', pt: 'Tudo tem data' },
   'Everything on your list is done. Show completed to see what you finished.': {
@@ -626,9 +626,9 @@ export const messages = {
   'Given to nobody': { es: 'Para nadie', pt: 'Para ninguém' },
   'Go to tickets': { es: 'Ir a tickets', pt: 'Ir para chamados' },
   'Grew by {n} over the window': { es: 'Creció {n} en la ventana', pt: 'Cresceu {n} na janela' },
-  'Hold ⌘ or Ctrl to pick more than one. Clearing the list leaves the task with nobody on it.': {
-    es: 'Mantén ⌘ o Ctrl para elegir más de uno. Vaciar la lista deja la tarea sin nadie.',
-    pt: 'Segure ⌘ ou Ctrl para escolher mais de um. Limpar a lista deixa a tarefa sem ninguém.'
+  'Click one name to leave the task with that person. Hold ⌘ or Ctrl to add another. Clearing the list leaves the task with nobody on it.': {
+    es: 'Haz clic en un nombre para dejar la tarea con esa persona. Mantén ⌘ o Ctrl para añadir otra. Vaciar la lista deja la tarea sin nadie.',
+    pt: 'Clique em um nome para deixar a tarefa com essa pessoa. Segure ⌘ ou Ctrl para adicionar outra. Limpar a lista deixa a tarefa sem ninguém.'
   },
   'Hold ctrl or cmd to pick more than one.': {
     es: 'Mantén ctrl o cmd para elegir más de uno.',
@@ -950,9 +950,9 @@ export const messages = {
     },
   'Opened and closed, per day': { es: 'Abiertos y cerrados, por día', pt: 'Abertos e fechados, por dia' },
   'Opening…': { es: 'Abriendo…', pt: 'Abrindo…' },
-  'Optional, and more than one is allowed. Leave it empty and the task is yours to pick up.': {
-    es: 'Opcional, y se permite más de uno. Déjalo vacío y la tarea queda para que la tomes tú.',
-    pt: 'Opcional, e mais de um é permitido. Deixe vazio e a tarefa fica para você assumir.'
+  'Click one name to assign the task to that person. Hold Ctrl to add another. Leave it empty and the task is yours to pick up.': {
+    es: 'Haz clic en un nombre para asignar la tarea a esa persona. Mantén Ctrl para añadir otra. Déjalo vacío y la tarea queda para que la tomes tú.',
+    pt: 'Clique em um nome para atribuir a tarefa a essa pessoa. Segure Ctrl para adicionar outra. Deixe vazio e a tarefa fica para você assumir.'
   },
   'Optional. Hold ctrl or cmd to pick more than one.': {
     es: 'Opcional. Mantén ctrl o cmd para elegir más de uno.',

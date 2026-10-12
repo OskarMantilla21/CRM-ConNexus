@@ -194,6 +194,9 @@ class Org(BaseModel):
         null=True,
         validators=[validate_help_center_slug],
     )
+    # Keys the CEO pasted for Gemini and Grok. The assistants API is the only
+    # reader, and it never puts a key in a response. Kept off every serializer.
+    assistant_keys = models.JSONField(blank=True, null=True, default=None)
 
     class Meta:
         verbose_name = "Organization"

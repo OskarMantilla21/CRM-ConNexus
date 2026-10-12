@@ -6,7 +6,7 @@ exactly `/api/public/help/` and nothing wider. See `cases/help_center_views.py`.
 
 from django.urls import path
 
-from cases import help_center_views
+from cases import help_center_views, help_chat
 
 app_name = "public_help"
 
@@ -20,5 +20,10 @@ urlpatterns = [
         "<str:slug>/articles/<uid:pk>/",
         help_center_views.PublicHelpCenterArticleView.as_view(),
         name="article",
+    ),
+    path(
+        "<str:slug>/chat/",
+        help_chat.PublicHelpChatView.as_view(),
+        name="chat",
     ),
 ]
