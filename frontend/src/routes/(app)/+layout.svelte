@@ -7,15 +7,19 @@
   import { afterNavigate } from '$app/navigation';
   import Sidebar from '$lib/v2/components/Sidebar.svelte';
   import AskScreen from '$lib/v2/components/AskScreen.svelte';
+  import Spark from '$lib/v2/components/assistant/Spark.svelte';
   import CommandPalette from '$lib/v2/components/CommandPalette.svelte';
   import BrandMark from '$lib/v2/components/BrandMark.svelte';
-  import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
+  import UserMenu from '$lib/v2/components/UserMenu.svelte';
+  import NotificationBell from '$lib/v2/components/NotificationBell.svelte';
   import { Search, Sun, Columns3, LifeBuoy, Receipt, Clock, Plus, Menu } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
   import { ALL_PERMISSIONS } from '$lib/access.js';
 
-  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[], role?: string, user?: { name?: string, email?: string }, screenAssistant?: { connected?: boolean, provider?: string, name?: string } }, children: import('svelte').Snippet }} */
+  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[], role?: string, user?: { name?: string, email?: string }, screenAssistant?: { connected?: boolean, provider?: string, name?: string, model?: string, models?: { id: string, provider: string, name: string }[] } }, children: import('svelte').Snippet }} */
   let { data, children } = $props();
+
+  let askOpen = $state(false);
 
   let permissions = $derived(data.permissions ?? ALL_PERMISSIONS);
   let canSearch = $derived(
@@ -25,8 +29,8 @@
   let paletteOpen = $state(false);
 
   // The sidebar is hidden below 768px, and the tab bar only carries four of the
-  // ~16 destinations. This drawer is how a phone reaches the rest of the nav and
-  // the footer: profile, notifications, help, sign out. It reuses the same
+  // ~16 destinations. This drawer is how a phone reaches the rest of the nav.
+  // Account, organisation and sign-out live in the avatar menu. It reuses the same
   // <Sidebar>, so the two can never drift apart. Closes itself on navigation.
   let menuOpen = $state(false);
   let navHidden = $state(false);
@@ -90,22 +94,34 @@
       <BrandMark />
     </a>
     <div class="v2-topbar-end">
+      <button
+        class="v2-icon-btn ask-launch"
+        type="button"
+        aria-pressed={askOpen}
+        aria-label={tx(askOpen ? 'Close assistant' : 'Open assistant')}
+        onclick={() => (askOpen = !askOpen)}
+      >
+        <span class="ask-spark"><Spark /></span>
+      </button>
       {#if canSearch}
         <button class="v2-icon-btn" type="button" onclick={() => (paletteOpen = true)} aria-label={tx('Search')}>
           <Search size={18} />
         </button>
       {/if}
-      <LanguageSelect compact />
+      {#if permissions.includes('serve')}
+        <NotificationBell count={data.counts?.notifications ?? 0} />
+      {/if}
+      <UserMenu user={data.user} role={data.role} />
     </div>
   </header>
   <div class="v2-shell">
   <Sidebar
     counts={data.counts}
     org={data.org}
-    user={data.user}
     role={data.role}
     {permissions}
     terminology={data.org.terminology}
+    oncollapse={() => (navHidden = true)}
   />
   <div class="v2-main">
     {@render children()}
@@ -157,7 +173,6 @@
         <Sidebar
           counts={data.counts}
           org={data.org}
-          user={data.user}
           role={data.role}
           {permissions}
           terminology={data.org.terminology}
@@ -171,5 +186,20 @@
   {/if}
   </div>
   </div>
-  <AskScreen assistant={data.screenAssistant} />
+  <AskScreen
+    open={askOpen}
+    assistant={data.screenAssistant}
+    user={data.user}
+    onclose={() => (askOpen = false)}
+  />
 </div>
+
+<style>
+  .ask-spark {
+    font-size: 18px;
+    display: grid;
+  }
+  .ask-launch[aria-pressed='true'] {
+    background: var(--v2-ember-soft);
+  }
+</style>

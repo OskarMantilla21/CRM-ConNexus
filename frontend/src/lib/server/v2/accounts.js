@@ -344,6 +344,7 @@ export const EDITABLE_FIELDS = [
   'state',
   'postcode',
   'country',
+  'currency',
   'description'
 ];
 

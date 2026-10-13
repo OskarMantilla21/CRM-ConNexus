@@ -164,7 +164,7 @@ export async function load(event) {
       name: event.locals.user?.name || '',
       email: event.locals.user?.email || ''
     },
-    /** @type {{ connected: boolean, provider?: string, name?: string }} */
+    /** @type {{ connected: boolean, provider?: string, name?: string, model?: string, models?: { id: string, provider: string, name: string }[] }} */
     screenAssistant: { connected: false }
   };
 
@@ -194,10 +194,24 @@ export async function load(event) {
 
   const assistantResult = results[countKeys.length + 1];
   if (assistantResult.status === 'fulfilled' && assistantResult.value?.connected === true) {
+    const models = Array.isArray(assistantResult.value.models)
+      ? assistantResult.value.models
+          .filter(
+            (/** @type {any} */ item) =>
+              item && typeof item.id === 'string' && typeof item.provider === 'string'
+          )
+          .map((/** @type {any} */ item) => ({
+            id: item.id,
+            provider: item.provider,
+            name: typeof item.name === 'string' ? item.name : item.provider
+          }))
+      : [];
     shell.screenAssistant = {
       connected: true,
       provider: assistantResult.value.provider,
-      name: assistantResult.value.name
+      name: assistantResult.value.name,
+      model: typeof assistantResult.value.model === 'string' ? assistantResult.value.model : '',
+      models
     };
   }
 

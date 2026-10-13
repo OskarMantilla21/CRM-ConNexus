@@ -38,11 +38,17 @@
       annual_revenue: '',
       city: '',
       country: data.defaults.country,
+      address_line: '',
+      state: '',
+      postcode: '',
+      currency: '',
       description: '',
       assigned_to: '',
       ...(result?.values ?? {})
     }))
   );
+
+  let detail = $state(1);
 
   let touched = $state(/** @type {Record<string, boolean>} */ ({}));
   let submitted = $state(false);
@@ -84,6 +90,15 @@
   const check = async ({ cancel }) => {
     submitted = true;
     if (!valid) {
+      const stepOf = (field) =>
+        field === 'name'
+          ? 1
+          : ['email', 'phone', 'website', 'industry', 'assigned_to'].includes(field)
+            ? 2
+            : ['number_of_employees', 'annual_revenue', 'city', 'country', 'description'].includes(field)
+              ? 3
+              : 4;
+      detail = Math.max(detail, ...Object.keys(errors).map(stepOf));
       cancel();
       await tick();
       /** @type {HTMLElement | null} */
@@ -141,7 +156,9 @@
       {/if}
     </div>
 
-    <div class="pair">
+    <p class="v2-sub" style="margin:0 0 12px">{tx('Step {n} of {total}', { n: detail, total: 4 })}</p>
+
+    <div class="pair" hidden={detail < 2}>
       <div class="v2-field">
         <label for="f-industry">{tx('Industry')}</label>
         <select id="f-industry" name="industry" class="v2-input" bind:value={form.industry}>
@@ -163,7 +180,7 @@
       </div>
     </div>
 
-    <div class="pair">
+    <div class="pair" hidden={detail < 2}>
       <div class="v2-field">
         <label for="f-email">{tx('Email')}</label>
         <input
@@ -191,12 +208,12 @@
       </div>
     </div>
 
-    <div class="v2-field">
+    <div class="v2-field" hidden={detail < 2}>
       <label for="f-website">{tx('Website')}</label>
       <input id="f-website" name="website" class="v2-input" type="url" bind:value={form.website} />
     </div>
 
-    <div class="pair">
+    <div class="pair" hidden={detail < 3}>
       <div class="v2-field">
         <label for="f-staff">{tx('Headcount')}</label>
         <input
@@ -227,7 +244,7 @@
       </div>
     </div>
 
-    <div class="pair">
+    <div class="pair" hidden={detail < 3}>
       <div class="v2-field">
         <label for="f-city">{tx('City')}</label>
         <input id="f-city" name="city" class="v2-input" bind:value={form.city} />
@@ -243,7 +260,7 @@
       </div>
     </div>
 
-    <div class="v2-field">
+    <div class="v2-field" hidden={detail < 3}>
       <label for="f-notes">{tx('Notes')}</label>
       <textarea
         id="f-notes"
@@ -253,6 +270,32 @@
         bind:value={form.description}></textarea>
     </div>
 
+    <div class="pair" hidden={detail < 4}>
+      <div class="v2-field">
+        <label for="f-line">{tx('Street address')}</label>
+        <input id="f-line" name="address_line" class="v2-input" maxlength="255" bind:value={form.address_line} />
+      </div>
+      <div class="v2-field">
+        <label for="f-region">{tx('Region')}</label>
+        <input id="f-region" name="state" class="v2-input" maxlength="255" bind:value={form.state} />
+      </div>
+    </div>
+    <div class="pair" hidden={detail < 4}>
+      <div class="v2-field">
+        <label for="f-post">{tx('Postal code')}</label>
+        <input id="f-post" name="postcode" class="v2-input" maxlength="64" bind:value={form.postcode} />
+      </div>
+      <div class="v2-field">
+        <label for="f-currency">{tx('Currency')}</label>
+        <select id="f-currency" name="currency" class="v2-input" bind:value={form.currency}>
+          <option value="">{tx('Not recorded')}</option>
+          {#each data.currencies as c (c.code)}
+            <option value={c.code}>{c.label}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+
     <DuplicateNotice
       module="accounts"
       values={{ name: form.name, email: form.email, phone: form.phone, website: form.website }}
@@ -260,6 +303,9 @@
 
     <div class="actions">
       <button class="v2-btn v2-btn-primary" type="submit">{tx('Create account')}</button>
+      {#if detail < 4}
+        <button class="v2-btn" type="button" onclick={() => (detail += 1)}>{tx('More details')}</button>
+      {/if}
       <a class="v2-btn" href={resolve('/accounts')}>{tx('Cancel')}</a>
     </div>
   </form>

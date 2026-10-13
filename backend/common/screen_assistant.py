@@ -9,7 +9,15 @@ kept valid: a screen that does not fit is shortened by whole rows.
 import json
 import re
 
-from common.assistants import ASSISTANTS, converse, key_for
+from common.assistants import (
+    ASSISTANTS,
+    MODEL_CHOICES,
+    connected_ids,
+    converse,
+    key_for,
+    preferred,
+    provider_runtime,
+)
 
 _SECRET_KEY = re.compile(
     r"password|api[_-]?key|secret|token|authorization|jwt|cookie|credential|assistant_keys",
@@ -87,7 +95,7 @@ Atender: Tareas (/tasks) tienen lista, tablero y calendario. Nueva tarea está e
 
 Cobrar: Facturas (/invoices), presupuestos (/invoices/estimates), recurrentes (/invoices/recurring) y productos (/invoices/products). Un pago guarda medio, fecha, monto y referencia, sin el número de la tarjeta. Informes y plantillas están en ese mismo grupo.
 
-Administrar: Personas (/team) es el equipo. El CEO crea administradores y empleados. Un administrador solo crea empleados y solo puede darles parte de horas, atender o vender. Un empleado no crea cuentas. Ajustes (/settings) tiene la organización, embudos, etiquetas, campos, formularios web, centro de ayuda, horarios, aprobaciones y webhooks.
+Administrar: Empleados (/team) es donde se invita o crea un empleado y donde se edita, suspende o elimina. Un administrador solo crea empleados. Un empleado no crea cuentas. El CEO crea administradores en Ajustes, pestaña Seguridad y accesos. Ajustes (/settings) concentra la configuración global: integraciones de IA (solo el CEO), datos generales de la organización, y seguridad (roles, contraseñas y auditoría). Embudos, etiquetas, campos, formularios, centro de ayuda, horarios, aprobaciones y webhooks están en Ajustes, pestaña Producto. Las claves de IA no se configuran en ninguna otra pantalla.
 
 Para todos: perfil (/profile) cambia el nombre, el teléfono, el idioma y, si hay varias, la empresa. Notificaciones (/notifications) son solo las de esa persona. La búsqueda es Ctrl+K donde el menú la muestra. Entrar es con usuario y contraseña.
 """
@@ -99,34 +107,48 @@ class ScreenNotConnected(Exception):
 
 
 def connected(org):
-    """The first connected assistant, Gemini then Grok, without its key."""
-    for item in ASSISTANTS:
-        if key_for(org, item["id"]):
-            return {"connected": True, "provider": item["id"], "name": item["name"]}
-    return {"connected": False}
+    """The assistant calls should use, without its key. The saved default wins.
+
+    ``models`` lists every model of a connected provider. It is what the chat
+    may offer. A key is never in this payload.
+    """
+    provider = preferred(org)
+    if not provider:
+        return {"connected": False, "models": []}
+    name = next(item["name"] for item in ASSISTANTS if item["id"] == provider)
+    model, _limit = provider_runtime(org, provider)
+    return {
+        "connected": True,
+        "provider": provider,
+        "name": name,
+        "model": model,
+        "models": _model_choices(org),
+    }
 
 
-def ask(org, path, question, screen, profile=None):
+def ask(org, path, question, screen, profile=None, *, model=None, attachment=None, filename=None):
     """One reply. Raises ScreenNotConnected when no key is stored.
 
     The guide covers every function. `profile` limits that guide to the menu
     this person actually has. The screen still supplies the records.
+    ``model`` is used only when it belongs to a provider this org connected.
     """
-    chosen = None
-    api_key = None
-    for item in ASSISTANTS:
-        key = key_for(org, item["id"])
-        if key:
-            chosen = item["id"]
-            api_key = key
-            break
+    chosen, requested = _resolve(org, model)
+    api_key = key_for(org, chosen) if chosen else None
     if not api_key:
         raise ScreenNotConnected()
-    text = _user_text(path, question, screen)
+    note = _note(attachment, filename, api_key)
+    text = _user_text(path, question, screen, note)
     if api_key in text:
         text = text.replace(api_key, "")
+    stored, limit = provider_runtime(org, chosen)
     answer = converse(
-        chosen, api_key, _prompt(profile), [{"role": "user", "content": text}]
+        chosen,
+        api_key,
+        _prompt(profile),
+        [{"role": "user", "content": text}],
+        requested or stored,
+        limit,
     )
     if api_key in answer or "assistant_keys" in answer.lower():
         raise ScreenNotConnected()
@@ -171,7 +193,57 @@ def _for_person(profile):
     return " ".join(lines)
 
 
-def _user_text(path, question, screen):
+def _model_choices(org):
+    """Connected providers only, in the order the settings screen uses."""
+    rows = []
+    linked = connected_ids(org)
+    for item in ASSISTANTS:
+        if item["id"] not in linked:
+            continue
+        for model in MODEL_CHOICES.get(item["id"], ()):
+            rows.append({"id": model, "provider": item["id"], "name": item["name"]})
+    return rows
+
+
+def _resolve(org, model):
+    """A requested model, or the saved default when the request names none."""
+    fallback = preferred(org)
+    if isinstance(model, str):
+        wanted = model.strip()
+        for item in ASSISTANTS:
+            if item["id"] in connected_ids(org) and wanted in MODEL_CHOICES.get(item["id"], ()):
+                return item["id"], wanted
+    return fallback, None
+
+
+def _note(value, filename, api_key):
+    """A short text excerpt. Anything that looks like a secret is dropped."""
+    if not isinstance(value, str) or not value.strip():
+        return ""
+    lines = []
+    for line in value.splitlines():
+        text = " ".join(line.split())
+        if not text or "token=" in text.lower():
+            continue
+        if len(text) > 40 and text.count(".") == 2 and " " not in text:
+            continue
+        lines.append(text[:300])
+        if sum(len(item) + 1 for item in lines) >= 2000:
+            break
+    body = "\n".join(lines)[:2000].strip()
+    if not body:
+        return ""
+    if api_key and api_key in body:
+        body = body.replace(api_key, "")
+    label = "documento"
+    if isinstance(filename, str):
+        cleaned = re.sub(r"[^A-Za-z0-9._ -]", "", filename).strip()[:80]
+        if cleaned:
+            label = cleaned
+    return f"Documento adjunto ({label}):\n{body}\n\n"
+
+
+def _user_text(path, question, screen, note=""):
     safe_path = path if isinstance(path, str) else "/"
     if not re.fullmatch(r"/[A-Za-z0-9/_\-]{0,180}", safe_path):
         safe_path = "/"
@@ -179,7 +251,8 @@ def _user_text(path, question, screen):
     if body in ("{}", "[]", "null"):
         body = "(sin datos)"
     asked = " ".join(str(question or "").split())[:400]
-    return f"Pantalla: {safe_path}\n\nDatos en pantalla:\n{body}\n\nPregunta:\n{asked}"
+    extra = note if isinstance(note, str) else ""
+    return f"Pantalla: {safe_path}\n\nDatos en pantalla:\n{body}\n\n{extra}Pregunta:\n{asked}"
 
 
 def _fit(cleaned):

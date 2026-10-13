@@ -42,11 +42,12 @@ def _person(org, email, role, grants=None):
 def test_a_member_can_ask_about_the_open_screen(org_a, monkeypatch):
     seen = {}
 
-    def _capture(provider, api_key, system, turns):
+    def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
         seen["provider"] = provider
         seen["api_key"] = api_key
         seen["system"] = system
         seen["turns"] = turns
+        seen["model"] = model
         return "Hay un prospecto: Panadería Luna."
 
     monkeypatch.setattr("common.screen_assistant.converse", _capture)
@@ -56,7 +57,13 @@ def test_a_member_can_ask_about_the_open_screen(org_a, monkeypatch):
 
     listed = employee.get("/api/assistants/screen/")
     assert listed.status_code == status.HTTP_200_OK
-    assert listed.data == {"connected": True, "provider": "gemini", "name": "Gemini"}
+    assert listed.data == {
+        "connected": True,
+        "provider": "gemini",
+        "name": "Gemini",
+        "model": "gemini-3.8-flash",
+        "models": [{"id": "gemini-3.8-flash", "provider": "gemini", "name": "Gemini"}],
+    }
     assert "gemini-secret" not in json.dumps(listed.data)
 
     answer = employee.post(
@@ -90,7 +97,7 @@ def test_a_member_can_ask_about_the_open_screen(org_a, monkeypatch):
 def test_grok_is_used_when_gemini_is_not_connected(org_a, monkeypatch):
     seen = {}
 
-    def _capture(provider, api_key, system, turns):
+    def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
         seen["provider"] = provider
         return "Nada en esta pantalla."
 
@@ -107,6 +114,51 @@ def test_grok_is_used_when_gemini_is_not_connected(org_a, monkeypatch):
     assert seen["provider"] == "grok"
     assert response.data["provider"] == "grok"
     assert "grok-secret-key" not in json.dumps(response.data)
+
+
+@pytest.mark.django_db
+def test_a_model_is_used_only_when_that_provider_is_connected(org_a, monkeypatch):
+    seen = {}
+
+    def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
+        seen["provider"] = provider
+        seen["model"] = model
+        seen["turns"] = turns
+        return "Listo."
+
+    monkeypatch.setattr("common.screen_assistant.converse", _capture)
+    org_a.assistant_keys = {"gemini": "gemini-secret-SHOULD-NOT-LEAK"}
+    org_a.save(update_fields=["assistant_keys"])
+    employee = _person(org_a, "empleado.model@test.com", "EMPLOYEE", ["daily_work"])
+
+    refused = employee.post(
+        "/api/assistants/screen/",
+        {
+            "path": "/leads",
+            "question": "Resume",
+            "model": "gpt-4o",
+            "screen": {},
+            "attachment": "token=abc gemini-secret-SHOULD-NOT-LEAK\nNotas del cliente",
+            "filename": "../notas.md",
+        },
+        format="json",
+    )
+    assert refused.status_code == status.HTTP_200_OK
+    assert seen["provider"] == "gemini"
+    assert seen["model"] == "gemini-3.8-flash"
+    content = seen["turns"][0]["content"]
+    assert "Notas del cliente" in content
+    assert "token=" not in content
+    assert "gemini-secret" not in content
+    assert "../" not in content
+
+    chosen = employee.post(
+        "/api/assistants/screen/",
+        {"path": "/leads", "question": "Resume", "model": "gemini-3.8-flash", "screen": {}},
+        format="json",
+    )
+    assert chosen.status_code == status.HTTP_200_OK
+    assert seen["model"] == "gemini-3.8-flash"
 
 
 @pytest.mark.django_db

@@ -24,6 +24,7 @@
    * where they live: people go looking, find nothing, and conclude the feature
    * does not exist.
    */
+  import { page } from '$app/state';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { count, shortDate } from '$lib/v2/format.js';
   import { tx } from '$lib/i18n/translate.js';
@@ -31,9 +32,13 @@
   import '$lib/i18n/pages/bill.js';
   import { isOrgAdmin } from '$lib/admin.js';
   import { ChevronRight, ShieldAlert } from '@lucide/svelte';
+  import '$lib/i18n/pages/sell.js';
+  import AiIntegrationsPanel from '$lib/v2/components/settings/AiIntegrationsPanel.svelte';
+  import GeneralSettingsPanel from '$lib/v2/components/settings/GeneralSettingsPanel.svelte';
+  import SecurityAccessPanel from '$lib/v2/components/settings/SecurityAccessPanel.svelte';
 
-  /** @type {{ data: any }} */
-  let { data } = $props();
+  /** @type {{ data: any, form: any }} */
+  let { data, form } = $props();
 
   let org = $derived(data.org);
 
@@ -269,22 +274,55 @@
     }
   ]);
 
-  let warnings = $derived(groups.flatMap((g) => g.items).filter((i) => i.warn).length);
+  // Identity, assistants and access now live on their own tabs. What remains
+  // is product configuration: pipelines, tickets, forms. It stays reachable
+  // from here so those screens are not orphaned.
+  const MOVED = new Set([
+    '/team',
+    '/settings/organization',
+    '/settings/api-tokens',
+    '/settings/webhooks',
+    '/settings/audit-log'
+  ]);
+
+  let area = $derived(page.url.searchParams.get('area') || 'general');
+
+  let visibleGroups = $derived(
+    groups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => !MOVED.has(item.href))
+      }))
+      .filter((group) => group.items.length > 0)
+  );
+
+  let warnings = $derived(visibleGroups.flatMap((g) => g.items).filter((i) => i.warn).length);
 </script>
 
 <PageHeader title={tx('Settings')}>
   {#snippet sub()}
     {org.name} · <span class="v2-num">{count(org.member_count)}</span> {tx('members')} · {tx('since')}
     {shortDate(org.created_at)}
-    {#if warnings}
+    {#if area === 'operacion' && warnings}
       · <span class="v2-num">{count(warnings)}</span> {tx('need a look')}
     {/if}
   {/snippet}
 </PageHeader>
 
 <div class="v2-scroll">
+  {#if area === 'ia'}
+    {#if data.role === 'CEO'}
+      <AiIntegrationsPanel {data} {form} />
+    {:else}
+      <div class="v2-pad" style="padding-top:18px">
+        <p class="v2-sub">{tx('Only the CEO connects assistants.')}</p>
+      </div>
+    {/if}
+  {:else if area === 'seguridad'}
+    <SecurityAccessPanel {data} {form} />
+  {:else if area === 'operacion'}
   <div class="v2-pad" style="padding-top:18px;padding-bottom:32px">
-    {#each groups as g (g.label)}
+    {#each visibleGroups as g (g.label)}
       <div class="v2-label" style="margin-bottom:10px">{tx(g.label)}</div>
       <div class="v2-card" style="overflow:hidden;margin-bottom:22px">
         {#each g.items as s (s.href)}
@@ -305,19 +343,13 @@
       </div>
     {/each}
 
-    <!--
-      The org API key is deliberately absent from this page. It is a
-      credential, it was once exposed through nested serializers, and a
-      settings screen that renders it is how the next leak happens. Rotating
-      or revealing it belongs behind an explicit, audited action, not on an
-      index anyone with the URL can load.
-    -->
     <p class="v2-sub" style="font-size:11.5px;margin-top:18px;max-width:64ch">
-      {tx('The organisation API key is not shown here. Credentials are never rendered on a page you can arrive at by browsing. See')}
-      <a href={resolve('/settings/api-tokens')} style="color:inherit">{tx('API tokens')}</a>
-      {tx('for how token values are handled.')}
+      {tx('The organisation API key is not shown here. Credentials are never rendered on a page you can arrive at by browsing.')}
     </p>
   </div>
+  {:else}
+    <GeneralSettingsPanel {data} {form} />
+  {/if}
 </div>
 
 <style>

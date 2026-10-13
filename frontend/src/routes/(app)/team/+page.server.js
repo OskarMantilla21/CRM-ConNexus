@@ -7,6 +7,7 @@ import {
   inviteUser,
   setRole,
   setStatus,
+  deleteUser,
   ROLES,
   actorFromCookies
 } from '$lib/server/v2/team.js';
@@ -35,25 +36,20 @@ export const actions = {
    */
   invite: async ({ cookies, request }) => {
     const form = await request.formData();
-    const actor = actorFromCookies(cookies);
     const name = form.get('name')?.toString().trim() ?? '';
     const username = form.get('username')?.toString().trim() ?? '';
     const password = form.get('password')?.toString() ?? '';
-    // This screen creates an administrator or an employee. A CEO picks which.
-    // An administrator only reaches the employee path.
-    const role = actor.can_manage_administrators
-      ? form.get('role')?.toString() || 'EMPLOYEE'
-      : 'EMPLOYEE';
+    // This screen creates employees. Administrators are created from Settings.
+    const role = 'EMPLOYEE';
+    if (form.get('role')?.toString() && form.get('role')?.toString() !== 'EMPLOYEE') {
+      return fail(400, {
+        invite: { error: tx('Create an administrator from Settings, under Security and access.') }
+      });
+    }
     if (!name) return fail(400, { invite: { error: tx('Enter a name.') } });
     if (!username) return fail(400, { invite: { error: tx('Enter a username.') } });
     if (password.length < 8) {
       return fail(400, { invite: { error: tx('Enter a password of at least 8 characters.') } });
-    }
-    if (!actor.can_manage_administrators && role !== 'EMPLOYEE') {
-      return fail(403, { invite: { error: tx('You can only create employee profiles.') } });
-    }
-    if (role !== 'ADMIN' && role !== 'EMPLOYEE') {
-      return fail(400, { invite: { error: tx('Pick a valid role.') } });
     }
     // The account is still an email. A plain username becomes one the person
     // can type as-is at sign-in, the same way the part before @ already works.
@@ -142,5 +138,24 @@ export const actions = {
       });
     }
     return { statusChanged: userId };
+  },
+
+  /**
+   * Remove the profile from this org. The server refuses the signed-in user,
+   * a CEO when the caller is an administrator, and anyone still linked to
+   * time entries or approvals.
+   */
+  remove: async ({ cookies, request }) => {
+    const userId = (await request.formData()).get('userId')?.toString();
+    if (!userId) return fail(400, { error: tx('Which person?') });
+    try {
+      await deleteUser({ cookies }, userId);
+    } catch (/** @type {any} */ err) {
+      const status = err?.status === 403 ? 403 : err?.status === 409 ? 409 : 400;
+      return fail(status, {
+        error: tx(readableError(err, 'Could not delete that profile.'))
+      });
+    }
+    return { removed: userId };
   }
 };

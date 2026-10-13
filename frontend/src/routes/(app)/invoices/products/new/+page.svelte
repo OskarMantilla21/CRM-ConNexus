@@ -22,6 +22,7 @@
   /* True from submit until the response lands, so a second press during a
      slow save cannot post the product again and create two catalogue rows. */
   let saving = $state(false);
+  let detail = $state(1);
 </script>
 
 <PageHeader title={tx('New product')} record center width="62ch">
@@ -68,6 +69,7 @@
           {form.error}
         </p>
       {/if}
+      <p class="v2-sub" style="margin:0 0 12px">{tx('Step {n} of {total}', { n: detail, total: 3 })}</p>
 
       <label class="v2-field">
         <span class="v2-label">{tx('Name')}</span>
@@ -105,7 +107,7 @@
         </label>
       </div>
 
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;gap:12px;flex-wrap:wrap" hidden={detail < 2}>
         <label class="v2-field" style="flex:1;min-width:160px">
           <span class="v2-label">{tx('Category')}</span>
           <input
@@ -127,11 +129,11 @@
           />
         </label>
       </div>
-      <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px">
+      <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px" hidden={detail < 2}>
         {tx('Category groups the catalogue; leave it blank and the product sits under "Uncategorised". A SKU is optional but must be unique here if you set one.')}
       </p>
 
-      <label class="v2-field">
+      <label class="v2-field" hidden={detail < 3}>
         <span class="v2-label">{tx('Availability')}</span>
         <select
           class="v2-input"
@@ -143,7 +145,7 @@
         </select>
       </label>
 
-      <label class="v2-field">
+      <label class="v2-field" hidden={detail < 3}>
         <span class="v2-label">{tx('Description')}</span>
         <textarea
           class="v2-input"
@@ -158,6 +160,9 @@
         <button class="v2-btn v2-btn-primary" type="submit" disabled={saving}>
           {saving ? tx('Adding…') : tx('Add product')}
         </button>
+        {#if detail < 3}
+          <button class="v2-btn" type="button" onclick={() => (detail += 1)}>{tx('More details')}</button>
+        {/if}
         <a class="v2-btn" href={resolve('/invoices/products')}>{tx('Cancel')}</a>
       </div>
     </form>

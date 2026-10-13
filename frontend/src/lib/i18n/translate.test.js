@@ -34,13 +34,18 @@ describe('safeNext', () => {
 describe('tx', () => {
   it('speaks Spanish by default once the test pin is lifted', () => {
     setClientLocale('es');
-    expect(tx('Sign out')).toBe('Cerrar sesión');
+    expect(tx('Sign out')).toBe('Salir');
+    expect(tx('Sign out of this account')).toBe('Cerrar sesión');
+    expect(tx('Account settings')).toBe('Ajustes de cuenta');
+    expect(tx('Switch organisation')).toBe('Cambiar de organización');
     expect(tx('{n} days ago', { n: 3 })).toBe('hace 3 días');
   });
 
   it('speaks Brazilian Portuguese when asked', () => {
     setClientLocale('pt-BR');
     expect(tx('Sign out')).toBe('Sair');
+    expect(tx('Sign out of this account')).toBe('Encerrar sessão');
+    expect(tx('Switch organisation')).toBe('Trocar de organização');
     expect(tx('Invoices')).toBe('Faturas');
     expect(choiceLabel('Partially_Paid')).toBe('Parcialmente pago');
   });

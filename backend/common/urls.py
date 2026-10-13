@@ -6,6 +6,8 @@ from common.views.assistant_views import (
     AssistantDisconnectView,
     AssistantListView,
     AssistantScreenView,
+    AssistantSettingsView,
+    AssistantTestView,
 )
 from common.views.attachment_views import AttachmentDownloadView
 from common.views.audit_log_views import SecurityAuditLogListView
@@ -85,6 +87,12 @@ urlpatterns = [
     path("dashboard/today/", ApiTodayView.as_view()),
     path("assistants/", AssistantListView.as_view(), name="assistants"),
     path("assistants/screen/", AssistantScreenView.as_view(), name="assistant_screen"),
+    path("assistants/settings/", AssistantSettingsView.as_view(), name="assistant_settings"),
+    path(
+        "assistants/<slug:provider>/test/",
+        AssistantTestView.as_view(),
+        name="assistant_test",
+    ),
     path(
         "assistants/<slug:provider>/connect/",
         AssistantConnectView.as_view(),

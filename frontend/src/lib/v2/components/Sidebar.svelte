@@ -20,15 +20,13 @@
     ChartNoAxesColumn,
     Copy,
     Settings,
-    Bell,
+    ChevronDown,
     CircleHelp,
-    LogOut,
-    ChevronDown
+    PanelLeftClose
   } from '@lucide/svelte';
   import { t } from '$lib/terminology.js';
   import { tx } from '$lib/i18n/translate.js';
   import { ALL_PERMISSIONS } from '$lib/access.js';
-  import { ROLE_LABEL } from '$lib/v2/enums.js';
 
   /**
    * One flat tree, grouped by what the person is doing rather than by which
@@ -42,23 +40,24 @@
    * @type {{
    *   counts?: Record<string, number>,
    *   org?: { name: string },
-   *   user?: { name?: string, email?: string },
    *   role?: string,
    *   permissions?: string[],
-   *   terminology?: Record<string, string> | null
+   *   terminology?: Record<string, string> | null,
+   *   oncollapse?: () => void
    * }}
    */
   let {
     counts = {},
     org = { name: 'ConNexus' },
-    user = { name: '', email: '' },
     role = '',
     permissions = ALL_PERMISSIONS,
-    terminology = undefined
+    terminology = undefined,
+    oncollapse = undefined
   } = $props();
 
   const GROUPS = [
     {
+      id: 'Sell',
       label: 'Sell',
       items: [
         { href: '/', label: 'Today', icon: Calendar, exact: true, permission: 'sell' },
@@ -96,6 +95,7 @@
       ]
     },
     {
+      id: 'Serve',
       label: 'Serve',
       items: [
         { href: '/tasks', label: 'Tasks', icon: SquareCheck, count: 'tasks', permission: 'serve' },
@@ -106,6 +106,7 @@
       ]
     },
     {
+      id: 'Bill',
       label: 'Bill',
       items: [
         {
@@ -129,10 +130,12 @@
       ]
     },
     {
+      id: 'Run',
       label: 'Run',
       items: [
-        { href: '/team', label: 'People', icon: Users, permission: 'team' },
-        { href: '/settings', label: 'Settings', icon: Settings, permission: 'settings' }
+        { href: '/team', label: 'Employees', icon: Users, permission: 'team' },
+        { href: '/settings', label: 'Settings', icon: Settings, permission: 'settings' },
+        { href: '/help', label: 'Help', icon: CircleHelp }
       ]
     }
   ];
@@ -147,6 +150,9 @@
       '/invoices/templates'
     ]
   };
+
+  /** Group ids the person has closed. Absent means "follow the open page". */
+  let collapsed = $state(/** @type {Record<string, boolean>} */ ({}));
 
   let groups = $derived(
     GROUPS.map((group) => ({
@@ -166,17 +172,6 @@
     })).filter((group) => group.items.length > 0)
   );
 
-  let displayName = $derived(
-    (user.name || '').trim() || (user.email || '').split('@')[0] || org.name
-  );
-  let initials = $derived.by(() => {
-    const parts = displayName.split(/\s+/).filter(Boolean);
-    if (parts.length === 0) return '?';
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  });
-  let roleLabel = $derived(role && ROLE_LABEL[role] ? ROLE_LABEL[role] : '');
-
   const isActive = (href, exact) => {
     const path = page.url.pathname;
     if (exact || href === '/') return path === href;
@@ -184,75 +179,77 @@
     if (nested?.some((item) => path === item || path.startsWith(`${item}/`))) return false;
     return path === href || path.startsWith(`${href}/`);
   };
+
+  /** @param {string} id @param {{ href: string, exact?: boolean }[]} items */
+  function groupIsOpen(id, items) {
+    if (Object.prototype.hasOwnProperty.call(collapsed, id)) return !collapsed[id];
+    return items.some((item) => isActive(item.href, item.exact));
+  }
+
+  /** @param {string} id @param {{ href: string, exact?: boolean }[]} items */
+  function toggleGroup(id, items) {
+    collapsed[id] = groupIsOpen(id, items);
+  }
+
+  // Open the section that owns a page when the person arrives there.
+  // A later collapse of that same section stays closed until the path changes.
+  let seenPath = '';
+  $effect(() => {
+    const path = page.url.pathname;
+    if (path === seenPath) return;
+    seenPath = path;
+    for (const group of groups) {
+      if (group.items.some((item) => isActive(item.href, item.exact))) {
+        collapsed[group.id] = false;
+      }
+    }
+  });
 </script>
 
 <nav class="v2-nav" aria-label={tx('Main')}>
   <div class="v2-side-head">
-    <a class="v2-org" href={resolve('/org')} aria-label={tx('Switch organisation')}>
-      <b>{org.name}</b>
-      <ChevronDown />
-    </a>
-    <div class="v2-who">
-      <span class="v2-who-avatar" aria-hidden="true">{initials}</span>
-      <div style="min-width:0">
-        <b>{displayName}</b>
-        {#if roleLabel}<span>{roleLabel}</span>{/if}
-      </div>
-    </div>
+    <p class="v2-org-name">{org.name}</p>
   </div>
 
   <div class="v2-nav-scroll">
-    {#each groups as group (group.label)}
-      <div class="v2-nav-group v2-label">{group.label}</div>
-      {#each group.items as item (item.href)}
-        <a
-          class="v2-link"
-          href={resolve(asInternalPath(item.href))}
-          aria-current={isActive(item.href, item.exact) ? 'page' : undefined}
-        >
-          <item.icon />
-          {item.label}
-          {#if item.count && counts[item.count]}
-            <span class="v2-count">{counts[item.count]}</span>
-          {/if}
-        </a>
-      {/each}
+    {#each groups as group (group.id)}
+      {@const open = groupIsOpen(group.id, group.items)}
+      <button
+        type="button"
+        class="v2-nav-toggle"
+        aria-expanded={open}
+        aria-controls={`nav-${group.id}`}
+        onclick={() => toggleGroup(group.id, group.items)}
+      >
+        {group.label}
+        <ChevronDown />
+      </button>
+      {#if open}
+        <div id={`nav-${group.id}`}>
+          {#each group.items as item (item.href)}
+            <a
+              class="v2-link"
+              href={resolve(asInternalPath(item.href))}
+              aria-current={isActive(item.href, item.exact) ? 'page' : undefined}
+            >
+              <item.icon />
+              {item.label}
+              {#if item.count && counts[item.count]}
+                <span class="v2-count">{counts[item.count]}</span>
+              {/if}
+            </a>
+          {/each}
+        </div>
+      {/if}
     {/each}
   </div>
 
-  <div class="v2-nav-foot">
-    {#if permissions.includes('serve')}
-      <a
-        class="v2-link"
-        href={resolve('/notifications')}
-        aria-current={isActive('/notifications', false) ? 'page' : undefined}
-      >
-        <Bell />
-        {tx('Notifications')}
-        {#if counts.notifications}
-          <span class="v2-count">{counts.notifications}</span>
-        {/if}
-      </a>
-    {/if}
-    <a
-      class="v2-link"
-      href={resolve('/profile')}
-      aria-current={isActive('/profile', false) ? 'page' : undefined}
-    >
-      <User />
-      {tx('Your profile')}
-    </a>
-    <a
-      class="v2-link"
-      href={resolve('/help')}
-      aria-current={isActive('/help', false) ? 'page' : undefined}
-    >
-      <CircleHelp />
-      {tx('Help')}
-    </a>
-    <a class="v2-link v2-link-out" href={resolve('/logout')} data-sveltekit-reload>
-      <LogOut />
-      {tx('Sign out')}
-    </a>
-  </div>
+  {#if oncollapse}
+    <div class="v2-nav-foot">
+      <button type="button" class="v2-nav-collapse" onclick={oncollapse}>
+        <PanelLeftClose />
+        {tx('Collapse sidebar')}
+      </button>
+    </div>
+  {/if}
 </nav>

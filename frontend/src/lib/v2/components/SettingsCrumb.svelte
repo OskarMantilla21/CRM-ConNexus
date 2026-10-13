@@ -1,5 +1,6 @@
 <script>
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   /**
    * The way back up from a settings page.
    *
@@ -15,7 +16,15 @@
   import { tx } from '$lib/i18n/translate.js';
 </script>
 
-<a href={resolve('/settings')}><ChevronLeft size={13} />{tx('Settings')}</a>
+<a
+  href={['/settings/api-tokens', '/settings/webhooks', '/settings/audit-log'].some(
+    (item) => page.url.pathname === item || page.url.pathname.startsWith(`${item}/`)
+  )
+    ? resolve('/settings') + '?area=seguridad'
+    : resolve('/settings')}
+>
+  <ChevronLeft size={13} />{tx('Settings')}
+</a>
 
 <style>
   a {
