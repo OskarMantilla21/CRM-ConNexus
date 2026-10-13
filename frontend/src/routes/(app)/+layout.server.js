@@ -9,6 +9,7 @@ import { listInvoices } from '$lib/server/v2/invoices.js';
 import { countAwaitingApprovals } from '$lib/server/v2/approvals.js';
 import { countUnread } from '$lib/server/v2/notifications.js';
 import { getOrgTerminology } from '$lib/server/v2/organization.js';
+import { getScreenAssistant } from '$lib/server/v2/assistants.js';
 
 /**
  * Counts for migrated modules, fetched for real and merged over the fixtures.
@@ -162,7 +163,9 @@ export async function load(event) {
     user: {
       name: event.locals.user?.name || '',
       email: event.locals.user?.email || ''
-    }
+    },
+    /** @type {{ connected: boolean, provider?: string, name?: string }} */
+    screenAssistant: { connected: false }
   };
 
   // countKeys' fetches and the terminology fetch are pushed into ONE
@@ -175,7 +178,8 @@ export async function load(event) {
   );
   const results = await Promise.allSettled([
     ...countKeys.map((key) => LIVE_COUNTS[/** @type {keyof typeof LIVE_COUNTS} */ (key)](event)),
-    getOrgTerminology(event)
+    getOrgTerminology(event),
+    getScreenAssistant(event)
   ]);
 
   countKeys.forEach((key, index) => {
@@ -186,6 +190,15 @@ export async function load(event) {
   const terminologyResult = results[countKeys.length];
   if (terminologyResult.status === 'fulfilled') {
     shell.org.terminology = terminologyResult.value.terminology;
+  }
+
+  const assistantResult = results[countKeys.length + 1];
+  if (assistantResult.status === 'fulfilled' && assistantResult.value?.connected === true) {
+    shell.screenAssistant = {
+      connected: true,
+      provider: assistantResult.value.provider,
+      name: assistantResult.value.name
+    };
   }
 
   return shell;

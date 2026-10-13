@@ -1,5 +1,6 @@
 <script>
   import { resolve } from '$app/paths';
+  import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import Pill from '$lib/v2/components/Pill.svelte';
   import { money, count } from '$lib/v2/format.js';
@@ -8,7 +9,19 @@
   import '$lib/i18n/pages/sell.js';
 
   /** @type {{ data: any }} */
-  let { data } = $props();
+  let { data, form = null } = $props();
+
+  let assistantBusy = $state(false);
+  const assistantSubmit = () => {
+    assistantBusy = true;
+    return async (/** @type {any} */ { update }) => {
+      await update();
+      assistantBusy = false;
+    };
+  };
+  let connectedAssistants = $derived(
+    (data.assistants?.assistants || []).filter((/** @type {{ connected?: boolean }} */ item) => item.connected)
+  );
 
   const TONE_VAR = {
     rust: 'var(--v2-rust)',
@@ -120,6 +133,83 @@
 
 <div class="v2-scroll">
   <div class="v2-pad" style="padding-top:14px;padding-bottom:26px">
+    {#if data.role === 'CEO'}
+      <section class="v2-card assistants" aria-label={tx('Assistants')}>
+        <div class="v2-label">{tx('Assistants')}</div>
+        <p class="v2-sub assist-lead">
+          {tx(
+            'Connect an assistant so it can summarise what needs you today. It only reads the same list on this page.'
+          )}
+        </p>
+        {#if data.assistants?.unavailable}
+          <p class="v2-sub">{tx('Assistants could not be loaded.')}</p>
+        {:else}
+          {#each data.assistants?.assistants || [] as item (item.id)}
+            <div class="assist-row">
+              <div class="assist-copy">
+                <b>{item.name}</b>
+                <span class="v2-sub">{tx(item.summary)}</span>
+                {#if item.connected}<span class="assist-on">{tx('Connected')}</span>{/if}
+              </div>
+              {#if item.connected}
+                <form method="POST" action="?/disconnect" use:enhance={assistantSubmit}>
+                  <input type="hidden" name="provider" value={item.id} />
+                  <button class="v2-btn" type="submit" disabled={assistantBusy}>{tx('Disconnect')}</button>
+                </form>
+              {:else}
+                <form class="assist-connect" method="POST" action="?/connect" use:enhance={assistantSubmit}>
+                  <input type="hidden" name="provider" value={item.id} />
+                  <label class="v2-signin-label" for={"key-" + item.id}>{tx('API key')}</label>
+                  <input
+                    id={"key-" + item.id}
+                    class="v2-input"
+                    name="api_key"
+                    type="password"
+                    autocomplete="off"
+                    required
+                    minlength="8"
+                  />
+                  <button class="v2-btn v2-btn-primary" type="submit" disabled={assistantBusy}>
+                    {tx('Connect')}
+                  </button>
+                </form>
+              {/if}
+              {#if form?.provider === item.id && form?.error && form?.action !== 'ask'}
+                <p class="assist-error">{form.error}</p>
+              {/if}
+            </div>
+          {/each}
+          <p class="v2-sub assist-note">
+            {tx('The key stays on the server. This page does not show it again.')}
+          </p>
+          {#if connectedAssistants.length}
+            <form class="assist-ask" method="POST" action="?/ask" use:enhance={assistantSubmit}>
+              <label class="v2-signin-label" for="assistant-question">{tx('Ask')}</label>
+              <select class="v2-input" name="provider">
+                {#each connectedAssistants as item (item.id)}
+                  <option value={item.id}>{item.name}</option>
+                {/each}
+              </select>
+              <input
+                id="assistant-question"
+                class="v2-input"
+                name="question"
+                maxlength="400"
+                placeholder={tx('What needs me today?')}
+                value={form?.question || ''}
+              />
+              <button class="v2-btn v2-btn-primary" type="submit" disabled={assistantBusy}>{tx('Ask')}</button>
+            </form>
+            {#if form?.action === 'ask' && form?.error}
+              <p class="assist-error">{form.error}</p>
+            {/if}
+            {#if form?.answer}
+              <p class="assist-answer">{form.answer}</p>
+            {/if}
+          {/if}
+        {/if}
+      </section>
+    {/if}
     <!--
       Only the top item gets the ember button. Five ember buttons down a page
       is v1's mistake in a new coat: if everything is the primary action then
@@ -231,6 +321,80 @@
 </div>
 
 <style>
+  .assistants {
+    padding: 14px 16px 16px;
+    margin-bottom: 16px;
+  }
+
+  .assist-lead {
+    margin: 6px 0 0;
+  }
+
+  .assist-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--v2-line-soft);
+  }
+
+  .assist-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .assist-on {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--v2-moss);
+  }
+
+  .assist-connect,
+  .assist-ask {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .assist-note {
+    margin: 0;
+    font-size: 12px;
+  }
+
+  .assist-error {
+    margin: 0;
+    color: var(--v2-rust);
+    font-size: 13px;
+  }
+
+  .assist-answer {
+    margin: 12px 0 0;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  @media (min-width: 768px) {
+    .assist-connect {
+      flex-direction: row;
+      align-items: end;
+    }
+
+    .assist-connect .v2-signin-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .assist-connect .v2-input {
+      flex: 1;
+    }
+  }
+
   /*
     Phone first: one goal per row at 390px, where three across would leave each
     bar too short to read. Widens from the 768px breakpoint v2.css already uses.

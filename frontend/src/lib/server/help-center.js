@@ -102,6 +102,35 @@ export async function getHelpCenter(event, slug, { q = '', page = 1 } = {}) {
  * @param {string} slug already canonical
  * @param {string} id
  */
+/**
+ * One turn of the public sales chat. Same rules as `call`: no staff credential,
+ * and the signed visitor address so the tighter chat throttle buckets the
+ * visitor. The system prompt never travels in either direction.
+ *
+ * @param {{ request: Request, getClientAddress: () => string }} event
+ * @param {string} slug already canonical
+ * @param {{ message: string, history: { role: string, content: string }[] }} body
+ */
+export async function postHelpChat(event, slug, { message, history }) {
+  const response = await fetch(`${API_BASE_URL}/${encodeURIComponent(slug)}/chat/`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...relayHeaders(event)
+    },
+    body: JSON.stringify({ message, history })
+  });
+  if (response.status === 404) throw notFound();
+  if (response.status === 429) throw error(429, 'Too many requests. Try again shortly.');
+  if (!response.ok) throw new Error(`help chat failed with ${response.status}`);
+  const data = await response.json();
+  return {
+    reply: typeof data.reply === 'string' ? data.reply : '',
+    transferred: data.transferred === true
+  };
+}
+
 export async function getHelpArticle(event, slug, id) {
   if (!UUID_RE.test(id)) throw notFound();
   const data = await call(event, `/${encodeURIComponent(slug)}/articles/${id}/`);

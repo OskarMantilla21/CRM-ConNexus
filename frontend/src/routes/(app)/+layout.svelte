@@ -6,6 +6,7 @@
   import { page } from '$app/state';
   import { afterNavigate } from '$app/navigation';
   import Sidebar from '$lib/v2/components/Sidebar.svelte';
+  import AskScreen from '$lib/v2/components/AskScreen.svelte';
   import CommandPalette from '$lib/v2/components/CommandPalette.svelte';
   import BrandMark from '$lib/v2/components/BrandMark.svelte';
   import LanguageSelect from '$lib/i18n/LanguageSelect.svelte';
@@ -13,7 +14,7 @@
   import { tx } from '$lib/i18n/translate.js';
   import { ALL_PERMISSIONS } from '$lib/access.js';
 
-  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[], role?: string, user?: { name?: string, email?: string } }, children: import('svelte').Snippet }} */
+  /** @type {{ data: { counts: Record<string, number>, org: { name: string, terminology?: Record<string, string> | null }, is_organization_admin: boolean, permissions?: string[], role?: string, user?: { name?: string, email?: string }, screenAssistant?: { connected?: boolean, provider?: string, name?: string } }, children: import('svelte').Snippet }} */
   let { data, children } = $props();
 
   let permissions = $derived(data.permissions ?? ALL_PERMISSIONS);
@@ -80,6 +81,7 @@
 <svelte:window {onkeydown} />
 
 <div class="v2-root v2-app" class:is-nav-hidden={navHidden}>
+  <div class="v2-workspace">
   <header class="v2-topbar">
     <button class="v2-icon-btn" type="button" onclick={onMenu} aria-label={tx('Open menu')} aria-expanded={menuOpen}>
       <Menu size={20} />
@@ -168,4 +170,6 @@
     <CommandPalette open={paletteOpen} onclose={() => (paletteOpen = false)} />
   {/if}
   </div>
+  </div>
+  <AskScreen assistant={data.screenAssistant} />
 </div>

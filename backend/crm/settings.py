@@ -409,6 +409,15 @@ REST_FRAMEWORK = {
         "help_center_global": os.environ.get(
             "HELP_CENTER_THROTTLE_GLOBAL", "10000/hour"
         ),
+        # Public help-center chat, per visitor. A message can call a paid model
+        # and open a lead, so this sits far below the page-reading limit.
+        "help_chat_ip": os.environ.get("HELP_CHAT_THROTTLE_IP", "8/hour"),
+        # Public help-center chat, per help center across every visitor.
+        "help_chat_slug": os.environ.get("HELP_CHAT_THROTTLE_SLUG", "40/hour"),
+        # Questions about the open screen, per person and per organization.
+        # Each one can call a paid model.
+        "screen_ask_user": os.environ.get("SCREEN_ASK_THROTTLE_USER", "30/hour"),
+        "screen_ask_org": os.environ.get("SCREEN_ASK_THROTTLE_ORG", "120/hour"),
         # Task calendar feed (G14), per address. Generous because Google,
         # Microsoft and Apple poll from shared fetchers carrying many users.
         "calendar_feed_ip": os.environ.get("CALENDAR_FEED_THROTTLE_IP", "1000/hour"),

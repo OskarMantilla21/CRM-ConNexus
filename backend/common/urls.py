@@ -1,8 +1,14 @@
 from django.urls import path
 
+from common.views.assistant_views import (
+    AssistantAskView,
+    AssistantConnectView,
+    AssistantDisconnectView,
+    AssistantListView,
+    AssistantScreenView,
+)
 from common.views.attachment_views import AttachmentDownloadView
 from common.views.audit_log_views import SecurityAuditLogListView
-from common.views.platform_views import PlatformUserListView
 from common.views.auth_views import (
     GoogleIdTokenView,
     GoogleOAuthCallbackView,
@@ -10,11 +16,10 @@ from common.views.auth_views import (
     MagicLinkRequestView,
     MagicLinkVerifyCodeView,
     MagicLinkVerifyView,
-    PasswordLoginView,
     MeView,
-    PasswordLoginView,
     OrgAwareTokenRefreshView,
     OrgSwitchView,
+    PasswordLoginView,
 )
 from common.views.calendar_feed_views import (
     CalendarFeedView,
@@ -55,6 +60,7 @@ from common.views.pat_views import (
     PersonalAccessTokenDetailView,
     PersonalAccessTokenListCreateView,
 )
+from common.views.platform_views import PlatformUserListView
 from common.views.saved_view_views import SavedViewDetailView, SavedViewListView
 from common.views.settings_views import DomainDetailView, DomainList
 from common.views.tags_views import (
@@ -77,6 +83,23 @@ app_name = "api_common"
 urlpatterns = [
     path("dashboard/", ApiHomeView.as_view()),
     path("dashboard/today/", ApiTodayView.as_view()),
+    path("assistants/", AssistantListView.as_view(), name="assistants"),
+    path("assistants/screen/", AssistantScreenView.as_view(), name="assistant_screen"),
+    path(
+        "assistants/<slug:provider>/connect/",
+        AssistantConnectView.as_view(),
+        name="assistant_connect",
+    ),
+    path(
+        "assistants/<slug:provider>/disconnect/",
+        AssistantDisconnectView.as_view(),
+        name="assistant_disconnect",
+    ),
+    path(
+        "assistants/<slug:provider>/ask/",
+        AssistantAskView.as_view(),
+        name="assistant_ask",
+    ),
     # JWT Authentication endpoints for SvelteKit integration
     path(
         "auth/refresh-token/",

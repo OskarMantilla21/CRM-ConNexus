@@ -17,6 +17,7 @@ const { load } = await import('./+layout.server.js');
 function event(orgSettings) {
   return /** @type {any} */ ({
     locals: { org: { name: 'Acme' }, org_settings: orgSettings, profile: {} },
+    url: { pathname: '/' },
     cookies: { get: () => 'token' }
   });
 }

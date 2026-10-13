@@ -131,7 +131,7 @@
       </select>
       <span class="v2-sub" style="font-size:11.5px">
         {tx(
-          'Optional, and more than one is allowed. Leave it empty and the task is yours to pick up.'
+          'Click one name to assign the task to that person. Hold Ctrl to add another. Leave it empty and the task is yours to pick up.'
         )}
       </span>
     </label>

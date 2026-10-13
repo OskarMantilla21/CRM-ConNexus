@@ -1065,7 +1065,53 @@ export const messages = {
   'Closed Won': { es: 'Cerrado ganado', pt: 'Fechado ganho' },
   'Closed Lost': { es: 'Cerrado perdido', pt: 'Fechado perdido' },
   '{n} days in {stage}': { es: '{n} días en {stage}', pt: '{n} dias em {stage}' },
-  'Filter to see the rest.': { es: 'Filtra para ver el resto.', pt: 'Filtre para ver o resto.' }
+  'Filter to see the rest.': { es: 'Filtra para ver el resto.', pt: 'Filtre para ver o resto.' },
+  Assistants: { es: 'Asistentes', pt: 'Assistentes' },
+  "Connect an assistant so it can summarise what needs you today. It only reads the same list on this page.": {
+    es: 'Conecta un asistente para que resuma lo que te necesita hoy. Solo lee la misma lista de esta pantalla.',
+    pt: 'Conecte um assistente para resumir o que precisa de você hoje. Ele só lê a mesma lista desta tela.'
+  },
+  "Google's assistant. It summarises what needs you today.": {
+    es: 'El asistente de Google. Resume lo que te necesita hoy.',
+    pt: 'O assistente do Google. Resume o que precisa de você hoje.'
+  },
+  "xAI's assistant. It summarises what needs you today.": {
+    es: 'El asistente de xAI. Resume lo que te necesita hoy.',
+    pt: 'O assistente da xAI. Resume o que precisa de você hoje.'
+  },
+  Connect: { es: 'Conectar', pt: 'Conectar' },
+  Connected: { es: 'Conectada', pt: 'Conectada' },
+  Disconnect: { es: 'Desconectar', pt: 'Desconectar' },
+  'API key': { es: 'Clave', pt: 'Chave' },
+  'The key stays on the server. This page does not show it again.': {
+    es: 'La clave se queda en el servidor. Esta pantalla no la vuelve a mostrar.',
+    pt: 'A chave fica no servidor. Esta tela não a mostra de novo.'
+  },
+  Ask: { es: 'Preguntar', pt: 'Perguntar' },
+  'What needs me today?': {
+    es: '¿Qué tengo pendiente?',
+    pt: 'O que está pendente?'
+  },
+  'Only the CEO connects assistants.': {
+    es: 'Solo el CEO conecta asistentes.',
+    pt: 'Só o CEO conecta assistentes.'
+  },
+  'The key was refused. Check it and try again.': {
+    es: 'La clave fue rechazada. Revísala e inténtalo de nuevo.',
+    pt: 'A chave foi recusada. Confira e tente de novo.'
+  },
+  'The assistant did not answer. Try again.': {
+    es: 'El asistente no respondió. Inténtalo de nuevo.',
+    pt: 'O assistente não respondeu. Tente de novo.'
+  },
+  'Connect that assistant first.': {
+    es: 'Conecta ese asistente primero.',
+    pt: 'Conecte esse assistente primeiro.'
+  },
+  'Assistants could not be loaded.': {
+    es: 'No se pudo cargar la lista de asistentes.',
+    pt: 'Não foi possível carregar a lista de assistentes.'
+  }
 };
 
 addMessages(messages);
