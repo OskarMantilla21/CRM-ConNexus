@@ -8,6 +8,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
+from common.audit_log import SecurityAuditLog
 from common.models import Document, Teams
 
 
@@ -188,6 +189,14 @@ class TestDocumentDetailView:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["error"] is False
         assert not Document.objects.filter(pk=doc.pk).exists()
+        row = SecurityAuditLog.objects.get(event_type="FILE_DELETED")
+        assert row.org_id == org_a.id
+        assert row.user_id == admin_user.id
+        assert row.metadata == {
+            "kind": "document",
+            "record_id": str(doc.id),
+            "name": "Sample Doc",
+        }
 
     def test_org_isolation(self, org_b_client, org_a, admin_user, admin_profile):
         """org_b_client cannot access a document belonging to org_a."""

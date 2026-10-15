@@ -4,7 +4,6 @@ import { redirect } from '@sveltejs/kit';
 import { listLeads } from '$lib/server/v2/leads.js';
 import { listDeals } from '$lib/server/v2/deals.js';
 import { listTickets, OPEN_STATUSES } from '$lib/server/v2/tickets.js';
-import { listTasks } from '$lib/server/v2/tasks.js';
 import { listInvoices } from '$lib/server/v2/invoices.js';
 import { countAwaitingApprovals } from '$lib/server/v2/approvals.js';
 import { countUnread } from '$lib/server/v2/notifications.js';
@@ -45,15 +44,6 @@ const LIVE_COUNTS = {
     for (const status of OPEN_STATUSES) params.append('status', status);
     return (await listTickets(event, params)).totals.open;
   },
-  /**
-   * Open tasks only, and the API already counts them per requester. An
-   * admin's badge covers the org, a member's covers their own list. Same
-   * argument as tickets: a badge counting completed tasks would only ever go
-   * up.
-   *
-   * @param {any} event
-   */
-  tasks: async (event) => (await listTasks(event, new URLSearchParams({ limit: '1' }))).totals.open,
   /**
    * Invoices waiting on this person: drafts to send plus anything overdue to
    * chase, counted by the API per requester. Not the total invoice count.

@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { listInvoices, sendInvoice } from '$lib/server/v2/invoices.js';
+import { listInvoices, sendInvoice, deleteInvoice } from '$lib/server/v2/invoices.js';
 import { invoiceListQuery } from '$lib/server/v2/list-queries.js';
 import { listAccountsPicker } from '$lib/server/v2/accounts.js';
 import { getOrgPeopleAndTeams, resolveMe } from '$lib/server/v2/org-people.js';
@@ -71,5 +71,21 @@ export const actions = {
       });
     }
     return { sent: id };
+  },
+
+  /** Remove an invoice the caller may open. The API 404s the rest. */
+  remove: async ({ cookies, request }) => {
+    const form = await request.formData();
+    const id = form.get('id')?.toString();
+    if (!id) return fail(400, { error: tx('Which invoice?') });
+
+    try {
+      await deleteInvoice({ cookies }, id);
+    } catch (/** @type {any} */ err) {
+      return fail(err?.status === 404 ? 404 : 400, {
+        error: readableError(err, tx('Could not delete this invoice.'))
+      });
+    }
+    return { removed: id };
   }
 };

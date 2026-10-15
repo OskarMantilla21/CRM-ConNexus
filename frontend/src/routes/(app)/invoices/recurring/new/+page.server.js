@@ -32,7 +32,7 @@ export async function load({ cookies }) {
       account_name: c.account?.name ?? ''
     })),
     products: products.results
-      .filter((p) => p.is_active)
+      .filter((p) => p.is_active && p.kind !== 'catalog')
       .map((p) => ({ id: p.id, name: p.name, sku: p.sku, price: p.price }))
   };
 }

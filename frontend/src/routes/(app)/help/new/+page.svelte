@@ -26,7 +26,7 @@
     <form
       method="POST"
       enctype="multipart/form-data"
-      class="v2-card form"
+      class="v2-form v2-create"
       use:enhance={() => {
         submitting = true;
         return async ({ update }) => {
@@ -82,11 +82,11 @@
         >
       </div>
 
-      <div class="actions">
+      <div class="v2-create-foot">
+        <a class="v2-btn" href={resolve('/help')}>{tx('Cancel')}</a>
         <button class="v2-btn v2-btn-primary" type="submit" disabled={submitting}
           >{submitting ? tx('Opening…') : tx('Open ticket')}</button
         >
-        <a class="v2-btn" href={resolve('/help')}>{tx('Cancel')}</a>
       </div>
     </form>
   </div>

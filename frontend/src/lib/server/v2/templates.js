@@ -111,6 +111,17 @@ export async function listInvoiceTemplates({ cookies }) {
 }
 
 /**
+ * Remove a template. Admin-only on the API. Invoices that pointed at it keep
+ * their numbers and fall back to the org default, or the built-in layout.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {string} id
+ */
+export function deleteInvoiceTemplate({ cookies }, id) {
+  return apiRequest(`/invoices/templates/${id}/`, { method: 'DELETE' }, { cookies });
+}
+
+/**
  * Make one template the org default. A partial update flipping `is_default`;
  * the model swaps the flag off whatever held it. The API admin-gates this.
  * This layer does not decide, it just asks, and a non-admin gets a 403.

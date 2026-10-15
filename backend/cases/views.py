@@ -233,7 +233,7 @@ class CaseListView(APIView, LimitOffsetPagination):
 
         # Queue totals, counted over the whole filtered queryset rather than
         # the page, so a header that says "12 open" is not really saying
-        # "12 on this screen". All three are plain DB counts.
+        # "12 on this screen". These are plain DB counts.
         #
         # `awaiting_first_reply` is deliberately not called "breaching": a
         # breach depends on the org's business calendar and is a Python
@@ -245,6 +245,31 @@ class CaseListView(APIView, LimitOffsetPagination):
         context["urgent_count"] = open_cases.filter(priority="Urgent").count()
         context["awaiting_first_reply"] = open_cases.filter(
             first_response_at__isnull=True
+        ).count()
+        # The queue's "overdue" and "due this week" cards use the resolution
+        # target the way the task list uses `due_date`. The real deadline
+        # walks the org's business calendar in Python (`resolution_sla_deadline`),
+        # and counting that would load every open ticket. This is the same
+        # wall-clock approximation the `sla_breached` filter already uses:
+        # created_at plus the stored hours. A pause is not shifted here.
+        resolution_open = (
+            '"case"."resolved_at" IS NULL '
+            'AND "case"."sla_resolution_hours" IS NOT NULL'
+        )
+        resolution_deadline = (
+            '"case"."created_at" + "case"."sla_resolution_hours" * INTERVAL \'1 hour\''
+        )
+        context["overdue_count"] = open_cases.extra(
+            where=[f"{resolution_open} AND {resolution_deadline} < NOW()"]
+        ).count()
+        context["due_this_week_count"] = open_cases.extra(
+            where=[
+                f"{resolution_open} AND {resolution_deadline} >= NOW() "
+                f"AND {resolution_deadline} <= NOW() + INTERVAL '7 days'"
+            ]
+        ).count()
+        context["no_due_date_count"] = open_cases.filter(
+            sla_resolution_hours__isnull=True
         ).count()
 
         results_cases = self.paginate_queryset(queryset, self.request, view=self)

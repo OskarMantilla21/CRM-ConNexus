@@ -136,7 +136,9 @@
           {#each data.audit.entries as entry (entry.id)}
             <tr>
               <td>
-                <div class="v2-table-primary">{entry.event_label}</div>
+                <div class="v2-table-primary">
+                  {entry.event_type === 'FILE_DELETED' ? tx('File or document deleted') : entry.event_label}
+                </div>
                 {#if auditDetail(entry)}
                   <div class="v2-table-secondary">{auditDetail(entry)}</div>
                 {/if}
@@ -151,6 +153,9 @@
     </div>
     <p style="margin-top:12px">
       <a class="v2-btn v2-btn-sm" href={resolve('/settings/audit-log')}>{tx('Open the full audit log')}</a>
+      <a class="v2-btn v2-btn-sm" href={resolve('/settings/audit-log?event_type=FILE_DELETED')} style="margin-left:8px">
+        {tx('Deleted files and documents')}
+      </a>
     </p>
   {/if}
 </div>

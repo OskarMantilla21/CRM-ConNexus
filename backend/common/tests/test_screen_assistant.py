@@ -196,7 +196,8 @@ def test_the_guide_covers_the_product_and_this_persons_menu():
 
     from common.screen_assistant import _GUIDE, _for_person, _prompt
 
-    assert "/tasks/new" in _GUIDE
+    assert "/tickets/new" in _GUIDE
+    assert "/tasks/new" not in _GUIDE
     assert "/invoices" in _GUIDE
     assert "/team" in _GUIDE
     assert "/settings" in _GUIDE
@@ -209,7 +210,8 @@ def test_the_guide_covers_the_product_and_this_persons_menu():
     assert "Parte de horas" in menu
     assert "No están en su menú: Vender, Atender, Cobrar, Ajustes, Personas." in menu
     assert "No crea cuentas." in menu
-    assert "Nueva tarea" in _prompt(employee)
+    assert "Nuevo ticket" in _prompt(employee)
+    assert "Nueva tarea" not in _prompt(employee)
     ceo = SimpleNamespace(
         role="CEO",
         granted_permissions=None,

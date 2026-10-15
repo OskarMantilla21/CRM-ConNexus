@@ -8,12 +8,15 @@
   import CurrencySwitch from '$lib/v2/components/CurrencySwitch.svelte';
   import Pill from '$lib/v2/components/Pill.svelte';
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
+  import FilePreview from '$lib/v2/components/FilePreview.svelte';
+  import DocThumb from '$lib/v2/components/DocThumb.svelte';
   import { money, count, shortDate, daysSince } from '$lib/v2/format.js';
   import { INVOICE_STATUS_TONE, invoiceStatusLabel } from '$lib/v2/enums.js';
+  import { invoiceRevision } from '$lib/v2/invoice-preview.js';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
   import { enhance } from '$app/forms';
-  import { Download, Plus, Receipt } from '@lucide/svelte';
+  import { Download, Plus, Receipt, Trash2 } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -59,6 +62,70 @@
 
   const isLate = (inv) =>
     !SETTLED.includes(inv.status) && inv.due_date && daysSince(inv.due_date) > 0;
+
+  /**
+   * The generated PDF, on this origin. `v` changes with the money and the
+   * status, so a payment does not leave the old page in the thumbnail.
+   * Download stays a separate address: that one is an attachment.
+   *
+   * @param {any} inv
+   * @param {boolean} [preview]
+   */
+  function pdfHref(inv, preview = false) {
+    const path = resolve(`/invoices/${inv.id}/pdf`);
+    if (!preview) return path;
+    const rev = invoiceRevision({
+      status: inv.status,
+      total: inv.total_amount,
+      due: inv.amount_due,
+      paid: inv.amount_paid,
+      lines: inv.line_items_count,
+      dueDate: inv.due_date
+    });
+    return `${path}?preview=1&v=${rev}`;
+  }
+
+  /** @type {any} */
+  let openInvoice = $state(null);
+  /** @type {HTMLElement | null} */
+  let dialog = $state(null);
+  /** @type {HTMLElement | null} */
+  let returnFocus = null;
+
+  function openPreview(/** @type {any} */ inv, /** @type {Event} */ event) {
+    returnFocus = /** @type {HTMLElement} */ (event.currentTarget);
+    openInvoice = inv;
+  }
+
+  function closePreview() {
+    openInvoice = null;
+    returnFocus?.focus();
+    returnFocus = null;
+  }
+
+  $effect(() => {
+    if (!openInvoice) return;
+    dialog?.focus();
+    const onKey = (/** @type {KeyboardEvent} */ event) => {
+      if (event.key === 'Escape') closePreview();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  let previewRows = $derived(
+    openInvoice
+      ? [
+          { label: tx('Account'), value: openInvoice.account.name },
+          { label: tx('Status'), value: invoiceStatusLabel(openInvoice.status) },
+          { label: tx('Due'), value: shortDate(openInvoice.due_date) },
+          {
+            label: tx('Amount'),
+            value: money(openInvoice.total_amount, openInvoice.currency)
+          }
+        ]
+      : []
+  );
 </script>
 
 <PageHeader title={tx('Invoices')} count={totals.count}>
@@ -148,19 +215,41 @@
             <th class="v2-r">{tx('Amount')}</th>
             <th>{tx('Due')}</th>
             <th class="v2-r">{tx('Age')}</th>
-            <th style="width:130px"></th>
+            <th style="width:168px"></th>
           </tr>
         </thead>
         <tbody>
           {#each invoices as inv (inv.id)}
             {@const late = isLate(inv)}
             <tr>
-              <td>
-                <a class="v2-row-link" href={resolve(`/invoices/${inv.id}`)}>
-                  <span class="v2-table-primary v2-num" style="font-size:13px"
-                    >{inv.invoice_number}</span
+              <td style="white-space:normal">
+                <span class="inv">
+                  <div
+                    class="thumb-btn"
+                    role="button"
+                    tabindex="0"
+                    aria-label={tx('Preview')}
+                    aria-haspopup="dialog"
+                    onclick={(event) => openPreview(inv, event)}
+                    onkeydown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openPreview(inv, event);
+                      }
+                    }}
                   >
-                </a>
+                    <DocThumb
+                      src={pdfHref(inv, true)}
+                      name="{inv.invoice_number}.pdf"
+                      title={inv.invoice_number}
+                    />
+                  </div>
+                  <a class="v2-row-link" href={resolve(`/invoices/${inv.id}`)}>
+                    <span class="v2-table-primary v2-num" style="font-size:13px"
+                      >{inv.invoice_number}</span
+                    >
+                  </a>
+                </span>
               </td>
               <td>{inv.account.name}</td>
               <td>
@@ -178,24 +267,32 @@
                 {ageLabel(inv)}
               </td>
               <td>
-                {#if inv.status === 'Overdue' || inv.status === 'Draft'}
-                  <form
-                    method="POST"
-                    action="?/send"
-                    use:enhance={() => {
-                      sending[inv.id] = true;
-                      return async ({ update }) => {
-                        await update();
-                        sending[inv.id] = false;
-                      };
-                    }}
-                  >
+                <div class="row-actions">
+                  {#if inv.status === 'Overdue' || inv.status === 'Draft'}
+                    <form
+                      method="POST"
+                      action="?/send"
+                      use:enhance={() => {
+                        sending[inv.id] = true;
+                        return async ({ update }) => {
+                          await update();
+                          sending[inv.id] = false;
+                        };
+                      }}
+                    >
+                      <input type="hidden" name="id" value={inv.id} />
+                      <button class="v2-btn v2-btn-sm" disabled={sending[inv.id]}>
+                        {#if sending[inv.id]}{tx('Sending…')}{:else if inv.status === 'Overdue'}{tx('Send a reminder')}{:else}{tx('Send')}{/if}
+                      </button>
+                    </form>
+                  {/if}
+                  <form method="POST" action="?/remove" use:enhance>
                     <input type="hidden" name="id" value={inv.id} />
-                    <button class="v2-btn v2-btn-sm" disabled={sending[inv.id]}>
-                      {#if sending[inv.id]}{tx('Sending…')}{:else if inv.status === 'Overdue'}{tx('Send a reminder')}{:else}{tx('Send')}{/if}
+                    <button class="v2-btn v2-btn-sm row-delete" type="submit">
+                      <Trash2 size={13} />{tx('Delete')}
                     </button>
                   </form>
-                {/if}
+                </div>
               </td>
             </tr>
           {/each}
@@ -208,3 +305,90 @@
     </p>
   {/if}
 </div>
+
+{#if openInvoice}
+  <div
+    class="v2-scrim"
+    role="presentation"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) closePreview();
+    }}
+  >
+    <div
+      class="doc-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="invoice-preview-title"
+      tabindex="-1"
+      bind:this={dialog}
+    >
+      <header>
+        <h2 id="invoice-preview-title">{openInvoice.invoice_number}</h2>
+        <a class="v2-btn" href={pdfHref(openInvoice)} download>{tx('Download PDF')}</a>
+        <button class="v2-btn" type="button" onclick={closePreview}>{tx('Close')}</button>
+      </header>
+      <FilePreview
+        flush
+        src={pdfHref(openInvoice, true)}
+        name="{openInvoice.invoice_number}.pdf"
+        title={openInvoice.invoice_number}
+        rows={previewRows}
+      />
+    </div>
+  </div>
+{/if}
+
+<style>
+  .inv {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .thumb-btn {
+    flex: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .thumb-btn:focus-visible {
+    outline: 2px solid var(--v2-ember);
+    outline-offset: 2px;
+  }
+  .doc-dialog {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+    background: var(--v2-card);
+    border: 1px solid var(--v2-line);
+    border-radius: 14px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+  }
+  .doc-dialog header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--v2-line);
+  }
+  .doc-dialog h2 {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .row-delete {
+    color: var(--v2-rust);
+  }
+</style>

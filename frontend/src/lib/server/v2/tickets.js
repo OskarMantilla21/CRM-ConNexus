@@ -193,6 +193,11 @@ export async function listTickets({ cookies }, params) {
       open: response.open_count ?? 0,
       urgent: response.urgent_count ?? 0,
       awaiting_reply: response.awaiting_first_reply ?? 0,
+      // Resolution target, counted over the whole filtered queue. Overdue is
+      // past that target; due this week is still inside the next seven days.
+      overdue: response.overdue_count ?? 0,
+      due_this_week: response.due_this_week_count ?? 0,
+      no_due_date: response.no_due_date_count ?? 0,
       shown: rows.length
     }
   };

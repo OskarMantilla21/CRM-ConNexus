@@ -89,9 +89,9 @@ _SYSTEM = (
 _GUIDE = """
 Guía de funciones. Las rutas son del menú.
 
-Vender: Hoy (/) es la cola de hoy, como máximo ocho asuntos entre tickets, facturas vencidas, negocios quietos y tareas. Pipeline (/pipeline) son los negocios por etapa; se arrastran, hay varios embudos y desde uno ganado se crea una factura. Leads (/leads) son quienes aún no son clientes; se convierten en cuenta, contacto y negocio. Cuentas (/accounts) son las empresas cliente. Contactos (/contacts) son las personas de una cuenta. Objetivos (/goals) miden ingresos, negocios o actividades del periodo.
+Vender: Hoy (/) es la cola de hoy, como máximo ocho asuntos entre tickets, facturas vencidas y negocios quietos. Pipeline (/pipeline) son los negocios por etapa; se arrastran, hay varios embudos y desde uno ganado se crea una factura. Leads (/leads) son quienes aún no son clientes; se convierten en cuenta, contacto y negocio. Cuentas (/accounts) son las empresas cliente. Contactos (/contacts) son las personas de una cuenta. Objetivos (/goals) miden ingresos, negocios o actividades del periodo.
 
-Atender: Tareas (/tasks) tienen lista, tablero y calendario. Nueva tarea está en /tasks/new: se escribe el título, en Asignar a un clic marca a una persona y Ctrl añade otra, y Crear tarea la guarda. Tickets (/tickets) son el soporte: responder, nota interna, aprobar, fusionar y cargar horas. Base de conocimiento (/solutions) son los artículos. Documentos (/documents) son los archivos de la empresa.
+Atender: Tickets (/tickets) son el trabajo y el soporte. La cola muestra Vencido, Nada con retraso y Vence esta semana según el plazo de resolución. Nuevo ticket está en /tickets/new. También hay tablero, responder, nota interna, aprobar, fusionar y cargar horas. No se crean tareas. Soluciones (/solutions) son los artículos. Documentos (/documents) son los archivos de la empresa.
 
 Cobrar: Facturas (/invoices), presupuestos (/invoices/estimates), recurrentes (/invoices/recurring) y productos (/invoices/products). Un pago guarda medio, fecha, monto y referencia, sin el número de la tarjeta. Informes y plantillas están en ese mismo grupo.
 

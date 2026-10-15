@@ -19,7 +19,7 @@
   import DuplicateNotice from '$lib/v2/components/DuplicateNotice.svelte';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
   import { industryLabel } from '$lib/v2/enums.js';
-  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/sell.js';
 
   /** @type {{ data: any, form: any }} */
@@ -30,25 +30,15 @@
   let form = $state(
     untrack(() => ({
       name: '',
-      industry: data.defaults.industry,
       website: '',
-      email: '',
+      industry: data.defaults.industry,
       phone: '',
-      number_of_employees: '',
-      annual_revenue: '',
       city: '',
       country: data.defaults.country,
-      address_line: '',
-      state: '',
-      postcode: '',
-      currency: '',
-      description: '',
       assigned_to: '',
       ...(result?.values ?? {})
     }))
   );
-
-  let detail = $state(1);
 
   let touched = $state(/** @type {Record<string, boolean>} */ ({}));
   let submitted = $state(false);
@@ -58,18 +48,6 @@
     const e = {};
     if (!form.name.trim()) e.name = tx('Give the account the name you would search for.');
 
-    if (form.annual_revenue !== '') {
-      const n = Number(form.annual_revenue);
-      if (!Number.isFinite(n)) e.annual_revenue = tx('Annual revenue has to be a number.');
-      else if (n < 0) e.annual_revenue = tx('Annual revenue cannot be negative.');
-    }
-    if (form.number_of_employees !== '') {
-      const n = Number(form.number_of_employees);
-      if (!Number.isInteger(n)) e.number_of_employees = tx('Headcount is a whole number.');
-      else if (n < 0) e.number_of_employees = tx('Headcount cannot be negative.');
-    }
-    if (form.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email))
-      e.email = tx('That does not look like an email address.');
     // The exact regex from `flexible_phone_validator`.
     if (form.phone && !/^[\d\s\-()+.]{7,25}$/.test(form.phone))
       e.phone = tx('7 to 25 characters: digits, spaces, brackets, dots, dashes. No extensions.');
@@ -90,15 +68,6 @@
   const check = async ({ cancel }) => {
     submitted = true;
     if (!valid) {
-      const stepOf = (field) =>
-        field === 'name'
-          ? 1
-          : ['email', 'phone', 'website', 'industry', 'assigned_to'].includes(field)
-            ? 2
-            : ['number_of_employees', 'annual_revenue', 'city', 'country', 'description'].includes(field)
-              ? 3
-              : 4;
-      detail = Math.max(detail, ...Object.keys(errors).map(stepOf));
       cancel();
       await tick();
       /** @type {HTMLElement | null} */
@@ -112,19 +81,19 @@
   };
 </script>
 
-<PageHeader title={tx('New account')} center>
+<PageHeader title={tx('New account')} center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/accounts')}>{tx('Accounts')}</a>
     <ChevronRight size={12} />
     <span>{tx('New')}</span>
   {/snippet}
   {#snippet sub()}
-    {tx('A company you sell to. Everything else attaches to it later.')}
+    {tx('The company name, a way to reach them, and who owns the account.')}
   {/snippet}
 </PageHeader>
 
 <div class="v2-scroll v2-pad" style="padding-top:18px">
-  <form class="v2-form" method="POST" action="?/create" use:enhance={check} novalidate>
+  <form class="v2-form v2-create" method="POST" action="?/create" use:enhance={check} novalidate>
     {#if result?.error}
       <div
         class="v2-next"
@@ -139,194 +108,96 @@
       </div>
     {/if}
 
-    <div class="v2-field">
-      <label for="f-name">{tx('Account name')}</label>
-      <input
-        id="f-name"
-        name="name"
-        class="v2-input"
-        bind:value={form.name}
-        onblur={() => (touched.name = true)}
-        aria-invalid={show('name') ? 'true' : undefined}
-      />
-      {#if show('name')}
-        <p class="v2-error">{errors.name}</p>
-      {:else}
-        <p class="v2-hint">{tx('Has to be unique in this organisation, ignoring capitals.')}</p>
-      {/if}
-    </div>
-
-    <p class="v2-sub" style="margin:0 0 12px">{tx('Step {n} of {total}', { n: detail, total: 4 })}</p>
-
-    <div class="pair" hidden={detail < 2}>
+    <section class="v2-create-section">
+      <h2>{tx('The company')}</h2>
       <div class="v2-field">
-        <label for="f-industry">{tx('Industry')}</label>
-        <select id="f-industry" name="industry" class="v2-input" bind:value={form.industry}>
-          <option value="">{tx('Not recorded')}</option>
-          {#each data.industries as i (i.value)}
-            <option value={i.value}>{industryLabel(i.value)}</option>
-          {/each}
-        </select>
+        <label class="req" for="f-name">{tx('Account name')}</label>
+        <input
+          id="f-name"
+          name="name"
+          class="v2-input"
+          autocomplete="organization"
+          bind:value={form.name}
+          onblur={() => (touched.name = true)}
+          aria-invalid={show('name') ? 'true' : undefined}
+        />
+        {#if show('name')}
+          <p class="v2-error">{errors.name}</p>
+        {:else}
+          <p class="v2-hint">{tx('Has to be unique in this organisation, ignoring capitals.')}</p>
+        {/if}
       </div>
+      <div class="v2-create-grid">
+        <div class="v2-field">
+          <label for="f-website">{tx('Website')}</label>
+          <input id="f-website" name="website" class="v2-input" type="url" autocomplete="url" bind:value={form.website} />
+        </div>
+        <div class="v2-field">
+          <label for="f-phone">{tx('Phone')}</label>
+          <input
+            id="f-phone"
+            name="phone"
+            class="v2-input"
+            type="tel"
+            autocomplete="tel"
+            bind:value={form.phone}
+            onblur={() => (touched.phone = true)}
+            aria-invalid={show('phone') ? 'true' : undefined}
+          />
+          {#if show('phone')}<p class="v2-error">{errors.phone}</p>{/if}
+        </div>
+        <div class="v2-field wide">
+          <label for="f-industry">{tx('Industry')}</label>
+          <select id="f-industry" name="industry" class="v2-input" bind:value={form.industry}>
+            <option value="">{tx('Not recorded')}</option>
+            {#each data.industries as i (i.value)}
+              <option value={i.value}>{industryLabel(i.value)}</option>
+            {/each}
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-create-section">
+      <h2>{tx('Where they are')}</h2>
+      <div class="v2-create-grid">
+        <div class="v2-field">
+          <label for="f-city">{tx('City')}</label>
+          <input id="f-city" name="city" class="v2-input" autocomplete="address-level2" bind:value={form.city} />
+        </div>
+        <div class="v2-field">
+          <label for="f-country">{tx('Country')}</label>
+          <select id="f-country" name="country" class="v2-input" bind:value={form.country}>
+            <option value="">{tx('Not recorded')}</option>
+            {#each data.countries as c (c.value)}
+              <option value={c.value}>{c.label}</option>
+            {/each}
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-create-section">
+      <h2>{tx('Assignment')}</h2>
       <div class="v2-field">
         <label for="f-owner">{tx('Owner')}</label>
         <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
           <option value="">{tx('Nobody')}</option>
           {#each data.owners as o (o.id)}
-            <!-- The value is the Profile id, not the display name. -->
             <option value={o.id}>{o.name}</option>
           {/each}
         </select>
       </div>
-    </div>
-
-    <div class="pair" hidden={detail < 2}>
-      <div class="v2-field">
-        <label for="f-email">{tx('Email')}</label>
-        <input
-          id="f-email"
-          name="email"
-          class="v2-input"
-          type="email"
-          bind:value={form.email}
-          onblur={() => (touched.email = true)}
-          aria-invalid={show('email') ? 'true' : undefined}
-        />
-        {#if show('email')}<p class="v2-error">{errors.email}</p>{/if}
-      </div>
-      <div class="v2-field">
-        <label for="f-phone">{tx('Phone')}</label>
-        <input
-          id="f-phone"
-          name="phone"
-          class="v2-input"
-          bind:value={form.phone}
-          onblur={() => (touched.phone = true)}
-          aria-invalid={show('phone') ? 'true' : undefined}
-        />
-        {#if show('phone')}<p class="v2-error">{errors.phone}</p>{/if}
-      </div>
-    </div>
-
-    <div class="v2-field" hidden={detail < 2}>
-      <label for="f-website">{tx('Website')}</label>
-      <input id="f-website" name="website" class="v2-input" type="url" bind:value={form.website} />
-    </div>
-
-    <div class="pair" hidden={detail < 3}>
-      <div class="v2-field">
-        <label for="f-staff">{tx('Headcount')}</label>
-        <input
-          id="f-staff"
-          name="number_of_employees"
-          class="v2-input v2-num"
-          type="text"
-          inputmode="numeric"
-          bind:value={form.number_of_employees}
-          onblur={() => (touched.number_of_employees = true)}
-          aria-invalid={show('number_of_employees') ? 'true' : undefined}
-        />
-        {#if show('number_of_employees')}<p class="v2-error">{errors.number_of_employees}</p>{/if}
-      </div>
-      <div class="v2-field">
-        <label for="f-revenue">{tx('Annual revenue')}</label>
-        <input
-          id="f-revenue"
-          name="annual_revenue"
-          class="v2-input v2-num"
-          type="text"
-          inputmode="decimal"
-          bind:value={form.annual_revenue}
-          onblur={() => (touched.annual_revenue = true)}
-          aria-invalid={show('annual_revenue') ? 'true' : undefined}
-        />
-        {#if show('annual_revenue')}<p class="v2-error">{errors.annual_revenue}</p>{/if}
-      </div>
-    </div>
-
-    <div class="pair" hidden={detail < 3}>
-      <div class="v2-field">
-        <label for="f-city">{tx('City')}</label>
-        <input id="f-city" name="city" class="v2-input" bind:value={form.city} />
-      </div>
-      <div class="v2-field">
-        <label for="f-country">{tx('Country')}</label>
-        <select id="f-country" name="country" class="v2-input" bind:value={form.country}>
-          <option value="">{tx('Not recorded')}</option>
-          {#each data.countries as c (c.value)}
-            <option value={c.value}>{c.label}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
-
-    <div class="v2-field" hidden={detail < 3}>
-      <label for="f-notes">{tx('Notes')}</label>
-      <textarea
-        id="f-notes"
-        name="description"
-        class="v2-input"
-        rows="3"
-        bind:value={form.description}></textarea>
-    </div>
-
-    <div class="pair" hidden={detail < 4}>
-      <div class="v2-field">
-        <label for="f-line">{tx('Street address')}</label>
-        <input id="f-line" name="address_line" class="v2-input" maxlength="255" bind:value={form.address_line} />
-      </div>
-      <div class="v2-field">
-        <label for="f-region">{tx('Region')}</label>
-        <input id="f-region" name="state" class="v2-input" maxlength="255" bind:value={form.state} />
-      </div>
-    </div>
-    <div class="pair" hidden={detail < 4}>
-      <div class="v2-field">
-        <label for="f-post">{tx('Postal code')}</label>
-        <input id="f-post" name="postcode" class="v2-input" maxlength="64" bind:value={form.postcode} />
-      </div>
-      <div class="v2-field">
-        <label for="f-currency">{tx('Currency')}</label>
-        <select id="f-currency" name="currency" class="v2-input" bind:value={form.currency}>
-          <option value="">{tx('Not recorded')}</option>
-          {#each data.currencies as c (c.code)}
-            <option value={c.code}>{c.label}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
+    </section>
 
     <DuplicateNotice
       module="accounts"
-      values={{ name: form.name, email: form.email, phone: form.phone, website: form.website }}
+      values={{ name: form.name, phone: form.phone, website: form.website }}
     />
 
-    <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create account')}</button>
-      {#if detail < 4}
-        <button class="v2-btn" type="button" onclick={() => (detail += 1)}>{tx('More details')}</button>
-      {/if}
+    <div class="v2-create-foot">
       <a class="v2-btn" href={resolve('/accounts')}>{tx('Cancel')}</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create account')}</button>
     </div>
   </form>
 </div>
-
-<style>
-  .pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-top: 22px;
-    padding-bottom: 40px;
-  }
-  @media (max-width: 720px) {
-    .pair {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

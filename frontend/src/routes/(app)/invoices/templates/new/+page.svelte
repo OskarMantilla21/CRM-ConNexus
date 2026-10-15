@@ -21,8 +21,10 @@
    * value, and `_validate_hex_color` in the serializer refuses anything else,
    * which is the check that counts.
    */
+  import { untrack } from 'svelte';
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import TemplatePreview from '$lib/v2/components/TemplatePreview.svelte';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
   import { ChevronRight, Lock } from '@lucide/svelte';
@@ -35,9 +37,34 @@
   /* True from submit until the response lands, so a second press during a
      slow save cannot post the template again and create two templates. */
   let saving = $state(false);
+
+  /* Bound so the sheet on the right updates as each field changes. A failed
+     save comes back with `form.values`; `untrack` keeps that first read from
+     being treated as a local state dependency. */
+  let name = $state(untrack(() => form?.values?.name ?? ''));
+  let primary = $state(untrack(() => form?.values?.primary_color || '#3B82F6'));
+  let secondary = $state(untrack(() => form?.values?.secondary_color || '#1E40AF'));
+  let notes = $state(untrack(() => form?.values?.default_notes ?? ''));
+  let terms = $state(untrack(() => form?.values?.default_terms ?? ''));
+  let footer = $state(untrack(() => form?.values?.footer_text ?? ''));
+  let logoUrl = $state('');
+
+  $effect(() => {
+    const url = logoUrl;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  });
+
+  /** @param {Event} event */
+  function onLogo(event) {
+    const input = /** @type {HTMLInputElement} */ (event.currentTarget);
+    const file = input.files?.[0];
+    logoUrl = file && file.type.startsWith('image/') ? URL.createObjectURL(file) : '';
+  }
 </script>
 
-<PageHeader title={tx('New template')} record center width="62ch">
+<PageHeader title={tx('New template')} record center width="calc(1180px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/invoices/templates')}>{tx('Templates')}</a>
     <ChevronRight size={12} />
@@ -45,7 +72,7 @@
   {/snippet}
 </PageHeader>
 
-<div class="v2-scroll">
+<div class="v2-scroll v2-pad" style="padding-top:18px">
   {#if !data.can_manage}
     <div class="v2-pad" style="padding-top:24px;max-width:56ch;margin-left:auto;margin-right:auto">
       <div class="v2-next" role="note">
@@ -62,6 +89,7 @@
       >
     </div>
   {:else}
+    <div class="studio">
     <form
       method="POST"
       action="?/create"
@@ -74,8 +102,7 @@
           saving = false;
         };
       }}
-      class="v2-pad"
-      style="padding-top:18px;padding-bottom:36px;max-width:62ch;margin-left:auto;margin-right:auto"
+      class="v2-form v2-create studio-form"
     >
       {#if form?.error}
         <p style="color:var(--v2-rust);font-size:12.5px;margin:0 0 14px" role="alert">
@@ -90,7 +117,7 @@
           name="name"
           required
           maxlength="100"
-          value={values.name ?? ''}
+          bind:value={name}
           placeholder={tx('Standard invoice')}
         />
       </label>
@@ -102,7 +129,7 @@
             class="color-swatch"
             type="color"
             name="primary_color"
-            value={values.primary_color || '#3B82F6'}
+            bind:value={primary}
           />
         </label>
         <label class="color-field">
@@ -111,7 +138,7 @@
             class="color-swatch"
             type="color"
             name="secondary_color"
-            value={values.secondary_color || '#1E40AF'}
+            bind:value={secondary}
           />
         </label>
       </div>
@@ -121,7 +148,7 @@
 
       <label class="v2-field">
         <span class="v2-label">{tx('Logo')} <span class="opt">{tx('(optional)')}</span></span>
-        <input class="v2-input" type="file" name="logo" accept="image/*" />
+        <input class="v2-input" type="file" name="logo" accept="image/*" onchange={onLogo} />
       </label>
 
       <label class="v2-field">
@@ -130,7 +157,8 @@
           class="v2-input"
           name="default_notes"
           rows="3"
-          placeholder={tx('Thanks for your business.')}>{values.default_notes ?? ''}</textarea
+          placeholder={tx('Thanks for your business.')}
+          bind:value={notes}></textarea
         >
       </label>
 
@@ -140,13 +168,14 @@
           class="v2-input"
           name="default_terms"
           rows="3"
-          placeholder={tx('Payment due within 30 days.')}>{values.default_terms ?? ''}</textarea
+          placeholder={tx('Payment due within 30 days.')}
+          bind:value={terms}></textarea
         >
       </label>
 
       <label class="v2-field">
         <span class="v2-label">{tx('Footer text')} <span class="opt">{tx('(optional)')}</span></span>
-        <textarea class="v2-input" name="footer_text" rows="2">{values.footer_text ?? ''}</textarea>
+        <textarea class="v2-input" name="footer_text" rows="2" bind:value={footer}></textarea>
       </label>
 
       <label class="flag">
@@ -166,10 +195,47 @@
         <a class="v2-btn" href={resolve('/invoices/templates')}>{tx('Cancel')}</a>
       </div>
     </form>
+    <div class="preview-slot">
+      <TemplatePreview
+        orgName={data.org_name}
+        {primary}
+        {secondary}
+        {logoUrl}
+        {notes}
+        {terms}
+        {footer}
+      />
+    </div>
+    </div>
   {/if}
 </div>
 
 <style>
+  .studio {
+    display: grid;
+    grid-template-columns: minmax(0, 720px) minmax(280px, 420px);
+    gap: 22px;
+    align-items: start;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .studio-form {
+    margin: 0;
+    max-width: none;
+  }
+  .preview-slot {
+    position: sticky;
+    top: 12px;
+  }
+  @media (max-width: 1040px) {
+    .studio {
+      grid-template-columns: 1fr;
+    }
+    .preview-slot {
+      position: static;
+      order: -1;
+    }
+  }
   .opt {
     text-transform: none;
     font-weight: 500;

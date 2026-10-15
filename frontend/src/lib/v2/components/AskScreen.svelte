@@ -1,7 +1,7 @@
 <script>
   /**
-   * The assistant canvas. It covers the workspace while it is open and keeps
-   * the thread when it closes.
+   * The assistant canvas. It opens as a right-hand column, the same width
+   * Chrome uses for Ask Gemini (about 360px), and keeps the thread when it closes.
    *
    * States, on the root as `data-state`:
    * - idle: welcome, greeting, model, suggestion cards
@@ -18,7 +18,7 @@
   import { tx } from '$lib/i18n/translate.js';
   import { visibleScreen, withVisible } from '$lib/screen-brief.js';
   import ChatMarkdown from '$lib/v2/components/assistant/ChatMarkdown.svelte';
-  import Spark from '$lib/v2/components/assistant/Spark.svelte';
+  import ProviderMark from '$lib/v2/components/assistant/ProviderMark.svelte';
   import { ArrowUp, Copy, Paperclip, Pencil, RefreshCw, Square, ThumbsDown, ThumbsUp, X } from '@lucide/svelte';
 
   /**
@@ -77,6 +77,7 @@
   );
   let selected = $derived(models.find((item) => item.id === modelId) || models[0] || null);
   let assistantName = $derived(selected?.name || assistant?.name || 'Gemini');
+  let providerId = $derived(selected?.provider || assistant?.provider || 'gemini');
 
   let phase = $derived.by(() => {
     if (busy) return 'thinking';
@@ -232,27 +233,12 @@
 
   /** @param {KeyboardEvent} event */
   function onDialogKey(event) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      event.stopPropagation();
-      onclose();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const root = /** @type {HTMLElement} */ (event.currentTarget);
-    const items = [...root.querySelectorAll('button, textarea, select, a[href], input')].filter(
-      (node) => node instanceof HTMLElement && !node.hasAttribute('disabled') && node.tabIndex !== -1
-    );
-    const first = items[0];
-    const last = items[items.length - 1];
-    if (!first || !last) return;
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    // The column sits beside the CRM, the way Chrome's Ask Gemini panel does.
+    // Escape closes it. Tab is free to leave, so the page stays usable.
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    onclose();
   }
 
   /** @param {number} id */
@@ -345,14 +331,14 @@
     class="canvas"
     data-state={phase}
     role="dialog"
-    aria-modal="true"
+    aria-modal="false"
     aria-labelledby="assistant-title"
     tabindex="-1"
     onkeydown={onDialogKey}
   >
     <header class="top">
       <p class="brand" id="assistant-title">
-        <span class="brand-spark"><Spark /></span>
+        <span class="brand-spark"><ProviderMark provider={providerId} /></span>
         {assistantName}
       </p>
       {#if models.length && phase !== 'idle'}
@@ -404,7 +390,7 @@
           {#each thread as turn (turn.id)}
             <article class="row" class:user={turn.role === 'user'} class:assistant={turn.role === 'assistant'} class:fail={turn.error}>
               {#if turn.role === 'assistant'}
-                <span class="mark"><Spark /></span>
+                <span class="mark"><ProviderMark provider={providerId} /></span>
               {/if}
               <div class="body">
                 {#if turn.pending}
@@ -523,12 +509,17 @@
 <style>
   .canvas {
     position: fixed;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(360px, calc(100vw - 48px));
     z-index: 70;
     display: flex;
     flex-direction: column;
     background: var(--v2-paper);
     color: var(--v2-ink);
+    border-left: 1px solid var(--v2-line);
+    box-shadow: -12px 0 32px rgba(28, 31, 38, 0.08);
   }
   .canvas:focus {
     outline: none;
@@ -537,16 +528,19 @@
     flex: none;
     display: flex;
     align-items: center;
-    gap: 12px;
-    height: 64px;
-    padding: 0 16px 0 22px;
+    gap: 8px;
+    height: 56px;
+    padding: 0 8px 0 16px;
+    min-width: 0;
   }
   .brand {
     display: flex;
     align-items: center;
     gap: 8px;
     margin: 0;
-    font-size: 16px;
+    min-width: 0;
+    flex: none;
+    font-size: 15px;
     font-weight: 650;
     letter-spacing: -0.02em;
   }
@@ -585,23 +579,23 @@
   }
   .canvas[data-state='idle'] .thread {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
   }
   .welcome,
   .talk,
   .dock {
-    width: min(760px, calc(100% - 32px));
-    margin: 0 auto;
+    width: auto;
+    margin: 0 16px;
   }
   .welcome {
     padding: 24px 0 8px;
   }
   h2 {
     margin: 0;
-    font-size: clamp(32px, 5vw, 44px);
+    font-size: 26px;
     font-weight: 560;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
   }
   .lead,
   .offline {
@@ -613,7 +607,12 @@
     color: var(--v2-ember);
   }
   .model {
-    display: inline-flex;
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .top .model {
+    flex: 1 1 auto;
   }
   .welcome-model {
     margin-top: 16px;
@@ -624,9 +623,14 @@
     background: transparent;
     color: var(--v2-slate);
     font: inherit;
-    font-size: 13.5px;
+    font-size: 13px;
     padding: 6px 4px;
     cursor: pointer;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .model select:hover,
   .model select:focus {
@@ -634,9 +638,9 @@
   }
   .cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 28px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
   }
   .card {
     display: flex;

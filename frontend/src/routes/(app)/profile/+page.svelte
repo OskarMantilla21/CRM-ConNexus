@@ -271,9 +271,9 @@
               <span class="v2-sub" style="font-size:11.5px">{tx('Hours you have logged this week')}</span>
             </div>
           </a>
-          <a class="v2-setting" href={resolve('/tasks')}>
+          <a class="v2-setting" href={resolve('/tickets')}>
             <div class="v2-setting-body">
-              <b>{tx('Tasks')}</b>
+              <b>{tx('Tickets')}</b>
               <span class="v2-sub" style="font-size:11.5px">{tx('What is assigned to you')}</span>
             </div>
           </a>

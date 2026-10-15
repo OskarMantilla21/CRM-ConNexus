@@ -134,6 +134,7 @@ function toDoc(d, viewer) {
     // Null when there is no file, so the row keeps rendering the name as text
     // instead of offering a download that 404s.
     download_href: d.document_file ? documentHref(d.id) : null,
+    preview_href: d.document_file ? `${documentHref(d.id)}?preview=1` : null,
     file_kind: fileKind(d.document_file),
     size_bytes: typeof d.size_bytes === 'number' ? d.size_bytes : null,
     status: d.status,
@@ -248,6 +249,9 @@ export async function getDocumentForEdit({ cookies }, id) {
       status: doc.status,
       file_kind: doc.file_kind,
       document_file: doc.document_file,
+      preview_href: doc.preview_href,
+      size_bytes: doc.size_bytes,
+      created_by_name: doc.created_by.name,
       shared_to: shared,
       // Shares the picker has no checkbox for: people deactivated since, or
       // every share when the list failed to load. The page posts them back so

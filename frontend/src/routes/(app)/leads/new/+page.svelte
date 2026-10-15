@@ -1,5 +1,5 @@
 <script>
-  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   /**
@@ -20,15 +20,7 @@
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import DuplicateNotice from '$lib/v2/components/DuplicateNotice.svelte';
-  import {
-    LEAD_STATUSES,
-    LEAD_STATUS_LABEL,
-    LEAD_SOURCES,
-    LEAD_SOURCE_LABEL,
-    INDUSTRIES,
-    industryLabel
-  } from '$lib/v2/enums.js';
-  import { money } from '$lib/v2/format.js';
+  import { LEAD_STATUSES, LEAD_STATUS_LABEL, LEAD_SOURCES, LEAD_SOURCE_LABEL } from '$lib/v2/enums.js';
   import { TriangleAlert } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -43,14 +35,11 @@
       last_name: '',
       company_name: '',
       email: '',
-      assigned_to: data.defaults.assigned_to,
-      job_title: '',
       phone: '',
-      website: '',
+      job_title: '',
+      assigned_to: data.defaults.assigned_to,
       status: data.defaults.status,
       source: '',
-      industry: '',
-      opportunity_amount: '',
       description: '',
       // A rejected submit comes back with what was typed. Retyping a dozen
       // fields because one collided is how people learn to distrust a create
@@ -86,15 +75,6 @@
     if (form.phone && !/^[\d\s\-()+.]{7,25}$/.test(form.phone))
       e.phone = tx('7 to 25 characters: digits, spaces, brackets, dots, dashes. No extensions.');
 
-    // `createLead` runs `Number(amount)` and the body is JSON-encoded, and
-    // `JSON.stringify` turns `NaN` into `null`. Without this check, typing
-    // "abc" would not error, it would silently save as no value at all.
-    if (form.opportunity_amount !== '') {
-      const n = Number(form.opportunity_amount);
-      if (!Number.isFinite(n)) e.opportunity_amount = tx('Estimated value has to be a number.');
-      else if (n < 0) e.opportunity_amount = tx('Estimated value cannot be negative.');
-    }
-
     return e;
   });
 
@@ -129,17 +109,17 @@
   };
 </script>
 
-<PageHeader title={tx('New lead')} center>
+<PageHeader title={tx('New lead')} center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/leads')}>{tx('Leads')}</a> ›
   {/snippet}
   {#snippet sub()}
-    {tx('A name and a company is enough to start. The rest can wait.')}
+    {tx('Name, a way to reach them, and the company they work at.')}
   {/snippet}
 </PageHeader>
 
 <div class="v2-scroll v2-pad" style="padding-top:18px">
-  <form class="v2-form" method="POST" action="?/create" use:enhance={check} novalidate>
+  <form class="v2-form v2-create" method="POST" action="?/create" use:enhance={check} novalidate>
     {#if result?.error}
       <div
         class="v2-next"
@@ -172,138 +152,114 @@
       </div>
     {/if}
 
-    <div class="v2-field">
-      <label for="f-first">{tx('First name')}</label>
-      <input
-        id="f-first"
-        name="first_name"
-        class="v2-input"
-        bind:value={form.first_name}
-        onblur={() => (touched.first_name = true)}
-      />
-    </div>
-    <div class="v2-field">
-      <label for="f-last">{tx('Last name')}</label>
-      <input
-        id="f-last"
-        name="last_name"
-        class="v2-input"
-        bind:value={form.last_name}
-        onblur={() => (touched.last_name = true)}
-        aria-invalid={show('last_name') ? 'true' : undefined}
-        aria-describedby={show('last_name') ? 'e-last' : undefined}
-      />
-      {#if show('last_name')}<p class="v2-error" id="e-last">{errors.last_name}</p>{/if}
-    </div>
-    <div class="v2-field">
-      <label for="f-company">{tx('Company')}</label>
-      <input id="f-company" name="company_name" class="v2-input" bind:value={form.company_name} />
-    </div>
-    <div class="v2-field">
-      <label for="f-email">{tx('Email')}</label>
-      <input
-        id="f-email"
-        name="email"
-        class="v2-input"
-        type="email"
-        bind:value={form.email}
-        onblur={() => (touched.email = true)}
-        aria-invalid={show('email') ? 'true' : undefined}
-        aria-describedby={show('email') ? 'e-email' : undefined}
-      />
-      {#if show('email')}<p class="v2-error" id="e-email">{errors.email}</p>{/if}
-    </div>
-    <div class="v2-field">
-      <label for="f-owner">{tx('Owner')}</label>
-      <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-        <option value="">{tx('Unassigned')}</option>
-        {#each data.owners as o (o.id)}
-          <option value={o.id}>{o.name}</option>
-        {/each}
-      </select>
-    </div>
-    <div class="v2-field">
-      <label for="f-jobtitle">{tx('Job title')}</label>
-      <input id="f-jobtitle" name="job_title" class="v2-input" bind:value={form.job_title} />
-    </div>
-    <div class="v2-field">
-      <label for="f-phone">{tx('Phone')}</label>
-      <input
-        id="f-phone"
-        name="phone"
-        class="v2-input"
-        bind:value={form.phone}
-        onblur={() => (touched.phone = true)}
-        aria-invalid={show('phone') ? 'true' : undefined}
-        aria-describedby={show('phone') ? 'e-phone' : undefined}
-      />
-      {#if show('phone')}<p class="v2-error" id="e-phone">{errors.phone}</p>{/if}
-    </div>
-    <div class="v2-field">
-      <label for="f-website">{tx('Website')}</label>
-      <input id="f-website" name="website" class="v2-input" bind:value={form.website} />
-    </div>
-    <div class="v2-field">
-      <label for="f-status">{tx('Status')}</label>
-      <select id="f-status" name="status" class="v2-input" bind:value={form.status}>
-        {#each LEAD_STATUSES.filter((s) => s !== 'converted') as s (s)}
-          <option value={s}>{LEAD_STATUS_LABEL[s]}</option>
-        {/each}
-      </select>
-      <p class="v2-hint">
-        {tx('Converting is a significant, largely irreversible step: it creates an Account, a Contact and an Opportunity that nothing undoes if the status changes back, and it requires an email address that nothing else here does. Set the status here to something else, and convert once the lead is real.')}
-      </p>
-    </div>
-    <div class="v2-field">
-      <label for="f-source">{tx('Source')}</label>
-      <select id="f-source" name="source" class="v2-input" bind:value={form.source}>
-        <option value="">{tx('Not specified')}</option>
-        {#each LEAD_SOURCES as s (s)}
-          <option value={s}>{LEAD_SOURCE_LABEL[s]}</option>
-        {/each}
-      </select>
-    </div>
-    <div class="v2-field">
-      <label for="f-industry">{tx('Industry')}</label>
-      <select id="f-industry" name="industry" class="v2-input" bind:value={form.industry}>
-        <option value="">{tx('Not specified')}</option>
-        {#each INDUSTRIES as ind (ind)}
-          <option value={ind}>{industryLabel(ind)}</option>
-        {/each}
-      </select>
-    </div>
-    <div class="v2-field">
-      <label for="f-amount">{tx('Estimated value')}</label>
-      <input
-        id="f-amount"
-        name="opportunity_amount"
-        class="v2-input v2-num"
-        type="number"
-        step="any"
-        bind:value={form.opportunity_amount}
-        onblur={() => (touched.opportunity_amount = true)}
-        aria-invalid={show('opportunity_amount') ? 'true' : undefined}
-        aria-describedby={show('opportunity_amount') ? 'e-amount' : 'h-amount'}
-      />
-      {#if show('opportunity_amount')}
-        <p class="v2-error" id="e-amount">{errors.opportunity_amount}</p>
-      {:else}
-        <p class="v2-hint" id="h-amount">
-          {Number(form.opportunity_amount) > 0
-            ? money(Number(form.opportunity_amount), data.org.currency)
-            : tx('What the deal would be worth if it lands.')}
-        </p>
-      {/if}
-    </div>
-    <div class="v2-field">
-      <label for="f-notes">{tx('Notes')}</label>
-      <textarea
-        id="f-notes"
-        name="description"
-        class="v2-input"
-        rows="4"
-        bind:value={form.description}></textarea>
-    </div>
+    <section class="v2-create-section">
+      <h2>{tx('About the person')}</h2>
+      <div class="v2-create-grid">
+        <div class="v2-field">
+          <label for="f-first">{tx('First name')}</label>
+          <input
+            id="f-first"
+            name="first_name"
+            class="v2-input"
+            autocomplete="given-name"
+            bind:value={form.first_name}
+            onblur={() => (touched.first_name = true)}
+          />
+        </div>
+        <div class="v2-field">
+          <label class="req" for="f-last">{tx('Last name')}</label>
+          <input
+            id="f-last"
+            name="last_name"
+            class="v2-input"
+            autocomplete="family-name"
+            bind:value={form.last_name}
+            onblur={() => (touched.last_name = true)}
+            aria-invalid={show('last_name') ? 'true' : undefined}
+            aria-describedby={show('last_name') ? 'e-last' : undefined}
+          />
+          {#if show('last_name')}<p class="v2-error" id="e-last">{errors.last_name}</p>{/if}
+        </div>
+        <div class="v2-field">
+          <label for="f-email">{tx('Email')}</label>
+          <input
+            id="f-email"
+            name="email"
+            class="v2-input"
+            type="email"
+            autocomplete="email"
+            bind:value={form.email}
+            onblur={() => (touched.email = true)}
+            aria-invalid={show('email') ? 'true' : undefined}
+            aria-describedby={show('email') ? 'e-email' : undefined}
+          />
+          {#if show('email')}<p class="v2-error" id="e-email">{errors.email}</p>{/if}
+        </div>
+        <div class="v2-field">
+          <label for="f-phone">{tx('Phone')}</label>
+          <input
+            id="f-phone"
+            name="phone"
+            class="v2-input"
+            type="tel"
+            autocomplete="tel"
+            bind:value={form.phone}
+            onblur={() => (touched.phone = true)}
+            aria-invalid={show('phone') ? 'true' : undefined}
+            aria-describedby={show('phone') ? 'e-phone' : undefined}
+          />
+          {#if show('phone')}<p class="v2-error" id="e-phone">{errors.phone}</p>{/if}
+        </div>
+        <div class="v2-field wide">
+          <label for="f-jobtitle">{tx('Job title')}</label>
+          <input id="f-jobtitle" name="job_title" class="v2-input" autocomplete="organization-title" bind:value={form.job_title} />
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-create-section">
+      <h2>{tx('The company')}</h2>
+      <div class="v2-field">
+        <label for="f-company">{tx('Company')}</label>
+        <input id="f-company" name="company_name" class="v2-input" autocomplete="organization" bind:value={form.company_name} />
+      </div>
+    </section>
+
+    <section class="v2-create-section">
+      <h2>{tx('Assignment')}</h2>
+      <div class="v2-create-grid">
+        <div class="v2-field">
+          <label for="f-source">{tx('Source')}</label>
+          <select id="f-source" name="source" class="v2-input" bind:value={form.source}>
+            <option value="">{tx('Not specified')}</option>
+            {#each LEAD_SOURCES as s (s)}
+              <option value={s}>{LEAD_SOURCE_LABEL[s]}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="v2-field">
+          <label for="f-owner">{tx('Owner')}</label>
+          <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
+            <option value="">{tx('Unassigned')}</option>
+            {#each data.owners as o (o.id)}
+              <option value={o.id}>{o.name}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="v2-field wide">
+          <label for="f-status">{tx('Status')}</label>
+          <select id="f-status" name="status" class="v2-input" bind:value={form.status}>
+            {#each LEAD_STATUSES.filter((s) => s !== 'converted') as s (s)}
+              <option value={s}>{LEAD_STATUS_LABEL[s]}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="v2-field wide">
+          <label for="f-notes">{tx('Notes')}</label>
+          <textarea id="f-notes" name="description" class="v2-input" rows="3" bind:value={form.description}></textarea>
+        </div>
+      </div>
+    </section>
 
     <DuplicateNotice
       module="leads"
@@ -316,19 +272,9 @@
       }}
     />
 
-    <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>{tx('Create lead')}</button>
+    <div class="v2-create-foot">
       <a class="v2-btn" href={resolve('/leads')}>{tx('Cancel')}</a>
+      <button class="v2-btn v2-btn-primary" type="submit" disabled={busy}>{tx('Create lead')}</button>
     </div>
   </form>
 </div>
-
-<style>
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-top: 22px;
-    padding-bottom: 40px;
-  }
-</style>

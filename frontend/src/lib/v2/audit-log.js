@@ -68,6 +68,12 @@ export function auditDetail(entry) {
       fields: d.changed.join(', ')
     });
   }
+  if (entry?.event_type === 'FILE_DELETED' && d.name) {
+    return tx('Deleted {kind} "{name}".', {
+      kind: tx(d.kind || 'document'),
+      name: d.name
+    });
+  }
   if (d.action && d.resource) return tx('{action} on {resource}', { action: d.action, resource: d.resource });
   if (d.deleted_count !== undefined && d.deleted_count !== null) {
     return tx('{n} sample leads removed', { n: d.deleted_count });

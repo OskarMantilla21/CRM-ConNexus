@@ -6,5 +6,7 @@ import { streamDownload } from '$lib/server/v2/files.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET(event) {
-  return streamDownload(event, `/documents/${event.params.id}/download/`);
+  return streamDownload(event, `/documents/${event.params.id}/download/`, {
+    preview: event.url.searchParams.get('preview') === '1'
+  });
 }

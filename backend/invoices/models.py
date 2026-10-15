@@ -1,4 +1,6 @@
+import os
 import secrets
+import time
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.core.exceptions import ValidationError
@@ -236,9 +238,44 @@ class InvoiceTemplate(BaseModel):
 # PRODUCT CATALOG
 # =============================================================================
 
+PRODUCT_KIND = (
+    ("product", "Product"),
+    ("catalog", "Catalog"),
+)
+
+
+def product_image_path(instance, filename):
+    """A photo stored under the org, named by us, not by the upload.
+
+    The original filename is untrusted. The extension is the only part kept,
+    and only when it is a photo type. Anything else lands as ``.bin``; the
+    serializer has already refused it, so this is the backstop.
+    """
+    leaf = os.path.basename(filename or "")
+    ext = leaf.rsplit(".", 1)[-1].lower() if "." in leaf else ""
+    if ext not in {"png", "jpg", "jpeg", "gif", "webp"}:
+        ext = "bin"
+    org = getattr(instance, "org_id", None) or "org"
+    return f"products/{org}/{int(time.time())}/image.{ext}"
+
+
+def product_catalog_path(instance, filename):
+    """The catalogue PDF, stored under the org as ``catalog.pdf``.
+
+    ``filename`` is not kept. The download is named from the product title.
+    """
+    os.path.basename(filename or "")
+    org = getattr(instance, "org_id", None) or "org"
+    return f"products/{org}/{int(time.time())}/catalog.pdf"
+
 
 class Product(BaseModel):
-    """Product Catalog for Line Items"""
+    """Product Catalog for Line Items
+
+    ``kind`` splits a sellable product from a PDF catalogue. A catalogue is
+    listed here so the photo and the PDF can be opened, and it is not a line
+    on an invoice. ``image`` is the photo. ``catalog_file`` is the PDF.
+    """
 
     name = models.CharField(_("Product Name"), max_length=255)
     description = models.TextField(_("Description"), blank=True, null=True)
@@ -249,6 +286,23 @@ class Product(BaseModel):
     )
     category = models.CharField(_("Category"), max_length=100, blank=True, null=True)
     is_active = models.BooleanField(_("Is Active"), default=True)
+    kind = models.CharField(
+        _("Kind"), max_length=16, choices=PRODUCT_KIND, default="product"
+    )
+    image = models.FileField(
+        _("Photo"),
+        upload_to=product_image_path,
+        blank=True,
+        null=True,
+        max_length=500,
+    )
+    catalog_file = models.FileField(
+        _("Catalogue PDF"),
+        upload_to=product_catalog_path,
+        blank=True,
+        null=True,
+        max_length=500,
+    )
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="products")
 
     class Meta:

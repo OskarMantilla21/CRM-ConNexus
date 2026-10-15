@@ -7,7 +7,7 @@
   import { afterNavigate } from '$app/navigation';
   import Sidebar from '$lib/v2/components/Sidebar.svelte';
   import AskScreen from '$lib/v2/components/AskScreen.svelte';
-  import Spark from '$lib/v2/components/assistant/Spark.svelte';
+  import ProviderMark from '$lib/v2/components/assistant/ProviderMark.svelte';
   import CommandPalette from '$lib/v2/components/CommandPalette.svelte';
   import BrandMark from '$lib/v2/components/BrandMark.svelte';
   import UserMenu from '$lib/v2/components/UserMenu.svelte';
@@ -20,6 +20,12 @@
   let { data, children } = $props();
 
   let askOpen = $state(false);
+  let askProvider = $derived(
+    data.screenAssistant?.connected ? data.screenAssistant.provider || 'gemini' : ''
+  );
+  let askName = $derived(
+    data.screenAssistant?.connected ? data.screenAssistant.name || 'Gemini' : tx('Assistant')
+  );
 
   let permissions = $derived(data.permissions ?? ALL_PERMISSIONS);
   let canSearch = $derived(
@@ -84,7 +90,7 @@
 
 <svelte:window {onkeydown} />
 
-<div class="v2-root v2-app" class:is-nav-hidden={navHidden}>
+<div class="v2-root v2-app" class:is-nav-hidden={navHidden} class:ask-open={askOpen}>
   <div class="v2-workspace">
   <header class="v2-topbar">
     <button class="v2-icon-btn" type="button" onclick={onMenu} aria-label={tx('Open menu')} aria-expanded={menuOpen}>
@@ -95,13 +101,14 @@
     </a>
     <div class="v2-topbar-end">
       <button
-        class="v2-icon-btn ask-launch"
+        class="ask-launch"
         type="button"
         aria-pressed={askOpen}
-        aria-label={tx(askOpen ? 'Close assistant' : 'Open assistant')}
+        aria-label={askOpen ? tx('Close assistant') : askName}
         onclick={() => (askOpen = !askOpen)}
       >
-        <span class="ask-spark"><Spark /></span>
+        <span class="ask-spark"><ProviderMark provider={askProvider} /></span>
+        <span class="ask-name">{askName}</span>
       </button>
       {#if canSearch}
         <button class="v2-icon-btn" type="button" onclick={() => (paletteOpen = true)} aria-label={tx('Search')}>
@@ -195,11 +202,41 @@
 </div>
 
 <style>
+  .ask-launch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    max-width: 180px;
+    min-width: 0;
+    flex: 0 1 auto;
+    padding: 0 12px 0 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--v2-ink);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ask-launch:hover,
+  .ask-launch[aria-pressed='true'] {
+    background: var(--v2-ember-soft);
+  }
   .ask-spark {
     font-size: 18px;
     display: grid;
+    flex: none;
   }
-  .ask-launch[aria-pressed='true'] {
-    background: var(--v2-ember-soft);
+  .ask-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Chrome's Ask Gemini panel resets to about 360px and leaves the page beside it. */
+  .v2-app.ask-open {
+    --v2-ask: min(360px, calc(100vw - 48px));
+    padding-right: var(--v2-ask);
   }
 </style>

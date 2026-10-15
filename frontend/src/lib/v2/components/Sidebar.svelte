@@ -9,7 +9,6 @@
     Building2,
     User,
     Target,
-    SquareCheck,
     MessageSquare,
     BookOpen,
     FileText,
@@ -98,7 +97,6 @@
       id: 'Serve',
       label: 'Serve',
       items: [
-        { href: '/tasks', label: 'Tasks', icon: SquareCheck, count: 'tasks', permission: 'serve' },
         { href: '/tickets', label: 'Tickets', icon: MessageSquare, count: 'tickets', permission: 'serve' },
         { href: '/solutions', label: 'Knowledge base', icon: BookOpen, permission: 'serve' },
         { href: '/documents', label: 'Documents', icon: FileText, permission: 'serve' },

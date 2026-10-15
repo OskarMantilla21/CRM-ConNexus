@@ -15,6 +15,7 @@ class Product {
     this.category,
     this.isActive = true,
     this.usedOn = 0,
+    this.kind = 'product',
   });
 
   final String id;
@@ -25,6 +26,10 @@ class Product {
   final String? currency;
   final String? category;
   final bool isActive;
+
+  /// `product` is something you sell. `catalog` is a PDF of the range: it is
+  /// listed with the catalogue and is not a line on an invoice.
+  final String kind;
 
   /// Distinct invoices this product is a line item on. Line items denormalise
   /// their own name and price, so retiring a product never rewrites history,
@@ -42,6 +47,7 @@ class Product {
       category: json['category'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       usedOn: json['used_on'] as int? ?? 0,
+      kind: json['kind'] as String? ?? 'product',
     );
   }
 

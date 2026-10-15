@@ -364,7 +364,7 @@ class _LineItemSheetState extends ConsumerState<_LineItemSheet> {
             // Only when the catalogue has something in it. An empty picker
             // above every line would suggest one is required, and it is not:
             // a free-text line is the ordinary case.
-            if (products.isNotEmpty) ...[
+            if (products.any((p) => p.isActive && p.kind != 'catalog')) ...[
               DropdownButtonFormField<String>(
                 initialValue: null,
                 isExpanded: true,
@@ -373,7 +373,7 @@ class _LineItemSheetState extends ConsumerState<_LineItemSheet> {
                   border: OutlineInputBorder(),
                 ),
                 items: [
-                  for (final p in products.where((p) => p.isActive))
+                  for (final p in products.where((p) => p.isActive && p.kind != 'catalog'))
                     DropdownMenuItem(
                       value: p.id,
                       child: Text(

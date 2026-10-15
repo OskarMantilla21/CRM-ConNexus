@@ -6,11 +6,12 @@
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import SectionTabs from '$lib/v2/components/SectionTabs.svelte';
   import FilterBar from '$lib/v2/components/FilterBar.svelte';
+  import StatCard from '$lib/v2/components/StatCard.svelte';
   import Pill from '$lib/v2/components/Pill.svelte';
   import Avatar from '$lib/v2/components/Avatar.svelte';
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import BulkActionBar from '$lib/v2/components/BulkActionBar.svelte';
-  import { count, shortAge } from '$lib/v2/format.js';
+  import { count, daysSince, relativeDays, shortAge } from '$lib/v2/format.js';
   import { PRIORITY_TONE, CASE_STATUS_TONE } from '$lib/v2/enums.js';
   import TicketImportDrawer from '$lib/components/tickets/TicketImportDrawer.svelte';
   import { Download, Plus, LifeBuoy, Upload } from '@lucide/svelte';
@@ -111,6 +112,29 @@
     return `${Math.round(n / 1440)}d`;
   }
 
+  /**
+   * The resolution target, shown the way a task shows its due date.
+   * A deadline later today is "today", not "tomorrow": `daysSince` floors a
+   * few hours ahead into the previous calendar day.
+   *
+   * @param {any} t
+   */
+  function dueLabel(t) {
+    if (!t.resolution_deadline) return { late: false, text: tx('no due date') };
+    const due = new Date(t.resolution_deadline);
+    if (Number.isNaN(due.getTime())) return { late: false, text: tx('no due date') };
+    const now = new Date();
+    if (t.is_open && due.getTime() < now.getTime()) {
+      const late = Math.max(1, daysSince(t.resolution_deadline) ?? 1);
+      return { late: true, text: tx('{n}d late', { n: late }) };
+    }
+    const sameDay =
+      due.getFullYear() === now.getFullYear() &&
+      due.getMonth() === now.getMonth() &&
+      due.getDate() === now.getDate();
+    return { late: false, text: sameDay ? tx('today') : relativeDays(t.resolution_deadline) };
+  }
+
   const TONE_VAR = {
     moss: 'var(--v2-moss)',
     rust: 'var(--v2-rust)',
@@ -121,12 +145,9 @@
 
 <PageHeader title={tx('Tickets')} count={totals.count}>
   {#snippet sub()}
-    <span class="v2-num">{count(totals.open)}</span> {tx('open')} ·
-    <span class="v2-num" style="color:var(--v2-rust)">{totals.urgent}</span> {tx('urgent')} ·
-    <!-- Not "breaching today". A breach depends on the org's business calendar
-         and is a per-row calculation; nobody having replied yet is a fact the
-         queue can establish, and it is the one that decides what to open. -->
-    <span class="v2-num">{count(totals.awaiting_reply)}</span> {tx('with no reply yet')}
+    <span class="v2-num">{count(totals.open)}</span> {tx('opened')} ·
+    <span class="v2-num" style="color:var(--v2-rust)">{count(totals.overdue)}</span>
+    {tx('overdue ones')}
   {/snippet}
   {#snippet actions()}
     <a class="v2-btn" href={resolve('/tickets/board')}>{tx('Board')}</a>
@@ -155,6 +176,19 @@
      which one you are on. -->
 <SectionTabs set="tickets" />
 
+<div class="v2-pad" style="padding-top:14px;flex:none">
+  <div class="v2-stats ticket-stats">
+    <StatCard
+      label={tx('Overdue')}
+      value={count(totals.overdue)}
+      tone={totals.overdue ? 'rust' : 'slate'}
+      detail={totals.overdue ? tx('Do these before anything else') : tx('Nothing late')}
+    />
+    <StatCard label={tx('Due this week')} value={count(totals.due_this_week)} tone="clay" />
+    <StatCard label={tx('Open')} value={count(totals.open)} tone="ink" />
+  </div>
+</div>
+
 {#if banner}
   <p class="v2-sub" style="font-size:12px;margin:8px 0 0">{banner}</p>
 {/if}
@@ -181,7 +215,7 @@
   tags={data.tags}
   meId={data.meId}
   saved={data.savedViews}
-  meta={tx("First-reply targets come from each ticket's SLA hours")}
+  meta={tx("Overdue and due this week follow each ticket's resolution target.")}
 />
 
 <div class="v2-scroll">
@@ -226,12 +260,14 @@
             <th>{tx('Account')}</th>
             <th>{tx('Assignee')}</th>
             <th class="v2-r">{tx('Age')}</th>
+            <th class="v2-r">{tx('Due')}</th>
             <th style="width:130px">{tx('First reply')}</th>
           </tr>
         </thead>
         <tbody>
           {#each tickets as t (t.id)}
             {@const p = responsePressure(t)}
+            {@const due = dueLabel(t)}
             <tr>
               <td data-m="lead">
                 <input
@@ -270,6 +306,14 @@
                 {/if}
               </td>
               <td class="v2-r v2-num v2-muted" data-m="meta">{shortAge(t.opened_at)}</td>
+              <td
+                class="v2-r"
+                data-m="meta"
+                class:v2-muted={!due.late}
+                style={due.late ? 'color:var(--v2-rust);font-weight:600' : ''}
+              >
+                {due.text}
+              </td>
               <!-- Kept on a phone, unlike the other trailing columns: a running
                    first-reply clock is the one thing in this queue that decides
                    what to open next. It takes its own line so the meter has a
@@ -314,3 +358,17 @@
 </div>
 
 <TicketImportDrawer bind:open={importOpen} />
+
+<style>
+  /* Three cards, the same ones that matter on the task list. The fourth task
+     card ("no due date") is always zero here: a ticket is given a resolution
+     target when it is opened, so that card only ever said everything was dated. */
+  .ticket-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 720px) {
+    .ticket-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

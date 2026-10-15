@@ -1,5 +1,9 @@
 import { fail, redirect, error } from '@sveltejs/kit';
-import { getInvoiceTemplateForEdit, updateInvoiceTemplate } from '$lib/server/v2/templates.js';
+import {
+  getInvoiceTemplateForEdit,
+  updateInvoiceTemplate,
+  deleteInvoiceTemplate
+} from '$lib/server/v2/templates.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { tx } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/bill.js';
@@ -75,6 +79,20 @@ export const actions = {
       return fail(400, { values, error: readableError(err, tx('Could not save this template.')) });
     }
 
+    redirect(303, '/invoices/templates');
+  },
+
+  delete: async (event) => {
+    try {
+      await deleteInvoiceTemplate(event, event.params.id);
+    } catch (/** @type {any} */ err) {
+      if (err?.status === 403) {
+        return fail(403, { error: tx('Only an administrator can change invoice templates.') });
+      }
+      if (err?.status !== 404) {
+        return fail(400, { error: readableError(err, tx('Could not delete this template.')) });
+      }
+    }
     redirect(303, '/invoices/templates');
   }
 };

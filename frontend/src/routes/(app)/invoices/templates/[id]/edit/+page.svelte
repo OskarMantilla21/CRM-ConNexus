@@ -25,7 +25,7 @@
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
-  import { ChevronRight, Lock, FileCode } from '@lucide/svelte';
+  import { ChevronRight, Lock, FileCode, Trash2 } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -163,6 +163,12 @@
         <a class="v2-btn" href={resolve('/invoices/templates')}>{tx('Cancel')}</a>
       </div>
     </form>
+
+    <div class="danger">
+      <form method="POST" action="?/delete" use:enhance>
+        <button class="v2-btn danger-btn" type="submit"><Trash2 size={14} />{tx('Delete')}</button>
+      </form>
+    </div>
   {/if}
 </div>
 
@@ -206,5 +212,18 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12px;
     line-height: 1.55;
+  }
+  .danger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    max-width: 72ch;
+    margin: 0 auto 40px;
+    padding: 16px var(--v2-pad) 0;
+    border-top: 1px solid var(--v2-line-soft);
+  }
+  .danger-btn {
+    color: var(--v2-rust);
   }
 </style>

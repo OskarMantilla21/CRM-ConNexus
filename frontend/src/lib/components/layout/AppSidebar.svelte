@@ -15,7 +15,6 @@
     Users,
     Building,
     Briefcase,
-    CheckSquare,
     HelpCircle,
     ChevronDown,
     PanelLeftClose,
@@ -256,14 +255,6 @@
           count: undefined
         }
       ]
-    },
-    {
-      href: '/tasks',
-      label: 'Tasks',
-      icon: CheckSquare,
-      type: 'link',
-      preload: 'off',
-      count: undefined
     },
     {
       href: '/timesheet',

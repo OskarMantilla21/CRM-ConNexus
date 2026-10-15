@@ -5,6 +5,7 @@
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import NextAction from '$lib/v2/components/NextAction.svelte';
+  import FilePreview from '$lib/v2/components/FilePreview.svelte';
   import { TriangleAlert, Users, Lock } from '@lucide/svelte';
   import '$lib/i18n/pages/serve.js';
   import { tx } from '$lib/i18n/translate.js';
@@ -49,10 +50,13 @@
   // Shown back to the reader so a replacement is a deliberate act, not a
   // silent one. Empty means the stored file is kept.
   let newFileName = $state('');
+  /** @type {File | null} */
+  let picked = $state(null);
 
   function onFile(/** @type {Event} */ ev) {
     const input = /** @type {HTMLInputElement} */ (ev.currentTarget);
-    newFileName = input.files?.[0]?.name ?? '';
+    picked = input.files?.[0] ?? null;
+    newFileName = picked?.name ?? '';
   }
 
   let touched = $state(/** @type {Record<string, boolean>} */ ({}));
@@ -70,6 +74,21 @@
   const show = (field) => (touched[field] || submitted) && errors[field];
 
   let reach = $derived(sharedTo.size + sharedTeams.size);
+
+  let audience = $derived.by(() => {
+    const people = (data.people ?? [])
+      .filter((/** @type {{ id: string }} */ p) => sharedTo.has(String(p.id)))
+      .map((/** @type {{ name: string }} */ p) => p.name);
+    const teams = (data.teams ?? [])
+      .filter((/** @type {{ id: string }} */ t) => sharedTeams.has(String(t.id)))
+      .map((/** @type {{ name: string }} */ t) => t.name);
+    const names = [...people, ...teams];
+    if (names.length) return names.join(', ');
+    if (reach > 0) {
+      return `${tx('Reaches')} ${reach} ${reach === 1 ? tx('person or team') : tx('people and teams')}`;
+    }
+    return tx('Only the owner and admins.');
+  });
 
   // The stored shares that have a checkbox, posted back as `*_original` so the
   // save action can tell "sharing left alone" (a PATCH that keeps every share)
@@ -168,7 +187,30 @@
            silently dropped everyone the document was shared with. -->
       <div class="v2-field">
         <label for="f-file">{tx('File')}</label>
-        <p class="v2-input v2-file-static">{data.document.document_file}</p>
+        {#if picked}
+          <div class="picked-preview">
+            <FilePreview
+              file={picked}
+              title={title}
+              rows={[{ label: tx('Who can open it'), value: audience }]}
+            />
+          </div>
+        {:else if data.document.preview_href}
+          <div class="picked-preview">
+            <FilePreview
+              src={data.document.preview_href}
+              name={data.document.document_file}
+              title={title}
+              size={data.document.size_bytes}
+              rows={[
+                { label: tx('Uploaded by'), value: data.document.created_by_name },
+                { label: tx('Who can open it'), value: audience }
+              ]}
+            />
+          </div>
+        {:else}
+          <p class="v2-input v2-file-static">{data.document.document_file}</p>
+        {/if}
         <input
           id="f-file"
           name="document_file"
@@ -365,5 +407,8 @@
     font-size: 12px;
     color: var(--v2-slate);
     margin: 0;
+  }
+  .picked-preview {
+    margin-bottom: 8px;
   }
 </style>

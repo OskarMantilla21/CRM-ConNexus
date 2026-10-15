@@ -123,6 +123,11 @@ urlpatterns = [
     # ==========================================================================
     path("products/", api_views.ProductListView.as_view(), name="product_list"),
     path(
+        "products/<uuid:pk>/file/",
+        api_views.ProductFileView.as_view(),
+        name="product_file",
+    ),
+    path(
         "products/<uuid:pk>/",
         api_views.ProductDetailView.as_view(),
         name="product_detail",

@@ -127,6 +127,10 @@ class OpportunityLineItemCreateSerializer(
             raise serializers.ValidationError(
                 "Product not found or does not belong to your organization"
             )
+        if product.kind == "catalog":
+            raise serializers.ValidationError(
+                "A product catalogue is not something you sell on a line."
+            )
         return product
 
     def validate(self, attrs):

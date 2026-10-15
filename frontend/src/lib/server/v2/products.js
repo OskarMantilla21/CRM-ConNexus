@@ -34,6 +34,7 @@
  *   is still listed rather than deleted.
  */
 import { apiRequest } from '$lib/api-helpers.js';
+import { productFileHref } from './files.js';
 import { viewerIsAdmin } from './organization.js';
 
 /**
@@ -69,6 +70,8 @@ const CURRENCY_CODES = new Set(CURRENCY_CHOICES.map((c) => c.code));
  * @param {any} p
  */
 function toProduct(p) {
+  const imageHref = p.has_image ? productFileHref(p.id, 'image') : null;
+  const catalogHref = p.has_catalog ? productFileHref(p.id, 'catalog') : null;
   return {
     id: p.id,
     name: p.name ?? '',
@@ -78,7 +81,14 @@ function toProduct(p) {
     currency: p.currency ?? null,
     category: (p.category && String(p.category).trim()) || 'Uncategorised',
     is_active: !!p.is_active,
-    used_on: typeof p.used_on === 'number' ? p.used_on : 0
+    kind: p.kind === 'catalog' ? 'catalog' : 'product',
+    used_on: typeof p.used_on === 'number' ? p.used_on : 0,
+    image_name: p.image_name || '',
+    catalog_name: p.catalog_name || '',
+    image_preview: imageHref ? `${imageHref}&preview=1` : null,
+    image_download: imageHref,
+    catalog_preview: catalogHref ? `${catalogHref}&preview=1` : null,
+    catalog_download: catalogHref
   };
 }
 
@@ -151,7 +161,14 @@ export async function getProductForEdit({ cookies }, id) {
       currency: p.currency,
       category: p.category === 'Uncategorised' ? '' : p.category,
       is_active: p.is_active,
-      used_on: p.used_on
+      kind: p.kind,
+      used_on: p.used_on,
+      image_name: p.image_name,
+      catalog_name: p.catalog_name,
+      image_preview: p.image_preview,
+      image_download: p.image_download,
+      catalog_preview: p.catalog_preview,
+      catalog_download: p.catalog_download
     }
   };
 }
@@ -172,11 +189,36 @@ function toPayload(values) {
     name: values.name,
     price: values.price,
     is_active: values.is_active,
+    kind: values.kind === 'catalog' ? 'catalog' : 'product',
     sku: values.sku ? values.sku : null,
     description: values.description ?? '',
     category: values.category ?? ''
   };
   if (values.currency && CURRENCY_CODES.has(values.currency)) body.currency = values.currency;
+  return body;
+}
+
+/**
+ * Multipart body. A file is appended only when one was chosen, so an edit
+ * that does not pick a new photo leaves the stored one. An empty SKU is sent
+ * as "" and the serializer stores null: two blank strings would collide on
+ * `(sku, org)`, and omitting the key on an edit would keep the old SKU.
+ *
+ * @param {Parameters<typeof toPayload>[0] & { image?: File | null, catalog_file?: File | null }} values
+ */
+function toFormData(values) {
+  const body = new FormData();
+  const payload = toPayload(values);
+  for (const [key, value] of Object.entries(payload)) {
+    if (key === 'sku') {
+      body.append('sku', value ?? '');
+      continue;
+    }
+    if (value === null || value === undefined) continue;
+    body.append(key, typeof value === 'boolean' ? String(value) : String(value));
+  }
+  if (values.image) body.append('image', values.image, values.image.name);
+  if (values.catalog_file) body.append('catalog_file', values.catalog_file, values.catalog_file.name);
   return body;
 }
 
@@ -188,7 +230,7 @@ function toPayload(values) {
 export function createProduct({ cookies }, values) {
   return apiRequest(
     '/invoices/products/',
-    { method: 'POST', body: toPayload(values) },
+    { method: 'POST', body: toFormData(values) },
     { cookies }
   );
 }
@@ -199,10 +241,91 @@ export function createProduct({ cookies }, values) {
  * @param {string} id
  * @param {Parameters<typeof toPayload>[0]} values
  */
+const PHOTO_EXT = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);
+
+/** @param {FormDataEntryValue | null} entry */
+export function takenFile(entry) {
+  if (!entry || typeof entry === 'string') return null;
+  if (!entry.name || !entry.size) return null;
+  return entry;
+}
+
+/** @param {string} name */
+function extOf(name) {
+  const base = name.split(/[/\\]/).pop() ?? name;
+  const dot = base.lastIndexOf('.');
+  return dot >= 0 ? base.slice(dot + 1).toLowerCase() : '';
+}
+
+/**
+ * The fields the create and edit actions share. A catalogue with a blank
+ * price is stored at 0: it is not sold, and the column is not nullable.
+ *
+ * @param {FormData} form
+ */
+export function readProductDraft(form) {
+  const kind = form.get('kind')?.toString() === 'catalog' ? 'catalog' : 'product';
+  let price = form.get('price')?.toString().trim() ?? '';
+  if (kind === 'catalog' && price === '') price = '0';
+  return {
+    name: form.get('name')?.toString().trim() ?? '',
+    sku: form.get('sku')?.toString().trim() ?? '',
+    price,
+    currency: form.get('currency')?.toString() ?? '',
+    category: form.get('category')?.toString().trim() ?? '',
+    description: form.get('description')?.toString().trim() ?? '',
+    is_active: form.get('is_active') !== 'false',
+    kind,
+    image: takenFile(form.get('image')),
+    catalog_file: takenFile(form.get('catalog_file'))
+  };
+}
+
+/**
+ * What `fail()` may carry back. File objects are not serialisable into the
+ * form result, and a browser will not refill a file input anyway.
+ *
+ * @param {ReturnType<typeof readProductDraft>} draft
+ */
+export function draftValues(draft) {
+  return {
+    name: draft.name,
+    sku: draft.sku,
+    price: draft.price,
+    currency: draft.currency,
+    category: draft.category,
+    description: draft.description,
+    is_active: draft.is_active,
+    kind: draft.kind
+  };
+}
+
+/**
+ * A sentence key when the chosen files are the wrong type. The API checks
+ * the bytes again. `requireCatalog` is the create form: an edit may already
+ * have the PDF stored.
+ *
+ * @param {ReturnType<typeof readProductDraft>} draft
+ * @param {{ requireCatalog?: boolean }} [options]
+ * @returns {string}
+ */
+export function productFileProblem(draft, options = {}) {
+  if (draft.image && !PHOTO_EXT.has(extOf(draft.image.name))) {
+    return 'Choose a photo in PNG, JPG, GIF or WebP.';
+  }
+  if (draft.catalog_file && extOf(draft.catalog_file.name) !== 'pdf') {
+    return 'Choose a PDF.';
+  }
+  if (options.requireCatalog && draft.kind === 'catalog' && !draft.catalog_file) {
+    return 'The catalogue needs its PDF.';
+  }
+  return '';
+}
+
 export function updateProduct({ cookies }, id, values) {
   return apiRequest(
     `/invoices/products/${id}/`,
-    { method: 'PUT', body: toPayload(values) },
+    { method: 'PUT', body: toFormData(values) },
     { cookies }
   );
 }
