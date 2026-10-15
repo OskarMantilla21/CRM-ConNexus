@@ -66,9 +66,13 @@ class OpportunityLineItemListView(APIView):
         ).order_by("order", "created_at")
 
         # Get available products for the dropdown
-        products = Product.objects.filter(
-            org=request.profile.org, is_active=True
-        ).order_by("name")
+        # A PDF catalogue lives in the same table so it can be opened from the
+        # product list. It is not something a deal line sells.
+        products = (
+            Product.objects.filter(org=request.profile.org, is_active=True)
+            .exclude(kind="catalog")
+            .order_by("name")
+        )
 
         return Response(
             {

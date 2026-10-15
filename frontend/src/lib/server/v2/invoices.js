@@ -287,6 +287,17 @@ export async function duplicateInvoice({ cookies }, id) {
 }
 
 /**
+ * Remove the invoice. The API allows it for whoever may open the invoice and
+ * answers 404 otherwise. Lines and payments go with it.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {string} id
+ */
+export function deleteInvoice({ cookies }, id) {
+  return apiRequest(`/invoices/${id}/`, { method: 'DELETE' }, { cookies });
+}
+
+/**
  * Create an invoice from the builder. The body is already the API shape
  * (account_id/contact_id required, line_items nested). The server owns the parts
  * that must not be forged: org and created_by (from the JWT/profile), the

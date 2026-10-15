@@ -104,6 +104,15 @@ describe('auditDetail', () => {
     ).toBe('Token "laptop" (bcrm_pat_ab12), scopes leads:read, contacts:read, owned by Asha.');
   });
 
+  it('names a deleted file so the audit log still says what it was', () => {
+    expect(
+      auditDetail({
+        event_type: 'FILE_DELETED',
+        details: { kind: 'invoice', record_id: 'i1', name: 'INV-0042' }
+      })
+    ).toBe('Deleted invoice "INV-0042".');
+  });
+
   it('adds nothing for a calendar feed event, whose label says it all', () => {
     for (const event_type of [
       'CALENDAR_FEED_ENABLED',

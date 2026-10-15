@@ -1,13 +1,13 @@
 <script>
-  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   import { untrack, tick } from 'svelte';
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
-  import { OPPORTUNITY_TYPE_LABEL } from '$lib/v2/enums.js';
   import { money } from '$lib/v2/format.js';
-  import { ChevronDown, ChevronRight, TriangleAlert } from '@lucide/svelte';
+  import { depositAccountError } from '$lib/v2/bank-account.js';
+  import { TriangleAlert } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form: result } = $props();
@@ -41,18 +41,17 @@
       closed_on: '',
       pipeline: data.defaults.pipeline,
       stage: data.defaults.stage,
-      // behind the disclosure
-      opportunity_type: 'NEW_BUSINESS',
-      probability: '',
-      lead_source: '',
       assigned_to: data.defaults.assigned_to,
-      description: '',
+      bank_name: data.deposit?.bank_name ?? '',
+      bank_account_number: data.deposit?.bank_account_number ?? '',
       // A rejected submit comes back with what was typed. Retyping eight
       // fields because the ninth collided is how people learn to distrust a
       // create page.
       ...(untrack(() => result?.values) ?? {})
     }))
   );
+
+  const canEditDeposit = untrack(() => Boolean(data.deposit?.can_edit));
 
   /** @type {any[]} */
   const pipelines = untrack(() => data.pipelines);
@@ -75,17 +74,16 @@
     form.stage = next.find((/** @type {any} */ s) => s.kind === 'open')?.code ?? '';
   }
 
-  let more = $state(false);
   let touched = $state(/** @type {Record<string, boolean>} */ ({}));
   let submitted = $state(false);
-
-  const REQUIRED = ['name', 'account', 'amount', 'closed_on'];
 
   let errors = $derived.by(() => {
     /** @type {Record<string, string>} */
     const e = {};
     if (!form.name.trim()) e.name = tx('Give the deal a name you would recognise in a list.');
     if (!form.account) e.account = tx('Pick the account this deal belongs to.');
+    const depositError = depositAccountError(form.bank_account_number);
+    if (depositError) e.bank_account_number = tx(depositError);
 
     const amount = Number(form.amount);
     if (form.amount === '') e.amount = tx('How much is it worth?');
@@ -95,10 +93,6 @@
     if (!form.closed_on) e.closed_on = tx('When do you expect this to close?');
     else if (new Date(form.closed_on).getTime() < Date.now() - 86400000)
       e.closed_on = tx('That date has passed. Pick the date you now expect.');
-
-    const p = Number(form.probability);
-    if (form.probability !== '' && (!Number.isFinite(p) || p < 0 || p > 100))
-      e.probability = tx('Probability is a percentage between 0 and 100.');
 
     return e;
   });
@@ -129,17 +123,17 @@
   };
 </script>
 
-<PageHeader title={tx('New deal')} center>
+<PageHeader title={tx('New deal')} center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/pipeline')}>{tx('Pipeline')}</a> ›
   {/snippet}
   {#snippet sub()}
-    Five fields to start. Everything else can wait until you know it.
+    {tx('Name, account, amount, and when you expect it to close.')}
   {/snippet}
 </PageHeader>
 
 <div class="v2-scroll v2-pad" style="padding-top:18px">
-  <form class="v2-form" method="POST" action="?/create" use:enhance={check} novalidate>
+  <form class="v2-form v2-create" method="POST" action="?/create" use:enhance={check} novalidate>
     {#if result?.error}
       <div
         class="v2-next"
@@ -163,21 +157,19 @@
         <TriangleAlert size={17} style="color:var(--v2-rust);flex:none" />
         <div class="v2-next-body">
           <div style="font-weight:600">
-            {Object.keys(errors).length} field{Object.keys(errors).length === 1 ? '' : 's'} still need{Object.keys(
-              errors
-            ).length === 1
-              ? 's'
-              : ''} you
+            {Object.keys(errors).length === 1
+              ? tx('1 field still needs you')
+              : tx('{n} fields still need you', { n: Object.keys(errors).length })}
           </div>
-          <div class="v2-sub" style="margin-top:2px">
-            They are marked below. Nothing has been saved.
-          </div>
+          <div class="v2-sub" style="margin-top:2px">{tx('Nothing has been saved.')}</div>
         </div>
       </div>
     {/if}
 
+    <section class="v2-create-section">
+      <h2>{tx('The deal')}</h2>
     <div class="v2-field">
-      <label for="f-name">{tx('Deal name')}</label>
+      <label class="req" for="f-name">{tx('Deal name')}</label>
       <input
         id="f-name"
         name="name"
@@ -185,20 +177,14 @@
         bind:value={form.name}
         onblur={() => (touched.name = true)}
         aria-invalid={show('name') ? 'true' : undefined}
-        aria-describedby={show('name') ? 'e-name' : 'h-name'}
+        aria-describedby={show('name') ? 'e-name' : undefined}
         placeholder={tx('Platform renewal')}
       />
-      {#if show('name')}
-        <p class="v2-error" id="e-name">{errors.name}</p>
-      {:else}
-        <p class="v2-hint" id="h-name">
-          What you would say out loud, “40 seats plus onboarding”, not “Opportunity 118”.
-        </p>
-      {/if}
+      {#if show('name')}<p class="v2-error" id="e-name">{errors.name}</p>{/if}
     </div>
 
     <div class="v2-field">
-      <label for="f-account">{tx('Account')}</label>
+      <label class="req" for="f-account">{tx('Account')}</label>
       <select
         id="f-account"
         name="account"
@@ -214,11 +200,58 @@
         {/each}
       </select>
       {#if show('account')}<p class="v2-error" id="e-account">{errors.account}</p>{/if}
+      {#if data.accounts.length === 0}
+        <p class="v2-hint">
+          {tx('No customer accounts in this organisation yet.')}
+          <a href={resolve('/accounts/new')}>{tx('New account')}</a>
+        </p>
+      {/if}
+    </div>
+
+    <div class="v2-field">
+      <label for="f-bank-account">{tx('Account number for deposits')}</label>
+      <input
+        id="f-bank-account"
+        name={canEditDeposit ? 'bank_account_number' : undefined}
+        class="v2-input v2-num"
+        maxlength="40"
+        autocomplete="off"
+        spellcheck="false"
+        inputmode="text"
+        disabled={!canEditDeposit}
+        bind:value={form.bank_account_number}
+        onblur={() => (touched.bank_account_number = true)}
+        aria-invalid={show('bank_account_number') ? 'true' : undefined}
+        aria-describedby={show('bank_account_number') ? 'e-bank-account' : 'h-bank-account'}
+        placeholder="0123 4567 8901"
+      />
+      {#if show('bank_account_number')}
+        <p class="v2-error" id="e-bank-account">{errors.bank_account_number}</p>
+      {:else}
+        <p class="v2-hint" id="h-bank-account">
+          {canEditDeposit
+            ? tx('The number deposits are paid into. You can change it later.')
+            : tx('Only an admin can change the account deposits are paid into.')}
+        </p>
+      {/if}
+    </div>
+
+    <div class="v2-field">
+      <label for="f-bank">{tx('Bank')}</label>
+      <input
+        id="f-bank"
+        name={canEditDeposit ? 'bank_name' : undefined}
+        class="v2-input"
+        maxlength="120"
+        disabled={!canEditDeposit}
+        bind:value={form.bank_name}
+        placeholder={tx('Bank')}
+      />
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="v2-field">
-        <label for="f-amount">{tx('Amount')}</label>
+        <label class="req" for="f-amount">{tx('Amount')}</label>
         <input
           id="f-amount"
           name="amount"
@@ -243,7 +276,7 @@
       </div>
 
       <div class="v2-field">
-        <label for="f-close">{tx('Expected close')}</label>
+        <label class="req" for="f-close">{tx('Expected close')}</label>
         <input
           id="f-close"
           name="closed_on"
@@ -258,7 +291,9 @@
       </div>
     </div>
 
-    {#if pipelines.length > 1}
+    {#if pipelines.length <= 1}
+      <input type="hidden" name="pipeline" value={form.pipeline} />
+    {:else}
       <div class="v2-field">
         <label for="f-pipeline">{tx('Pipeline')}</label>
         <select
@@ -282,116 +317,23 @@
           <option value={s.code}>{s.label}</option>
         {/each}
       </select>
-      <p class="v2-hint">
-        A new deal cannot start closed. Won and lost are things you do to a deal that exists, so
-        they are not offered here.
-      </p>
     </div>
 
-    <!--
-      The disclosure below removes its fields from the DOM when closed, and a
-      field that is not in the DOM submits nothing. That is right for every
-      field in there except the owner: the hint under it promises "Defaults to
-      you", and without this the common path, never opening the disclosure,
-      would create an unassigned deal. So the default rides along in a hidden
-      input whenever the select itself is not mounted.
-    -->
-    {#if !more}
-      <input type="hidden" name="assigned_to" value={form.assigned_to} />
-    {/if}
-
-    <!-- Closed by default. Opening it is a choice; filling it is never a
-         condition of saving. -->
-    <div class="v2-disclosure">
-      <button
-        class="v2-btn v2-btn-quiet"
-        type="button"
-        style="padding-left:0"
-        onclick={() => (more = !more)}
-        aria-expanded={more}
-        aria-controls="more-fields"
-      >
-        {#if more}<ChevronDown />{:else}<ChevronRight />{/if}
-        More fields
-        <span class="v2-sub" style="font-size:12px">{tx('. Type, probability, source, owner, notes')}</span>
-      </button>
-
-      {#if more}
-        <div id="more-fields" style="margin-top:14px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="v2-field">
-              <label for="f-type">{tx('Type')}</label>
-              <select
-                id="f-type"
-                name="opportunity_type"
-                class="v2-input"
-                bind:value={form.opportunity_type}
-              >
-                {#each Object.entries(OPPORTUNITY_TYPE_LABEL) as [key, label] (key)}
-                  <option value={key}>{label}</option>
-                {/each}
-              </select>
-            </div>
-            <div class="v2-field">
-              <label for="f-prob">{tx('Probability')}</label>
-              <input
-                id="f-prob"
-                name="probability"
-                class="v2-input v2-num"
-                type="text"
-                inputmode="numeric"
-                bind:value={form.probability}
-                onblur={() => (touched.probability = true)}
-                aria-invalid={show('probability') ? 'true' : undefined}
-                placeholder="50"
-              />
-              {#if show('probability')}<p class="v2-error">{errors.probability}</p>{/if}
-            </div>
-          </div>
-
-          <div class="v2-field">
-            <label for="f-owner">{tx('Owner')}</label>
-            <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-              {#each data.owners as o (o.id)}
-                <option value={o.id}>{o.name}</option>
-              {/each}
-            </select>
-            <p class="v2-hint">
-              Defaults to you. Who created the deal is recorded separately and is not editable.
-            </p>
-          </div>
-
-          <div class="v2-field">
-            <label for="f-source">{tx('Source')}</label>
-            <input
-              id="f-source"
-              name="lead_source"
-              class="v2-input"
-              bind:value={form.lead_source}
-              placeholder={tx('Existing customer')}
-            />
-          </div>
-
-          <div class="v2-field">
-            <label for="f-notes">{tx('Notes')}</label>
-            <textarea
-              id="f-notes"
-              name="description"
-              class="v2-input"
-              rows="3"
-              bind:value={form.description}></textarea>
-          </div>
-        </div>
-      {/if}
+    <div class="v2-create-grid">
+      <div class="v2-field">
+        <label for="f-owner">{tx('Owner')}</label>
+        <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
+          {#each data.owners as o (o.id)}
+            <option value={o.id}>{o.name}</option>
+          {/each}
+        </select>
+      </div>
     </div>
+    </section>
 
-    <div style="display:flex;gap:8px;align-items:center;margin-top:22px">
-      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create deal')}</button>
+    <div class="v2-create-foot">
       <a class="v2-btn" href={resolve('/pipeline')}>{tx('Cancel')}</a>
-      <span class="v2-sub" style="margin-left:auto;font-size:12px">
-        <span class="v2-num">{REQUIRED.filter((f) => !errors[f]).length}</span>
-        of <span class="v2-num">{REQUIRED.length}</span> {tx('required fields done')}
-      </span>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create deal')}</button>
     </div>
   </form>
 </div>

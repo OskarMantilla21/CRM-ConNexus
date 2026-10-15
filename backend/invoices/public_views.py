@@ -144,6 +144,12 @@ class PublicInvoiceView(APIView):
             ],
             "org": {
                 "name": invoice.org.name if invoice.org else "",
+                # Where the customer sends the money. Only these two fields:
+                # the rest of the org profile stays off this anonymous payload.
+                "bank_name": invoice.org.bank_name if invoice.org else "",
+                "bank_account_number": (
+                    invoice.org.bank_account_number if invoice.org else ""
+                ),
             },
         }
 

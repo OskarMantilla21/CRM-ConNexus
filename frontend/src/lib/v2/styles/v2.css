@@ -27,10 +27,15 @@
   --v2-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'DejaVu Sans Mono', Menlo, monospace;
   --v2-fs: 15px;
 
-  /* ── metrics (density dial) ─────────────────────────────────────────── */
+  /* ── metrics. Spacing steps are multiples of 8px. ─────────────── */
+  --v2-space: 8px;
   --v2-row: 48px;
   --v2-pad: 32px;
+  --v2-radius-sm: 8px;
   --v2-radius: 10px;
+  --v2-radius-lg: 12px;
+  --v2-shadow: 0 1px 2px rgba(28, 31, 38, 0.04);
+  --v2-shadow-pop: 0 8px 24px rgba(28, 31, 38, 0.08);
 
   background: var(--v2-paper);
   color: var(--v2-ink);
@@ -55,6 +60,8 @@
   --v2-line: #2a3140;
   --v2-line-soft: #222833;
   --v2-hover: rgba(244, 246, 251, 0.04);
+  --v2-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --v2-shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 .v2-root *,
@@ -147,7 +154,7 @@
   padding-right: var(--v2-pad);
 }
 .v2-app {
-  --v2-ask: 320px;
+  --v2-ask: 0px;
   height: 100vh;
   height: 100dvh;
   display: flex;
@@ -179,6 +186,8 @@
   padding: 0 16px 0 8px;
   background: var(--v2-card);
   border-bottom: 1px solid var(--v2-line);
+  position: relative;
+  z-index: 20;
 }
 .v2-brand {
   display: inline-flex;
@@ -379,6 +388,74 @@
 }
 .v2-nav-group:first-of-type {
   margin-top: 4px;
+}
+.v2-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 8px 8px 12px;
+  border: 0;
+  border-radius: var(--v2-radius-sm);
+  background: transparent;
+  color: var(--v2-slate);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.v2-nav-toggle:first-child {
+  margin-top: 4px;
+}
+.v2-nav-toggle:hover {
+  background: var(--v2-hover);
+  color: var(--v2-ink);
+}
+.v2-nav-toggle svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  transition: transform 160ms ease;
+}
+.v2-nav-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+.v2-nav-collapse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--v2-radius-sm);
+  background: transparent;
+  color: var(--v2-slate);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.v2-nav-collapse:hover {
+  background: var(--v2-line-soft);
+  color: var(--v2-ink);
+}
+.v2-nav-collapse svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.v2-org-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .v2-link {
   display: flex;
@@ -646,6 +723,7 @@
   background: var(--v2-card);
   border: 1px solid var(--v2-line);
   border-radius: var(--v2-radius);
+  box-shadow: var(--v2-shadow);
 }
 .v2-card-head {
   display: flex;
@@ -1298,6 +1376,67 @@ a.v2-setting:hover {
   margin-inline: auto;
   padding: 4px 0 30px;
 }
+/* Create pages. A card, two columns, section labels, actions on the right:
+   the same shape Salesforce and HubSpot use for a new record. Wider than an
+   edit form, so the page header passes `calc(720px + 2 * var(--v2-pad))`. */
+.v2-form.v2-create {
+  max-width: 720px;
+  background: var(--v2-card);
+  border: 1px solid var(--v2-line);
+  border-radius: 12px;
+  padding: 6px 22px 16px;
+  box-shadow: var(--v2-shadow);
+}
+.v2-create-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--v2-line);
+}
+.v2-create-section:first-of-type {
+  margin-top: 4px;
+  border-top: 0;
+  padding-top: 10px;
+}
+.v2-create-section h2 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--v2-slate);
+}
+.v2-create-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+.v2-create-grid .wide {
+  grid-column: 1 / -1;
+}
+.v2-create .req::after {
+  content: ' *';
+  color: var(--v2-rust);
+}
+.v2-create .v2-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: inherit;
+}
+.v2-create-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 6px -22px 0;
+  padding: 14px 22px 2px;
+  border-top: 1px solid var(--v2-line);
+}
+@media (max-width: 720px) {
+  .v2-create-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .v2-field {
   margin-bottom: 15px;
 }
@@ -1909,7 +2048,7 @@ a.v2-setting:hover {
   .v2-root {
     --v2-pad: 15px;
     --v2-row: 42px;
-    --v2-ask: 42vw;
+    --v2-ask: 0px;
   }
   .v2-nav {
     display: none;

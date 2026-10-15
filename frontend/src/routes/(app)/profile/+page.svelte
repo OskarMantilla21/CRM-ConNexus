@@ -147,31 +147,6 @@
           </div>
         {/if}
 
-        <div class="v2-label" style="margin-bottom:10px">{tx('Language')}</div>
-        <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
-          <p class="v2-sub" style="font-size:11.5px;margin:0;padding:12px 16px 4px">
-            {tx('Choose the language for this browser.')}
-          </p>
-          {#each LOCALES as item (item.id)}
-            <form class="v2-lang-form" method="POST" action="/locale">
-              <input type="hidden" name="locale" value={item.id} />
-              <input type="hidden" name="next" value={localeNext} />
-              <button
-                class="v2-setting"
-                type="submit"
-                aria-current={currentLocale === item.id ? 'true' : undefined}
-              >
-                <div class="v2-setting-body">
-                  <b>{item.label}</b>
-                </div>
-                {#if currentLocale === item.id}
-                  <Pill tone="ink" dot>{tx('Current')}</Pill>
-                {/if}
-              </button>
-            </form>
-          {/each}
-        </div>
-
         <div class="v2-label" style="margin-bottom:10px">{tx('Organisations')}</div>
         <div class="v2-card" style="overflow:hidden">
           {#each p.orgs as o (o.id)}
@@ -208,8 +183,29 @@
       </div>
 
       <div>
-        <div class="v2-label" style="margin-bottom:10px">{tx('Access')}</div>
+        <div class="v2-label" style="margin-bottom:10px">{tx('Full access')}</div>
         <div class="v2-card" style="overflow:hidden;margin-bottom:20px">
+          <p class="v2-sub" style="font-size:11.5px;margin:0;padding:12px 16px 4px">
+            {tx('Choose the language for this browser.')}
+          </p>
+          {#each LOCALES as item (item.id)}
+            <form class="v2-lang-form" method="POST" action="/locale">
+              <input type="hidden" name="locale" value={item.id} />
+              <input type="hidden" name="next" value={localeNext} />
+              <button
+                class="v2-setting"
+                type="submit"
+                aria-current={currentLocale === item.id ? 'true' : undefined}
+              >
+                <div class="v2-setting-body">
+                  <b>{item.label}</b>
+                </div>
+                {#if currentLocale === item.id}
+                  <Pill tone="ink" dot>{tx('Current')}</Pill>
+                {/if}
+              </button>
+            </form>
+          {/each}
           <div class="v2-setting">
             <div class="v2-setting-body">
               <b>{tx('Role')}</b>
@@ -275,9 +271,9 @@
               <span class="v2-sub" style="font-size:11.5px">{tx('Hours you have logged this week')}</span>
             </div>
           </a>
-          <a class="v2-setting" href={resolve('/tasks')}>
+          <a class="v2-setting" href={resolve('/tickets')}>
             <div class="v2-setting-body">
-              <b>{tx('Tasks')}</b>
+              <b>{tx('Tickets')}</b>
               <span class="v2-sub" style="font-size:11.5px">{tx('What is assigned to you')}</span>
             </div>
           </a>
@@ -311,5 +307,11 @@
   }
   .v2-lang-form .v2-setting:hover {
     background: var(--v2-hover);
+  }
+  .v2-lang-form .v2-setting[aria-current='true'] b {
+    text-decoration: underline;
+    text-decoration-color: #0b3d91;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 </style>

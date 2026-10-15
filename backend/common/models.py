@@ -133,6 +133,19 @@ class Org(BaseModel):
     tax_id = models.CharField(
         max_length=50, blank=True, help_text="Tax ID / VAT / Registration number"
     )
+    # Where this organisation's deposits arrive. Printed on invoices and shown
+    # on the public invoice page, and editable from a new deal as well as from
+    # organisation settings. One number for the org, not one per deal.
+    bank_name = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Bank that receives deposits for this organisation.",
+    )
+    bank_account_number = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text="Account number deposits are paid into.",
+    )
 
     # Locale settings
     default_currency = models.CharField(

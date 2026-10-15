@@ -13,7 +13,7 @@ vi.mock('$env/dynamic/public', () => ({
   env: { PUBLIC_DJANGO_API_URL: 'http://api.test' }
 }));
 
-const { attachmentHref, documentHref, streamDownload } = await import('./files.js');
+const { attachmentHref, documentHref, productFileHref, streamDownload } = await import('./files.js');
 
 /** A Cookies-alike carrying just what the helper reads. */
 function cookies(/** @type {Record<string, string>} */ jar) {
@@ -28,6 +28,11 @@ describe('href builders', () => {
   it('point at this origin, never at the storage path', () => {
     expect(attachmentHref('abc')).toBe('/api/attachments/abc/download');
     expect(documentHref('abc')).toBe('/api/documents/abc/download');
+    expect(productFileHref('abc', 'image')).toBe('/api/invoices/products/abc/file?which=image');
+    expect(productFileHref('abc', 'catalog')).toBe(
+      '/api/invoices/products/abc/file?which=catalog'
+    );
+    expect(productFileHref(null, 'image')).toBeNull();
   });
 
   it('return null for a missing id so a page renders text, not a dead link', () => {
@@ -112,4 +117,62 @@ describe('streamDownload', () => {
     );
     expect(await response.text()).toBe('the file');
   });
+
+  it('shows a pdf in the page when preview is asked', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      upstream(200, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Disposition': 'attachment; filename="Q3 pricing.pdf"'
+        }
+      })
+    );
+    const response = await streamDownload(
+      { cookies: cookies({ jwt_access: 'tok' }), request: new Request('http://x/') },
+      '/documents/1/download/',
+      { preview: true }
+    );
+    expect(response.headers.get('Content-Type')).toBe('application/pdf');
+    expect(response.headers.get('Content-Disposition')).toBe(
+      'inline; filename="Q3 pricing.pdf"'
+    );
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+  });
+
+  it('reads an encoded filename before deciding the preview', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      upstream(200, {
+        headers: {
+          'Content-Disposition': "attachment; filename*=UTF-8''Informe%20Q3.pdf"
+        }
+      })
+    );
+    const response = await streamDownload(
+      { cookies: cookies({ jwt_access: 'tok' }), request: new Request('http://x/') },
+      '/documents/1/download/',
+      { preview: true }
+    );
+    expect(response.headers.get('Content-Disposition')).toBe('inline; filename="Informe Q3.pdf"');
+  });
+
+  it.each(['page.html', 'logo.svg'])(
+    'keeps %s as a download even when preview is asked',
+    async (name) => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        upstream(200, {
+          headers: {
+            'Content-Type': 'text/html',
+            'Content-Disposition': `attachment; filename="${name}"`
+          }
+        })
+      );
+      const response = await streamDownload(
+        { cookies: cookies({ jwt_access: 'tok' }), request: new Request('http://x/') },
+        '/documents/1/download/',
+        { preview: true }
+      );
+      expect(response.headers.get('Content-Disposition')).toBe(`attachment; filename="${name}"`);
+      expect(response.headers.get('Content-Type')).toBe('text/html');
+    }
+  );
 });

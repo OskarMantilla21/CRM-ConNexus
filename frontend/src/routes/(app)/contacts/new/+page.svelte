@@ -1,5 +1,5 @@
 <script>
-  import { tx, choiceLabel } from '$lib/i18n/translate.js';
+  import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/sell.js';
   import { resolve } from '$app/paths';
   /**
@@ -31,11 +31,8 @@
       email: '',
       phone: '',
       title: '',
-      department: '',
-      organization: '',
       account: data.defaults.account ?? '',
       assigned_to: '',
-      do_not_call: false,
       ...(result?.values ?? {})
     }))
   );
@@ -80,19 +77,19 @@
   );
 </script>
 
-<PageHeader title={tx('New contact')} center>
+<PageHeader title={tx('New contact')} center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/contacts')}>{tx('Contacts')}</a>
     <ChevronRight size={12} />
     <span>{tx('New')}</span>
   {/snippet}
   {#snippet sub()}
-    {tx('A person at an account. Everything optional can wait until they exist.')}
+    {tx('Name, a way to reach them, and the company they belong to.')}
   {/snippet}
 </PageHeader>
 
 <div class="v2-scroll v2-pad" style="padding-top:18px">
-  <form class="v2-form" method="POST" action="?/create" use:enhance={check} novalidate>
+  <form class="v2-form v2-create" method="POST" action="?/create" use:enhance={check} novalidate>
     {#if result?.error}
       <div
         class="v2-next"
@@ -125,122 +122,105 @@
       </div>
     {/if}
 
-    <div class="pair">
-      <div class="v2-field">
-        <label for="f-first">{tx('First name')}</label>
-        <input
-          id="f-first"
-          name="first_name"
-          class="v2-input"
-          bind:value={form.first_name}
-          onblur={() => (touched.first_name = true)}
-          aria-invalid={show('first_name') ? 'true' : undefined}
-        />
-        {#if show('first_name')}<p class="v2-error">{errors.first_name}</p>{/if}
+    <section class="v2-create-section">
+      <h2>{tx('About the person')}</h2>
+      <div class="v2-create-grid">
+        <div class="v2-field">
+          <label class="req" for="f-first">{tx('First name')}</label>
+          <input
+            id="f-first"
+            name="first_name"
+            class="v2-input"
+            autocomplete="given-name"
+            bind:value={form.first_name}
+            onblur={() => (touched.first_name = true)}
+            aria-invalid={show('first_name') ? 'true' : undefined}
+          />
+          {#if show('first_name')}<p class="v2-error">{errors.first_name}</p>{/if}
+        </div>
+        <div class="v2-field">
+          <label class="req" for="f-last">{tx('Last name')}</label>
+          <input
+            id="f-last"
+            name="last_name"
+            class="v2-input"
+            autocomplete="family-name"
+            bind:value={form.last_name}
+            onblur={() => (touched.last_name = true)}
+            aria-invalid={show('last_name') ? 'true' : undefined}
+          />
+          {#if show('last_name')}<p class="v2-error">{errors.last_name}</p>{/if}
+        </div>
+        <div class="v2-field">
+          <label for="f-email">{tx('Email')}</label>
+          <input
+            id="f-email"
+            name="email"
+            class="v2-input"
+            type="email"
+            autocomplete="email"
+            bind:value={form.email}
+            onblur={() => (touched.email = true)}
+            aria-invalid={show('email') ? 'true' : undefined}
+          />
+          {#if show('email')}
+            <p class="v2-error">{errors.email}</p>
+          {:else}
+            <p class="v2-hint">{tx('Has to be unique in this organisation, ignoring capitals.')}</p>
+          {/if}
+        </div>
+        <div class="v2-field">
+          <label for="f-phone">{tx('Phone')}</label>
+          <input
+            id="f-phone"
+            name="phone"
+            class="v2-input"
+            type="tel"
+            autocomplete="tel"
+            bind:value={form.phone}
+            onblur={() => (touched.phone = true)}
+            aria-invalid={show('phone') ? 'true' : undefined}
+          />
+          {#if show('phone')}<p class="v2-error">{errors.phone}</p>{/if}
+        </div>
+        <div class="v2-field wide">
+          <label for="f-title">{tx('Job title')}</label>
+          <input id="f-title" name="title" class="v2-input" autocomplete="organization-title" bind:value={form.title} />
+        </div>
       </div>
-      <div class="v2-field">
-        <label for="f-last">{tx('Last name')}</label>
-        <input
-          id="f-last"
-          name="last_name"
-          class="v2-input"
-          bind:value={form.last_name}
-          onblur={() => (touched.last_name = true)}
-          aria-invalid={show('last_name') ? 'true' : undefined}
-        />
-        {#if show('last_name')}<p class="v2-error">{errors.last_name}</p>{/if}
-      </div>
-    </div>
+    </section>
 
-    <div class="pair">
-      <div class="v2-field">
-        <label for="f-email">{tx('Email')}</label>
-        <input
-          id="f-email"
-          name="email"
-          class="v2-input"
-          type="email"
-          bind:value={form.email}
-          onblur={() => (touched.email = true)}
-          aria-invalid={show('email') ? 'true' : undefined}
-        />
-        {#if show('email')}
-          <p class="v2-error">{errors.email}</p>
-        {:else}
-          <p class="v2-hint">{tx('Has to be unique in this organisation, ignoring capitals.')}</p>
-        {/if}
+    <section class="v2-create-section">
+      <h2>{tx('The company')}</h2>
+      <div class="v2-create-grid">
+        <div class="v2-field">
+          <label for="f-account">{tx('Account')}</label>
+          <select id="f-account" name="account" class="v2-input" bind:value={form.account}>
+            <option value="">{tx('Not linked')}</option>
+            {#each data.accounts as a (a.id)}
+              <option value={a.id}>{a.name}</option>
+            {/each}
+          </select>
+          {#if chosenAccount}
+            <p class="v2-hint">{tx("Also adds them to {name}'s people.", { name: chosenAccount.name })}</p>
+          {:else if data.account_total > data.accounts.length}
+            <p class="v2-hint">
+              {tx('Showing')} <span class="v2-num">{data.accounts.length}</span> {tx('of')}
+              <span class="v2-num">{data.account_total}</span> {tx('accounts.')}
+            </p>
+          {/if}
+        </div>
+        <div class="v2-field">
+          <label for="f-owner">{tx('Owner')}</label>
+          <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
+            <option value="">{tx('Nobody')}</option>
+            {#each data.owners as o (o.id)}
+              <option value={o.id}>{o.name}</option>
+            {/each}
+          </select>
+        </div>
       </div>
-      <div class="v2-field">
-        <label for="f-phone">{tx('Phone')}</label>
-        <input
-          id="f-phone"
-          name="phone"
-          class="v2-input"
-          bind:value={form.phone}
-          onblur={() => (touched.phone = true)}
-          aria-invalid={show('phone') ? 'true' : undefined}
-        />
-        {#if show('phone')}<p class="v2-error">{errors.phone}</p>{/if}
-      </div>
-    </div>
-
-    <div class="pair">
-      <div class="v2-field">
-        <label for="f-title">{tx('Job title')}</label>
-        <input id="f-title" name="title" class="v2-input" bind:value={form.title} />
-      </div>
-      <div class="v2-field">
-        <label for="f-dept">{tx('Department')}</label>
-        <input id="f-dept" name="department" class="v2-input" bind:value={form.department} />
-      </div>
-    </div>
-
-    <div class="pair">
-      <div class="v2-field">
-        <label for="f-account">{tx('Account')}</label>
-        <select id="f-account" name="account" class="v2-input" bind:value={form.account}>
-          <option value="">{tx('Not linked')}</option>
-          {#each data.accounts as a (a.id)}
-            <option value={a.id}>{a.name}</option>
-          {/each}
-        </select>
-        {#if chosenAccount}
-          <p class="v2-hint">{tx("Also adds them to {name}'s people.", { name: chosenAccount.name })}</p>
-        {:else if data.account_total > data.accounts.length}
-          <p class="v2-hint">
-            {tx('Showing')} <span class="v2-num">{data.accounts.length}</span> {tx('of')}
-            <span class="v2-num">{data.account_total}</span> {tx('accounts.')}
-          </p>
-        {:else}
-          <p class="v2-hint">{tx('Can be left empty and set later.')}</p>
-        {/if}
-      </div>
-      <div class="v2-field">
-        <label for="f-owner">{tx('Owner')}</label>
-        <select id="f-owner" name="assigned_to" class="v2-input" bind:value={form.assigned_to}>
-          <option value="">{tx('Nobody')}</option>
-          {#each data.owners as o (o.id)}
-            <option value={o.id}>{o.name}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
-
-    <div class="v2-field">
-      <label for="f-org">{tx('Company typed in')}</label>
-      <input id="f-org" name="organization" class="v2-input" bind:value={form.organization} />
-      <p class="v2-hint">
-        {tx('Only needed when there is no account to link, an imported record, or a company nobody has created yet.')}
-      </p>
-    </div>
-
-    <label class="flag">
-      <input type="checkbox" name="do_not_call" bind:checked={form.do_not_call} />
-      <span>
-        <strong>{tx('Do not call')}</strong>
-        <span class="v2-sub">{tx('Tick if they have already asked not to be phoned.')}</span>
-      </span>
-    </label>
+    </section>
 
     <DuplicateNotice
       module="contacts"
@@ -252,44 +232,9 @@
       }}
     />
 
-    <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create contact')}</button>
+    <div class="v2-create-foot">
       <a class="v2-btn" href={resolve('/contacts')}>{tx('Cancel')}</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create contact')}</button>
     </div>
   </form>
 </div>
-
-<style>
-  .pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .flag {
-    display: flex;
-    gap: 9px;
-    align-items: flex-start;
-    font-size: 13px;
-    margin: 4px 0 18px;
-  }
-  .flag span {
-    display: block;
-  }
-  .flag .v2-sub {
-    display: block;
-    font-size: 11.5px;
-    margin-top: 2px;
-  }
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-top: 22px;
-    padding-bottom: 40px;
-  }
-  @media (max-width: 720px) {
-    .pair {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

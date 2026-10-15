@@ -250,11 +250,48 @@ export const messages = {
     es: 'Demasiadas consultas. Inténtalo de nuevo en un momento.',
     pt: 'Consultas demais. Tente de novo em instantes.'
   },
-  'Ask Gemini': { es: 'Pregúntale a Gemini', pt: 'Pergunte ao Gemini' },
-  'Ask Grok': { es: 'Pregúntale a Grok', pt: 'Pergunte ao Grok' },
+  'Ask Gemini': { es: 'Pregunta a Gemini', pt: 'Pergunte ao Gemini' },
+  'Ask Grok': { es: 'Pregunta a Grok', pt: 'Pergunte ao Grok' },
+  'Ask OpenAI': { es: 'Pregunta a OpenAI', pt: 'Pergunte à OpenAI' },
   'An assistant has to be connected on Today before this can answer.': {
     es: 'Para responder, un asistente tiene que estar conectado en Hoy.',
     pt: 'Para responder, um assistente precisa estar conectado em Hoje.'
+  },
+  'An assistant has to be connected in Settings before this can answer.': {
+    es: 'Para responder, un CEO tiene que conectar un asistente en Ajustes.',
+    pt: 'Para responder, um CEO precisa conectar um assistente em Ajustes.'
+  },
+  General: { es: 'General', pt: 'Geral' },
+  Security: { es: 'Seguridad', pt: 'Segurança' },
+  Assistants: { es: 'Asistentes', pt: 'Assistentes' },
+  Regenerate: { es: 'Regenerar', pt: 'Gerar de novo' },
+  'Good answer': { es: 'Respuesta útil', pt: 'Resposta útil' },
+  'Poor answer': { es: 'Respuesta pobre', pt: 'Resposta fraca' },
+  'Asking…': { es: 'Consultando…', pt: 'Consultando…' },
+  Copy: { es: 'Copiar', pt: 'Copiar' },
+  Copied: { es: 'Copiado', pt: 'Copiado' },
+  'How do I create a task for one person?': {
+    es: '¿Cómo creo una tarea para una sola persona?',
+    pt: 'Como crio uma tarefa para uma só pessoa?'
+  },
+  'What can I open?': { es: '¿Qué puedo abrir?', pt: 'O que posso abrir?' },
+  'Where are settings?': { es: '¿Dónde están los ajustes?', pt: 'Onde ficam os ajustes?' },
+  'If this person already has an account, their name and password stay as they are.': {
+    es: 'Si esta persona ya tiene cuenta, se conservan su nombre y su contraseña.',
+    pt: 'Se esta pessoa já tem conta, o nome e a senha dela permanecem.'
+  },
+  'Marking every area stores this administrator without a restriction.': {
+    es: 'Si marcas todas las áreas, este administrador queda sin restricción.',
+    pt: 'Se você marcar todas as áreas, este administrador fica sem restrição.'
+  },
+  'Step {n} of {total}': { es: 'Paso {n} de {total}', pt: 'Etapa {n} de {total}' },
+  'More details': { es: 'Más detalles', pt: 'Mais detalhes' },
+  'Street address': { es: 'Dirección', pt: 'Endereço' },
+  Region: { es: 'Departamento', pt: 'Estado' },
+  'Postal code': { es: 'Código postal', pt: 'CEP' },
+  'Ask about today from the list on this page. Connect Gemini or Grok in Settings.': {
+    es: 'Pregunta por el día con la lista de esta página. Conecta Gemini o Grok en Ajustes.',
+    pt: 'Pergunte sobre o dia com a lista desta página. Conecte Gemini ou Grok em Ajustes.'
   },
   'Answers from what this screen shows.': {
     es: 'Responde con lo que muestra esta pantalla.',
@@ -1311,7 +1348,7 @@ export const messages = {
   worth: { es: 'valor', pt: 'valor' },
   CEO: { es: 'CEO', pt: 'CEO' },
   Employee: { es: 'Empleado', pt: 'Funcionário' },
-  'Daily work': { es: 'Trabajo del día', pt: 'Trabalho do dia' },
+  'Daily work': { es: 'Parte de horas', pt: 'Apontamento de horas' },
   Permissions: { es: 'Permisos', pt: 'Permissões' },
   'The CEO chooses what this administrator can open.': {
     es: 'El CEO elige qué puede abrir este administrador.',
@@ -1473,6 +1510,173 @@ export const messages = {
   'No jobs yet. An administrator has to open one before work can be recorded against it.': {
     es: 'Aún no hay trabajos. Un administrador tiene que abrir uno antes de que se pueda registrar trabajo en él.',
     pt: 'Ainda não há trabalhos. Um administrador precisa abrir um antes que o trabalho possa ser registrado nele.'
+  },
+  Employees: { es: 'Empleados', pt: 'Funcionários' },
+  'AI integrations': { es: 'Integraciones de IA', pt: 'Integrações de IA' },
+  'Security and access': { es: 'Seguridad y accesos', pt: 'Segurança e acessos' },
+  Product: { es: 'Producto', pt: 'Produto' },
+  'Invite / Create employee': { es: 'Invitar / Crear empleado', pt: 'Convidar / Criar funcionário' },
+  'Total employees': { es: 'Total de empleados', pt: 'Total de funcionários' },
+  'Invite someone, or change the people already here, without leaving this list.': {
+    es: 'Invita a alguien, o cambia a quien ya está, sin salir de esta lista.',
+    pt: 'Convide alguém, ou altere quem já está, sem sair desta lista.'
+  },
+  'Edit employee': { es: 'Editar empleado', pt: 'Editar funcionário' },
+  Close: { es: 'Cerrar', pt: 'Fechar' },
+  Actions: { es: 'Acciones', pt: 'Ações' },
+  Department: { es: 'Departamento', pt: 'Departamento' },
+  'All departments': { es: 'Todos los departamentos', pt: 'Todos os departamentos' },
+  'No department': { es: 'Sin departamento', pt: 'Sem departamento' },
+  'All roles': { es: 'Todos los roles', pt: 'Todos os papéis' },
+  'Name or email': { es: 'Nombre o correo', pt: 'Nome ou e-mail' },
+  'No one matches.': { es: 'Nadie coincide.', pt: 'Ninguém corresponde.' },
+  Suspend: { es: 'Suspender', pt: 'Suspender' },
+  Reactivate: { es: 'Reactivar', pt: 'Reativar' },
+  'Removes this account from the organization.': {
+    es: 'Quita esta cuenta de la organización.',
+    pt: 'Remove esta conta da organização.'
+  },
+  '{from}–{to} of {total}': { es: '{from}–{to} de {total}', pt: '{from}–{to} de {total}' },
+  Previous: { es: 'Anterior', pt: 'Anterior' },
+  'Not connected': { es: 'Sin conexión', pt: 'Sem conexão' },
+  Model: { es: 'Modelo', pt: 'Modelo' },
+  'Output token limit': { es: 'Límite de tokens de salida', pt: 'Limite de tokens de saída' },
+  'Test connection': { es: 'Probar conexión', pt: 'Testar conexão' },
+  'Save and connect': { es: 'Guardar y conectar', pt: 'Salvar e conectar' },
+  'Replace key': { es: 'Reemplazar clave', pt: 'Substituir chave' },
+  'Save model and limit': { es: 'Guardar modelo y límite', pt: 'Salvar modelo e limite' },
+  'Paste a new key to replace it': {
+    es: 'Pega una clave nueva para reemplazarla',
+    pt: 'Cole uma chave nova para substituí-la'
+  },
+  'The connection succeeded.': { es: 'La conexión funcionó.', pt: 'A conexão funcionou.' },
+  'Default provider': { es: 'Proveedor predeterminado', pt: 'Provedor padrão' },
+  'First connected': { es: 'El primero conectado', pt: 'O primeiro conectado' },
+  'Save default': { es: 'Guardar predeterminado', pt: 'Salvar padrão' },
+  'Questions on Today and on the screen bar use this provider when it is connected.': {
+    es: 'Las preguntas de Hoy y de la barra de la pantalla usan este proveedor cuando está conectado.',
+    pt: 'As perguntas de Hoje e da barra da tela usam este provedor quando ele está conectado.'
+  },
+  'Test connection checks the key without saving it.': {
+    es: 'Probar conexión revisa la clave sin guardarla.',
+    pt: 'Testar conexão confere a chave sem salvá-la.'
+  },
+  'Check the model and the token limit.': {
+    es: 'Revisa el modelo y el límite de tokens.',
+    pt: 'Confira o modelo e o limite de tokens.'
+  },
+  "OpenAI's assistant. It summarises what needs you today.": {
+    es: 'El asistente de OpenAI. Resume lo que te necesita hoy.',
+    pt: 'O assistente da OpenAI. Resume o que precisa de você hoje.'
+  },
+  'Organization name': { es: 'Nombre de la organización', pt: 'Nome da organização' },
+  'Base currency': { es: 'Moneda base', pt: 'Moeda base' },
+  Language: { es: 'Idioma', pt: 'Idioma' },
+  Timezone: { es: 'Zona horaria', pt: 'Fuso horário' },
+  Save: { es: 'Guardar', pt: 'Salvar' },
+  'PNG, JPEG or WebP, up to 2 MB.': {
+    es: 'PNG, JPEG o WebP, hasta 2 MB.',
+    pt: 'PNG, JPEG ou WebP, até 2 MB.'
+  },
+  'This browser. The organization does not store a language of its own.': {
+    es: 'Este navegador. La organización no guarda un idioma propio.',
+    pt: 'Este navegador. A organização não guarda um idioma próprio.'
+  },
+  'Printed on invoices. Address and tax stay on the organization page.': {
+    es: 'Sale impreso en las facturas. La dirección y el impuesto siguen en la página de la organización.',
+    pt: 'Sai impresso nas faturas. O endereço e o imposto continuam na página da organização.'
+  },
+  'The company details printed on every invoice and estimate.': {
+    es: 'Los datos de la empresa que salen en cada factura y presupuesto.',
+    pt: 'Os dados da empresa que saem em cada fatura e orçamento.'
+  },
+  Roles: { es: 'Roles', pt: 'Papéis' },
+  'Password policy': { es: 'Política de contraseñas', pt: 'Política de senhas' },
+  'API access': { es: 'Accesos de API', pt: 'Acessos de API' },
+  'Open the full audit log': { es: 'Abrir el registro de auditoría completo', pt: 'Abrir o registro de auditoria completo' },
+  'These are the rules sign-in and new accounts already follow. This screen cannot loosen them.': {
+    es: 'Estas son las reglas que el ingreso y las cuentas nuevas ya siguen. Esta pantalla no puede aflojarlas.',
+    pt: 'Estas são as regras que a entrada e as contas novas já seguem. Esta tela não pode afrouxá-las.'
+  },
+  'At least 8 characters.': { es: 'Al menos 8 caracteres.', pt: 'Pelo menos 8 caracteres.' },
+  'Not too similar to the name or the email.': {
+    es: 'No demasiado parecida al nombre o al correo.',
+    pt: 'Não parecida demais com o nome ou o e-mail.'
+  },
+  'Not a commonly used password.': {
+    es: 'No una contraseña de uso común.',
+    pt: 'Não uma senha de uso comum.'
+  },
+  'Not entirely numeric.': { es: 'No solo números.', pt: 'Não só números.' },
+  'Can do everything, connects assistants, and creates administrators.': {
+    es: 'Puede hacer todo, conecta asistentes y crea administradores.',
+    pt: 'Pode fazer tudo, conecta assistentes e cria administradores.'
+  },
+  'Opens the areas the CEO ticks. Creates employees, not other administrators.': {
+    es: 'Abre las áreas que el CEO marca. Crea empleados, no otros administradores.',
+    pt: 'Abre as áreas que o CEO marca. Cria funcionários, não outros administradores.'
+  },
+  'Works in the areas a member already had. Does not manage the team.': {
+    es: 'Trabaja en las áreas que un miembro ya tenía. No administra el equipo.',
+    pt: 'Trabalha nas áreas que um membro já tinha. Não administra a equipe.'
+  },
+  "Records the day's work, handles tickets and tasks, or works on sales. Cannot open billing, settings, or the team.": {
+    es: 'Registra el trabajo del día, atiende tickets y tareas, o trabaja en ventas. No puede abrir cobros, ajustes ni el equipo.',
+    pt: 'Registra o trabalho do dia, atende chamados e tarefas, ou trabalha em vendas. Não pode abrir cobrança, ajustes nem a equipe.'
+  },
+  'Create an administrator from Settings, under Security and access.': {
+    es: 'Crea un administrador desde Ajustes, en Seguridad y accesos.',
+    pt: 'Crie um administrador em Ajustes, em Segurança e acessos.'
+  },
+  'Could not delete that profile.': {
+    es: 'No se pudo eliminar ese perfil.',
+    pt: 'Não foi possível excluir esse perfil.'
+  },
+  'Which person?': { es: '¿Qué persona?', pt: 'Qual pessoa?' },
+  'Ask about the list on this page.': {
+    es: 'Pregunta sobre la lista de esta pantalla.',
+    pt: 'Pergunte sobre a lista desta tela.'
+  },
+  'Connect an assistant in Settings to ask about this list.': {
+    es: 'Conecta un asistente en Ajustes para preguntar sobre esta lista.',
+    pt: 'Conecte um assistente em Ajustes para perguntar sobre esta lista.'
+  },
+  'The organisation API key is not shown here. Credentials are never rendered on a page you can arrive at by browsing.': {
+    es: 'La clave de API de la organización no se muestra aquí. Las credenciales no aparecen en una página a la que se llega navegando.',
+    pt: 'A chave de API da organização não aparece aqui. Credenciais não são mostradas numa página a que se chega navegando.'
+  },
+  'This account is the CEO. The role is not changed from this form.': {
+    es: 'Esta cuenta es el CEO. El rol no se cambia desde este formulario.',
+    pt: 'Esta conta é o CEO. O papel não muda neste formulário.'
+  },
+  'Good morning': { es: 'Buenos días', pt: 'Bom dia' },
+  'Good afternoon': { es: 'Buenas tardes', pt: 'Boa tarde' },
+  'Good evening': { es: 'Buenas noches', pt: 'Boa noite' },
+  '{greeting}, {name}': { es: '{greeting}, {name}', pt: '{greeting}, {name}' },
+  'Open assistant': { es: 'Abrir asistente', pt: 'Abrir assistente' },
+  'Close assistant': { es: 'Cerrar asistente', pt: 'Fechar assistente' },
+  'Create one task': { es: 'Crear una tarea', pt: 'Criar uma tarefa' },
+  'What you can open': { es: 'Qué puedes abrir', pt: 'O que você pode abrir' },
+  'Where settings live': { es: 'Dónde están los ajustes', pt: 'Onde ficam os ajustes' },
+  'This screen': { es: 'Esta pantalla', pt: 'Esta tela' },
+  'Summarize what is on this screen.': {
+    es: 'Resume lo que hay en esta pantalla.',
+    pt: 'Resuma o que há nesta tela.'
+  },
+  'Ask about this screen': { es: 'Pregunta sobre esta pantalla', pt: 'Pergunte sobre esta tela' },
+  'Attach a text file': { es: 'Adjuntar un archivo de texto', pt: 'Anexar um arquivo de texto' },
+  'Attach a text file up to 100 KB.': {
+    es: 'Adjunta un archivo de texto de hasta 100 KB.',
+    pt: 'Anexe um arquivo de texto de até 100 KB.'
+  },
+  'Remove attachment': { es: 'Quitar adjunto', pt: 'Remover anexo' },
+  'What is in this document?': { es: '¿Qué hay en este documento?', pt: 'O que há neste documento?' },
+  'Copy code': { es: 'Copiar código', pt: 'Copiar código' },
+  'Stop generating': { es: 'Detener', pt: 'Parar' },
+  'Edit message': { es: 'Editar mensaje', pt: 'Editar mensagem' },
+  'The assistant is answering.': {
+    es: 'El asistente está respondiendo.',
+    pt: 'O assistente está respondendo.'
   }
 };
 

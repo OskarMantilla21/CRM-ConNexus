@@ -28,7 +28,7 @@
   import { count, relativeDays } from '$lib/v2/format.js';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
-  import { Plus, FileCode, ShieldAlert } from '@lucide/svelte';
+  import { Plus, FileCode, ShieldAlert, Trash2 } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -152,7 +152,18 @@
                     </button>
                   </form>
                 {/if}
+                  <form method="POST" action="?/remove" use:enhance>
+                    <input type="hidden" name="id" value={t.id} />
+                    <button type="submit" class="v2-btn v2-btn-sm" style="color:var(--v2-rust)">
+                      <Trash2 size={13} />{tx('Delete')}
+                    </button>
+                  </form>
               </div>
+              {#if t.used_on_invoices}
+                <p class="v2-sub" style="font-size:12px;margin:8px 0 0">
+                  {tx('Invoices that use it print with the org default, or the built-in layout if none is set.')}
+                </p>
+              {/if}
             {/if}
           </div>
         </div>

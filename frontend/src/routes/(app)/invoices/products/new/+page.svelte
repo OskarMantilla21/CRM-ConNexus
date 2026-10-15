@@ -1,7 +1,8 @@
 <script>
   import { resolve } from '$app/paths';
   /**
-   * A new catalogue product: a name, a list price, and where it sits.
+   * A new catalogue entry: one product, or a PDF catalogue of the range.
+   * Both can carry a photo and a PDF. The preview is the file just chosen.
    *
    * VALIDATION HERE IS A UX HINT, NOT A RULE. The serializer requires a name and
    * a numeric price and rejects a duplicate SKU within the org; a non-admin is
@@ -9,8 +10,10 @@
    * through this page. The view is the trust boundary (see CLAUDE.md).
    */
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import ProductFiles from '$lib/v2/components/ProductFiles.svelte';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
+  import { untrack } from 'svelte';
   import { enhance } from '$app/forms';
   import { ChevronRight, Lock } from '@lucide/svelte';
 
@@ -18,13 +21,18 @@
   let { data, form } = $props();
 
   let values = $derived(form?.values ?? {});
+  let kind = $state(untrack(() => (form?.values?.kind === 'catalog' ? 'catalog' : 'product')));
+  let name = $state(untrack(() => form?.values?.name ?? ''));
+  let price = $state(untrack(() => form?.values?.price ?? ''));
+  let currency = $state(untrack(() => form?.values?.currency ?? 'USD'));
+  let sku = $state(untrack(() => form?.values?.sku ?? ''));
 
   /* True from submit until the response lands, so a second press during a
      slow save cannot post the product again and create two catalogue rows. */
   let saving = $state(false);
 </script>
 
-<PageHeader title={tx('New product')} record center width="62ch">
+<PageHeader title={tx('New product')} record center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/invoices/products')}>{tx('Products')}</a>
     <ChevronRight size={12} />
@@ -32,7 +40,7 @@
   {/snippet}
 </PageHeader>
 
-<div class="v2-scroll">
+<div class="v2-scroll v2-pad" style="padding-top:18px">
   {#if !data.can_manage}
     <div class="v2-pad" style="padding-top:24px;max-width:56ch;margin-left:auto;margin-right:auto">
       <div class="v2-next" role="note">
@@ -60,52 +68,65 @@
           saving = false;
         };
       }}
-      class="v2-pad"
-      style="padding-top:18px;padding-bottom:36px;max-width:62ch;margin-left:auto;margin-right:auto"
+      class="v2-form v2-create"
+      enctype="multipart/form-data"
     >
       {#if form?.error}
         <p style="color:var(--v2-rust);font-size:12.5px;margin:0 0 14px" role="alert">
           {form.error}
         </p>
       {/if}
+      <section class="v2-create-section">
+      <ProductFiles bind:kind title={name} />
 
       <label class="v2-field">
-        <span class="v2-label">{tx('Name')}</span>
+        <span class="v2-label req">{tx('Name')}</span>
         <input
           class="v2-input"
           name="name"
           required
           maxlength="255"
-          value={values.name ?? ''}
-          placeholder={tx('Platform licence, per seat')}
+          bind:value={name}
+          placeholder={kind === 'catalog'
+            ? tx('Pool range, 2026')
+            : tx('Platform licence, per seat')}
         />
       </label>
 
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <label class="v2-field" style="flex:2;min-width:180px">
-          <span class="v2-label">{tx('List price')}</span>
-          <input
-            class="v2-input"
-            name="price"
-            type="number"
-            min="0"
-            step="0.01"
-            required
-            value={values.price ?? ''}
-            placeholder="100.00"
-          />
-        </label>
-        <label class="v2-field" style="flex:1;min-width:130px">
-          <span class="v2-label">{tx('Currency')}</span>
-          <select class="v2-input" name="currency" value={values.currency ?? 'USD'}>
-            {#each data.currencies as c (c.code)}
-              <option value={c.code}>{c.label}</option>
-            {/each}
-          </select>
-        </label>
-      </div>
+      {#if kind === 'product'}
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <label class="v2-field" style="flex:2;min-width:180px">
+            <span class="v2-label req">{tx('List price')}</span>
+            <input
+              class="v2-input"
+              name="price"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              bind:value={price}
+              placeholder="100.00"
+            />
+          </label>
+          <label class="v2-field" style="flex:1;min-width:130px">
+            <span class="v2-label">{tx('Currency')}</span>
+            <select class="v2-input" name="currency" bind:value={currency}>
+              {#each data.currencies as c (c.code)}
+                <option value={c.code}>{c.label}</option>
+              {/each}
+            </select>
+          </label>
+        </div>
+      {:else}
+        <input type="hidden" name="price" value={price || '0'} />
+        <input type="hidden" name="currency" value={currency} />
+        <input type="hidden" name="sku" value={sku} />
+        <p class="v2-hint">
+          {tx('This catalogue is not a line on an invoice. It stays on this list so anyone can open the PDF and the photo.')}
+        </p>
+      {/if}
 
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="v2-create-grid">
         <label class="v2-field" style="flex:1;min-width:160px">
           <span class="v2-label">{tx('Category')}</span>
           <input
@@ -116,33 +137,19 @@
             placeholder={tx('Licence, Module, Service…')}
           />
         </label>
-        <label class="v2-field" style="flex:1;min-width:160px">
-          <span class="v2-label">{tx('SKU')}</span>
-          <input
-            class="v2-input"
-            name="sku"
-            maxlength="100"
-            value={values.sku ?? ''}
-            placeholder="PLAT-SEAT"
-          />
-        </label>
+        {#if kind === 'product'}
+          <label class="v2-field" style="flex:1;min-width:160px">
+            <span class="v2-label">{tx('SKU')}</span>
+            <input
+              class="v2-input"
+              name="sku"
+              maxlength="100"
+              bind:value={sku}
+              placeholder="PLAT-SEAT"
+            />
+          </label>
+        {/if}
       </div>
-      <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px">
-        {tx('Category groups the catalogue; leave it blank and the product sits under "Uncategorised". A SKU is optional but must be unique here if you set one.')}
-      </p>
-
-      <label class="v2-field">
-        <span class="v2-label">{tx('Availability')}</span>
-        <select
-          class="v2-input"
-          name="is_active"
-          value={values.is_active === false ? 'false' : 'true'}
-        >
-          <option value="true">{tx('Sellable, appears in the line-item picker')}</option>
-          <option value="false">{tx('Retired, kept for history, hidden from the picker')}</option>
-        </select>
-      </label>
-
       <label class="v2-field">
         <span class="v2-label">{tx('Description')}</span>
         <textarea
@@ -154,11 +161,17 @@
         >
       </label>
 
-      <div style="display:flex;gap:9px;margin-top:6px">
-        <button class="v2-btn v2-btn-primary" type="submit" disabled={saving}>
-          {saving ? tx('Adding…') : tx('Add product')}
-        </button>
+      </section>
+
+      <div class="v2-create-foot">
         <a class="v2-btn" href={resolve('/invoices/products')}>{tx('Cancel')}</a>
+        <button class="v2-btn v2-btn-primary" type="submit" disabled={saving}>
+          {saving
+            ? tx('Adding…')
+            : kind === 'catalog'
+              ? tx('Add catalogue')
+              : tx('Add product')}
+        </button>
       </div>
     </form>
   {/if}

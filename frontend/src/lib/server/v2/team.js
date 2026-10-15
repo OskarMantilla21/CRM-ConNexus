@@ -264,3 +264,14 @@ export function setRole({ cookies }, userId, role, granted = null) {
 export function setStatus({ cookies }, userId, status) {
   return apiRequest(`/user/${userId}/status/`, { method: 'POST', body: { status } }, { cookies });
 }
+
+/**
+ * Remove a profile from this org. The server refuses the caller themselves,
+ * a CEO seen by an administrator, and anyone still linked to time or approvals.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {string} userId
+ */
+export function deleteUser({ cookies }, userId) {
+  return apiRequest(`/user/${userId}/`, { method: 'DELETE' }, { cookies });
+}

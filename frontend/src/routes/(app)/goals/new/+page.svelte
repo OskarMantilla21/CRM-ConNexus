@@ -100,7 +100,7 @@
     />
   </div>
 {:else}
-  <PageHeader title={tx('New goal')} center>
+  <PageHeader title={tx('New goal')} center width="calc(720px + 2 * var(--v2-pad))">
     {#snippet crumb()}<a href={resolve('/goals')}>{tx('Goals')}</a> ›{/snippet}
     {#snippet sub()}
       A target and a period. Closed-won deals count towards it automatically.
@@ -108,7 +108,7 @@
   </PageHeader>
 
   <div class="v2-scroll v2-pad" style="padding-top:18px">
-    <form class="v2-form" method="POST" action="?/create" use:enhance={check} novalidate>
+    <form class="v2-form v2-create" method="POST" action="?/create" use:enhance={check} novalidate>
       {#if result?.error}
         <div
           class="v2-next"

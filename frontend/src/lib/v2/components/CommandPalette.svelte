@@ -48,11 +48,11 @@
     },
     {
       kind: 'Actions',
-      id: 'act-tasks',
-      title: 'Go to Tasks',
+      id: 'act-tickets',
+      title: 'Go to Tickets',
       meta: '',
-      href: '/tasks',
-      icon: Columns3
+      href: '/tickets',
+      icon: LifeBuoy
     },
     {
       kind: 'Actions',

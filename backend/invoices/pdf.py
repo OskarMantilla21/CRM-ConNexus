@@ -688,6 +688,8 @@ def render_invoice_template(template_html, context):
         "{{invoice.notes}}": invoice.notes or "",
         "{{invoice.terms}}": invoice.terms or "",
         "{{org.name}}": org.name if org else "",
+        "{{org.bank_name}}": (org.bank_name if org else "") or "",
+        "{{org.bank_account_number}}": (org.bank_account_number if org else "") or "",
     }
 
     # Address fields

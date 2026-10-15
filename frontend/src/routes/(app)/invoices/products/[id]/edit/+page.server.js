@@ -1,5 +1,12 @@
 import { fail, redirect, error } from '@sveltejs/kit';
-import { getProductForEdit, updateProduct, deleteProduct } from '$lib/server/v2/products.js';
+import {
+  getProductForEdit,
+  updateProduct,
+  deleteProduct,
+  readProductDraft,
+  draftValues,
+  productFileProblem
+} from '$lib/server/v2/products.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { tx } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/bill.js';
@@ -34,21 +41,19 @@ function priceOk(value) {
 export const actions = {
   save: async (event) => {
     const form = await event.request.formData();
-    const name = form.get('name')?.toString().trim() ?? '';
-    const sku = form.get('sku')?.toString().trim() ?? '';
-    const price = form.get('price')?.toString().trim() ?? '';
-    const currency = form.get('currency')?.toString() ?? '';
-    const category = form.get('category')?.toString().trim() ?? '';
-    const description = form.get('description')?.toString().trim() ?? '';
-    const is_active = form.get('is_active') !== 'false';
+    const draft = readProductDraft(form);
+    const values = draftValues(draft);
+    const storedCatalog = form.get('has_catalog') === '1';
 
-    const values = { name, sku, price, currency, category, description, is_active };
-
-    if (!name) return fail(400, { values, error: tx('Give the product a name.') });
-    if (!priceOk(price)) return fail(400, { values, error: tx('Enter a list price of 0 or more.') });
+    if (!draft.name) return fail(400, { values, error: tx('Give the product a name.') });
+    if (!priceOk(draft.price)) {
+      return fail(400, { values, error: tx('Enter a list price of 0 or more.') });
+    }
+    const fileProblem = productFileProblem(draft, { requireCatalog: !storedCatalog });
+    if (fileProblem) return fail(400, { values, error: tx(fileProblem) });
 
     try {
-      await updateProduct(event, event.params.id, values);
+      await updateProduct(event, event.params.id, draft);
     } catch (/** @type {any} */ err) {
       if (err?.status === 403) {
         return fail(403, { values, error: tx('Only an administrator can change products.') });

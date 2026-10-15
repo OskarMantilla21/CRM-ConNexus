@@ -65,19 +65,19 @@
   };
 </script>
 
-<PageHeader title={tx('New ticket')} center>
+<PageHeader title={tx('New ticket')} center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/tickets')}>{tx('Tickets')}</a>
     <ChevronRight size={12} />
     <span>{tx('New')}</span>
   {/snippet}
   {#snippet sub()}
-    {tx('What happened, how urgent it is, and who it is for.')}
+    {tx('What broke, how urgent it is, and who it is for.')}
   {/snippet}
 </PageHeader>
 
 <div class="v2-scroll v2-pad" style="padding-top:18px">
-  <form class="v2-form" method="POST" action="?/create" use:enhance={check} novalidate>
+  <form class="v2-form v2-create" method="POST" action="?/create" use:enhance={check} novalidate>
     {#if result?.error}
       <div
         class="v2-next"
@@ -92,8 +92,10 @@
       </div>
     {/if}
 
+    <section class="v2-create-section">
+      <h2>{tx('The request')}</h2>
     <div class="v2-field">
-      <label for="f-name">{tx('Subject')}</label>
+      <label class="req" for="f-name">{tx('Subject')}</label>
       <input
         id="f-name"
         name="name"
@@ -112,7 +114,9 @@
       {/if}
     </div>
 
-    <div class="triple">
+    <input type="hidden" name="status" value={form.status} />
+
+    <div class="v2-create-grid">
       <div class="v2-field">
         <label for="f-priority">{tx('Priority')}</label>
         <select id="f-priority" name="priority" class="v2-input" bind:value={form.priority}>
@@ -120,7 +124,6 @@
             <option value={p.value}>{tx(p.label)}</option>
           {/each}
         </select>
-        <p class="v2-hint">{tx('Sets the first-reply target.')}</p>
       </div>
       <div class="v2-field">
         <label for="f-type">{tx('Type')}</label>
@@ -131,17 +134,12 @@
           {/each}
         </select>
       </div>
-      <div class="v2-field">
-        <label for="f-status">{tx('Status')}</label>
-        <select id="f-status" name="status" class="v2-input" bind:value={form.status}>
-          {#each data.statuses as s (s.value)}
-            <option value={s.value}>{tx(s.label)}</option>
-          {/each}
-        </select>
-      </div>
     </div>
+    </section>
 
-    <div class="pair">
+    <section class="v2-create-section">
+      <h2>{tx('Who it is for')}</h2>
+      <div class="v2-create-grid">
       <div class="v2-field">
         <label for="f-account">{tx('Account')}</label>
         <select id="f-account" name="account" class="v2-input" bind:value={form.account}>
@@ -160,59 +158,35 @@
             <option value={o.id}>{o.name}</option>
           {/each}
         </select>
-        <p class="v2-hint">{tx('Unassigned tickets still count against the clock.')}</p>
       </div>
-    </div>
+      <div class="v2-field wide">
+        <label for="f-contacts">{tx('Contact')}</label>
+        <select id="f-contacts" name="contacts" class="v2-input">
+          <option value="">{tx('Not linked')}</option>
+          {#each data.contacts as c (c.id)}
+            <option value={c.id}>{c.name}</option>
+          {/each}
+        </select>
+      </div>
+      </div>
+    </section>
 
-    <div class="v2-field">
-      <label for="f-contacts">{tx('People affected')}</label>
-      <select id="f-contacts" name="contacts" class="v2-input" multiple size="4">
-        {#each data.contacts as c (c.id)}
-          <option value={c.id}>{c.name}</option>
-        {/each}
-      </select>
-      <p class="v2-hint">{tx('Optional. Hold ctrl or cmd to pick more than one.')}</p>
-    </div>
+    <section class="v2-create-section">
+      <h2>{tx('What happened')}</h2>
+      <div class="v2-field">
+        <label for="f-desc">{tx('What happened')}</label>
+        <textarea
+          id="f-desc"
+          name="description"
+          class="v2-input"
+          rows="4"
+          bind:value={form.description}></textarea>
+      </div>
+    </section>
 
-    <div class="v2-field">
-      <label for="f-desc">{tx('What happened')}</label>
-      <textarea
-        id="f-desc"
-        name="description"
-        class="v2-input"
-        rows="4"
-        bind:value={form.description}></textarea>
-    </div>
-
-    <div class="actions">
-      <button class="v2-btn v2-btn-primary" type="submit">{tx('Raise ticket')}</button>
+    <div class="v2-create-foot">
       <a class="v2-btn" href={resolve('/tickets')}>{tx('Cancel')}</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Raise ticket')}</button>
     </div>
   </form>
 </div>
-
-<style>
-  .pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .triple {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px;
-  }
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-top: 22px;
-    padding-bottom: 40px;
-  }
-  @media (max-width: 720px) {
-    .pair,
-    .triple {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

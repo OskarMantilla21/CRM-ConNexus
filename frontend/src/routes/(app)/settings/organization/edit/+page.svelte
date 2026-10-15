@@ -27,6 +27,7 @@
   import { CURRENCY_CODES } from '$lib/constants/filters.js';
   import { COUNTRIES, getCountryName } from '$lib/constants/countries.js';
   import { ChevronRight, TriangleAlert } from '@lucide/svelte';
+  import { depositAccountError } from '$lib/v2/bank-account.js';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/ops.js';
 
@@ -61,6 +62,8 @@
       email: org.email ?? '',
       website: org.website ?? '',
       tax_id: org.tax_id ?? '',
+      bank_name: org.bank_name ?? '',
+      bank_account_number: org.bank_account_number ?? '',
       default_currency: org.default_currency || 'USD',
       default_country: org.default_country ?? '',
       timezone: org.timezone || 'UTC',
@@ -82,6 +85,8 @@
     // here saves a server round-trip; the serializer is the actual rule.
     if (form.website && !/^https?:\/\/.+\..+/.test(form.website))
       e.website = tx('Include the full address, starting with http:// or https://.');
+    const depositError = depositAccountError(form.bank_account_number);
+    if (depositError) e.bank_account_number = tx(depositError);
     return e;
   });
 
@@ -157,7 +162,9 @@
             <!-- Counted, not assumed. Only two fields are checked here, but one
                  of them failing on its own is the common case. -->
             <div style="font-weight:600">
-              {Object.keys(errors).length === 1 ? tx('One field to check') : tx('Two fields to check')}
+              {Object.keys(errors).length === 1
+              ? tx('One field to check')
+              : tx('{n} fields to check', { n: Object.keys(errors).length })}
             </div>
             <div class="v2-sub" style="margin-top:2px">{tx('Nothing has been saved yet.')}</div>
           </div>
@@ -206,6 +213,43 @@
             class="v2-input"
             maxlength="25"
             bind:value={form.phone}
+          />
+        </div>
+      </div>
+
+      <div class="v2-label" style="margin:8px 0 12px">{tx('Where deposits arrive')}</div>
+      <div class="pair">
+        <div class="v2-field">
+          <label for="f-bank-account">{tx('Account number for deposits')}</label>
+          <input
+            id="f-bank-account"
+            name="bank_account_number"
+            class="v2-input v2-num"
+            maxlength="40"
+            autocomplete="off"
+            spellcheck="false"
+            bind:value={form.bank_account_number}
+            onblur={() => (touched.bank_account_number = true)}
+            aria-invalid={show('bank_account_number') ? 'true' : undefined}
+            aria-describedby={show('bank_account_number') ? 'e-bank-account' : 'h-bank-account'}
+            placeholder="0123 4567 8901"
+          />
+          {#if show('bank_account_number')}
+            <p class="v2-error" id="e-bank-account">{errors.bank_account_number}</p>
+          {:else}
+            <p class="v2-hint" id="h-bank-account">
+              {tx('The number deposits are paid into. You can change it later.')}
+            </p>
+          {/if}
+        </div>
+        <div class="v2-field">
+          <label for="f-bank">{tx('Bank')}</label>
+          <input
+            id="f-bank"
+            name="bank_name"
+            class="v2-input"
+            maxlength="120"
+            bind:value={form.bank_name}
           />
         </div>
       </div>

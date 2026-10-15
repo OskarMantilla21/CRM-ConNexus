@@ -132,7 +132,6 @@ export const COUNT_PERMISSION = {
   leads: 'sell',
   pipeline: 'sell',
   tickets: 'serve',
-  tasks: 'serve',
   approvals: 'serve',
   invoices: 'bill',
   notifications: 'serve'

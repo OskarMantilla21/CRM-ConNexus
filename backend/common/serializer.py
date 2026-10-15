@@ -135,6 +135,14 @@ class OrganizationSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+# A transfer form: letters, digits, spaces and hyphens. The same shape is
+# checked in `$lib/v2/bank-account.js` so the form and the API agree.
+_BANK_ACCOUNT_NUMBER = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9 \-]*[A-Za-z0-9])?$")
+_BANK_ACCOUNT_MESSAGE = (
+    "Use letters, digits, spaces and hyphens, at least 4 characters."
+)
+
+
 class OrgSettingsSerializer(serializers.ModelSerializer):
     """The org's own settings: company profile, locale, and case-handling switches.
 
@@ -182,6 +190,9 @@ class OrgSettingsSerializer(serializers.ModelSerializer):
             "email",
             "website",
             "tax_id",
+            # Where deposits for this organisation arrive. Printed on invoices.
+            "bank_name",
+            "bank_account_number",
             # Locale settings
             "default_currency",
             "default_country",
@@ -206,6 +217,22 @@ class OrgSettingsSerializer(serializers.ModelSerializer):
             "vertical",
             "terminology",
         ]
+
+    def validate_bank_name(self, value):
+        return (value or "").strip()
+
+    def validate_bank_account_number(self, value):
+        text = (value or "").strip()
+        if not text:
+            return ""
+        significant = re.sub(r"[\s\-]", "", text)
+        if (
+            len(text) > 40
+            or len(significant) < 4
+            or _BANK_ACCOUNT_NUMBER.fullmatch(text) is None
+        ):
+            raise serializers.ValidationError(_BANK_ACCOUNT_MESSAGE)
+        return text
 
     @extend_schema_field(str)
     def get_currency_symbol(self, obj):

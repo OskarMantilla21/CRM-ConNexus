@@ -31,28 +31,32 @@
   let options = $derived(kind ? (data.parents[kind] ?? []) : []);
 </script>
 
-<PageHeader title={tx('New task')} record center width="62ch">
+<PageHeader title={tx('New task')} record center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}
     <a href={resolve('/tasks')}>{tx('Tasks')}</a>
     <ChevronRight size={12} />
     <span>{tx('New')}</span>
   {/snippet}
+  {#snippet sub()}
+    {tx('What to do, when, and which record it belongs to.')}
+  {/snippet}
 </PageHeader>
 
-<div class="v2-scroll">
+<div class="v2-scroll v2-pad" style="padding-top:18px">
   <form
     method="POST"
     action="?/create"
     use:enhance
-    class="v2-pad"
-    style="padding-top:18px;padding-bottom:36px;max-width:62ch;margin-left:auto;margin-right:auto"
+    class="v2-form v2-create"
   >
     {#if form?.error}
       <p style="color:var(--v2-rust);font-size:12.5px;margin:0 0 14px" role="alert">{form.error}</p>
     {/if}
 
+    <section class="v2-create-section">
+      <h2>{tx('The request')}</h2>
     <label class="v2-field">
-      <span class="v2-label">{tx('Task')}</span>
+      <span class="v2-label req">{tx('Task')}</span>
       <input
         class="v2-input"
         name="title"
@@ -63,8 +67,8 @@
       />
     </label>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <label class="v2-field" style="flex:1;min-width:150px">
+    <div class="v2-create-grid">
+      <label class="v2-field">
         <span class="v2-label">{tx('Priority')}</span>
         <select class="v2-input" name="priority" value={values.priority ?? 'Medium'}>
           <option value="Low">{choiceLabel('Low')}</option>
@@ -72,25 +76,15 @@
           <option value="High">{choiceLabel('High')}</option>
         </select>
       </label>
-      <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">{tx('Status')}</span>
-        <select class="v2-input" name="status" value={values.status ?? 'New'}>
-          <option value="New">{choiceLabel('New')}</option>
-          <option value="In Progress">{choiceLabel('In Progress')}</option>
-          <option value="Completed">{choiceLabel('Completed')}</option>
-        </select>
-      </label>
-      <label class="v2-field" style="flex:1;min-width:150px">
-        <span class="v2-label">{tx('When it should be done')}</span>
+      <label class="v2-field">
+        <span class="v2-label">{tx('Due date')}</span>
         <input class="v2-input" type="date" name="due_date" value={values.due_date ?? ''} />
       </label>
     </div>
-    <p class="v2-sub" style="font-size:11.5px;margin:-6px 0 16px">
-      {tx(
-        'The day this task should be done. Leave it empty and it never counts as late, and it never appears in this week. That is a real choice, not a blank you forgot.'
-      )}
-    </p>
+    </section>
 
+    <section class="v2-create-section">
+      <h2>{tx('Who it is for')}</h2>
     <label class="v2-field">
       <span class="v2-label">{tx('Attached to')}</span>
       <select class="v2-input" name="parent_kind" bind:value={kind}>
@@ -119,23 +113,16 @@
 
     <label class="v2-field">
       <span class="v2-label">{tx('Assign to')}</span>
-      <select
-        class="v2-input"
-        name="assigned_to"
-        multiple
-        size={Math.min(data.owners.length || 1, 5)}
-      >
+      <select class="v2-input" name="assigned_to">
+        <option value="">{tx('Nobody')}</option>
         {#each data.owners as person (person.id)}
           <option value={person.id}>{person.name}</option>
         {/each}
       </select>
-      <span class="v2-sub" style="font-size:11.5px">
-        {tx(
-          'Click one name to assign the task to that person. Hold Ctrl to add another. Leave it empty and the task is yours to pick up.'
-        )}
-      </span>
     </label>
+    </section>
 
+    <section class="v2-create-section">
     <label class="v2-field">
       <span class="v2-label">{tx('Note')}</span>
       <textarea
@@ -146,10 +133,11 @@
         >{values.description ?? ''}</textarea
       >
     </label>
+    </section>
 
-    <div style="display:flex;gap:9px;margin-top:6px">
-      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create task')}</button>
+    <div class="v2-create-foot">
       <a class="v2-btn" href={resolve('/tasks')}>{tx('Cancel')}</a>
+      <button class="v2-btn v2-btn-primary" type="submit">{tx('Create task')}</button>
     </div>
   </form>
 </div>

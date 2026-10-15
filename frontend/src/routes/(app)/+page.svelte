@@ -22,6 +22,13 @@
   let connectedAssistants = $derived(
     (data.assistants?.assistants || []).filter((/** @type {{ connected?: boolean }} */ item) => item.connected)
   );
+  let askProvider = $derived.by(() => {
+    const preferred = data.assistants?.default_provider;
+    if (preferred && connectedAssistants.some((/** @type {{ id: string }} */ item) => item.id === preferred)) {
+      return preferred;
+    }
+    return connectedAssistants[0]?.id || '';
+  });
 
   const TONE_VAR = {
     rust: 'var(--v2-rust)',
@@ -136,77 +143,33 @@
     {#if data.role === 'CEO'}
       <section class="v2-card assistants" aria-label={tx('Assistants')}>
         <div class="v2-label">{tx('Assistants')}</div>
-        <p class="v2-sub assist-lead">
-          {tx(
-            'Connect an assistant so it can summarise what needs you today. It only reads the same list on this page.'
-          )}
-        </p>
         {#if data.assistants?.unavailable}
           <p class="v2-sub">{tx('Assistants could not be loaded.')}</p>
-        {:else}
-          {#each data.assistants?.assistants || [] as item (item.id)}
-            <div class="assist-row">
-              <div class="assist-copy">
-                <b>{item.name}</b>
-                <span class="v2-sub">{tx(item.summary)}</span>
-                {#if item.connected}<span class="assist-on">{tx('Connected')}</span>{/if}
-              </div>
-              {#if item.connected}
-                <form method="POST" action="?/disconnect" use:enhance={assistantSubmit}>
-                  <input type="hidden" name="provider" value={item.id} />
-                  <button class="v2-btn" type="submit" disabled={assistantBusy}>{tx('Disconnect')}</button>
-                </form>
-              {:else}
-                <form class="assist-connect" method="POST" action="?/connect" use:enhance={assistantSubmit}>
-                  <input type="hidden" name="provider" value={item.id} />
-                  <label class="v2-signin-label" for={"key-" + item.id}>{tx('API key')}</label>
-                  <input
-                    id={"key-" + item.id}
-                    class="v2-input"
-                    name="api_key"
-                    type="password"
-                    autocomplete="off"
-                    required
-                    minlength="8"
-                  />
-                  <button class="v2-btn v2-btn-primary" type="submit" disabled={assistantBusy}>
-                    {tx('Connect')}
-                  </button>
-                </form>
-              {/if}
-              {#if form?.provider === item.id && form?.error && form?.action !== 'ask'}
-                <p class="assist-error">{form.error}</p>
-              {/if}
-            </div>
-          {/each}
-          <p class="v2-sub assist-note">
-            {tx('The key stays on the server. This page does not show it again.')}
-          </p>
-          {#if connectedAssistants.length}
-            <form class="assist-ask" method="POST" action="?/ask" use:enhance={assistantSubmit}>
-              <label class="v2-signin-label" for="assistant-question">{tx('Ask')}</label>
-              <select class="v2-input" name="provider">
-                {#each connectedAssistants as item (item.id)}
-                  <option value={item.id}>{item.name}</option>
-                {/each}
-              </select>
-              <input
-                id="assistant-question"
-                class="v2-input"
-                name="question"
-                maxlength="400"
-                placeholder={tx('What needs me today?')}
-                value={form?.question || ''}
-              />
-              <button class="v2-btn v2-btn-primary" type="submit" disabled={assistantBusy}>{tx('Ask')}</button>
-            </form>
-            {#if form?.action === 'ask' && form?.error}
-              <p class="assist-error">{form.error}</p>
-            {/if}
-            {#if form?.answer}
-              <p class="assist-answer">{form.answer}</p>
-            {/if}
+        {:else if askProvider}
+          <form class="assist-ask" method="POST" action="?/ask" use:enhance={assistantSubmit}>
+            <label class="v2-signin-label" for="assistant-question">{tx('Ask about the list on this page.')}</label>
+            <input type="hidden" name="provider" value={askProvider} />
+            <input
+              id="assistant-question"
+              class="v2-input"
+              name="question"
+              maxlength="400"
+              placeholder={tx('What needs me today?')}
+              value={form?.question || ''}
+            />
+            <button class="v2-btn v2-btn-primary" type="submit" disabled={assistantBusy}>{tx('Ask')}</button>
+          </form>
+          {#if form?.action === 'ask' && form?.error}
+            <p class="assist-error">{form.error}</p>
           {/if}
+          {#if form?.answer}
+            <p class="assist-answer">{form.answer}</p>
+          {/if}
+        {:else}
+          <p class="v2-sub assist-lead">
+            {tx('Connect an assistant in Settings to ask about this list.')}
+            <a href={resolve('/settings') + '?area=ia'}>{tx('AI integrations')}</a>
+          </p>
         {/if}
       </section>
     {/if}

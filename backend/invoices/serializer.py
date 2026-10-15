@@ -29,6 +29,11 @@ from invoices.models import (
     line_discount,
     line_gross,
 )
+from invoices.product_files import (
+    clean_product_catalog,
+    clean_product_image,
+    is_catalog,
+)
 from opportunity.access import visible_deals_qs
 from opportunity.models import Opportunity
 
@@ -56,10 +61,27 @@ class OpportunityMinimalSerializer(serializers.ModelSerializer):
 # =============================================================================
 
 
+def _stored_leaf(field):
+    """The last segment of a stored file name, never a URL."""
+    if not field:
+        return ""
+    return (field.name or "").rsplit("/", 1)[-1]
+
+
 class ProductSerializer(serializers.ModelSerializer):
-    """Serializer for Product catalog"""
+    """Serializer for Product catalog.
+
+    The photo and the PDF are not returned as storage URLs. ``/media/`` is
+    guarded only by "has an org", so a path here would be a link any tenant
+    could open. Callers get a name (for the preview's file type) and a flag.
+    The bytes go through ``ProductFileView``.
+    """
 
     used_on = serializers.SerializerMethodField()
+    has_image = serializers.SerializerMethodField()
+    image_name = serializers.SerializerMethodField()
+    has_catalog = serializers.SerializerMethodField()
+    catalog_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -72,11 +94,28 @@ class ProductSerializer(serializers.ModelSerializer):
             "currency",
             "category",
             "is_active",
+            "kind",
+            "has_image",
+            "image_name",
+            "has_catalog",
+            "catalog_name",
             "used_on",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+    def get_has_image(self, obj):
+        return bool(obj.image)
+
+    def get_image_name(self, obj):
+        return _stored_leaf(obj.image)
+
+    def get_has_catalog(self, obj):
+        return bool(obj.catalog_file)
+
+    def get_catalog_name(self, obj):
+        return _stored_leaf(obj.catalog_file)
 
     def get_used_on(self, obj):
         """Distinct invoices this product is a line item on.
@@ -95,7 +134,16 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating/updating Products"""
+    """Serializer for creating/updating Products.
+
+    ``image`` and ``catalog_file`` are optional on a product. A catalogue
+    (``kind=catalog``) needs the PDF. An empty SKU is stored as null: the
+    column is unique with the org, and two blank strings would collide.
+    """
+
+    kind = serializers.ChoiceField(choices=["product", "catalog"], default="product")
+    image = serializers.FileField(required=False, allow_null=True)
+    catalog_file = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Product
@@ -107,7 +155,37 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             "currency",
             "category",
             "is_active",
+            "kind",
+            "image",
+            "catalog_file",
         )
+
+    def validate_sku(self, value):
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
+    def validate_image(self, value):
+        if not value:
+            return value
+        return clean_product_image(value)
+
+    def validate_catalog_file(self, value):
+        if not value:
+            return value
+        return clean_product_catalog(value)
+
+    def validate(self, attrs):
+        kind = attrs.get("kind", getattr(self.instance, "kind", "product"))
+        if kind == "catalog":
+            incoming = attrs.get("catalog_file")
+            already = bool(self.instance and self.instance.catalog_file)
+            if not incoming and not already:
+                raise serializers.ValidationError(
+                    {"catalog_file": "A catalogue needs its PDF."}
+                )
+        return attrs
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -426,6 +504,10 @@ class InvoiceLineItemCreateSerializer(LineAmountsMixin, serializers.ModelSeriali
             raise serializers.ValidationError(
                 "Product not found or does not belong to your organization"
             )
+        if is_catalog(value):
+            raise serializers.ValidationError(
+                "A product catalogue is not something you sell on a line."
+            )
         return value
 
 
@@ -490,6 +572,14 @@ def validate_line_item_products(line_items, org):
                 {
                     "line_items": (
                         "A line item references a product from another organization."
+                    )
+                }
+            )
+        if is_catalog(product):
+            raise serializers.ValidationError(
+                {
+                    "line_items": (
+                        "A product catalogue is not something you sell on a line."
                     )
                 }
             )

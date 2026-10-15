@@ -36,7 +36,7 @@ def test_only_the_ceo_sees_the_list(org_a):
     listed = ceo.get("/api/assistants/")
     assert listed.status_code == status.HTTP_200_OK
     ids = [item["id"] for item in listed.data["assistants"]]
-    assert ids == ["gemini", "grok"]
+    assert ids == ["gemini", "grok", "openai"]
     assert all(item["connected"] is False for item in listed.data["assistants"])
     assert "assistant_keys" not in listed.data
     assert "api_key" not in json.dumps(listed.data)
@@ -99,7 +99,7 @@ def test_a_refused_key_is_not_stored(org_a, monkeypatch):
 def test_ask_sends_the_today_list_and_not_the_key(org_a, monkeypatch):
     seen = {}
 
-    def _capture(provider, api_key, user_text):
+    def _capture(provider, api_key, user_text, model=None, max_output_tokens=None):
         seen["provider"] = provider
         seen["api_key"] = api_key
         seen["user_text"] = user_text
@@ -160,3 +160,49 @@ def test_grok_request_does_not_store_the_exchange(monkeypatch):
     assert captured["auth"] == "Bearer grok-secret-key"
     assert captured["body"]["store"] is False
     assert captured["body"]["model"] == "grok-4.7"
+
+
+@pytest.mark.django_db
+def test_settings_and_a_connection_test_never_return_the_key(org_a, monkeypatch):
+    monkeypatch.setattr("common.views.assistant_views.complete", lambda *args, **kwargs: "OK")
+    ceo = _person(org_a, "ceo.settings@test.com", "CEO")
+    secret = "openai-secret-key"
+
+    tested = ceo.post(
+        "/api/assistants/openai/test/",
+        {"api_key": secret, "model": "gpt-4o", "max_output_tokens": 256},
+        format="json",
+    )
+    assert tested.status_code == status.HTTP_200_OK
+    assert tested.data["ok"] is True
+    assert secret not in json.dumps(tested.data)
+    org_a.refresh_from_db()
+    assert not org_a.assistant_keys
+
+    connected = ceo.post(
+        "/api/assistants/openai/connect/",
+        {"api_key": secret, "model": "gpt-4o", "max_output_tokens": 256},
+        format="json",
+    )
+    assert connected.status_code == status.HTTP_200_OK
+    assert secret not in json.dumps(connected.data)
+
+    saved = ceo.post(
+        "/api/assistants/settings/",
+        {"default_provider": "openai", "providers": {"openai": {"model": "gpt-4.1-mini"}}},
+        format="json",
+    )
+    assert saved.status_code == status.HTTP_200_OK
+    assert saved.data["default_provider"] == "openai"
+    openai = next(item for item in saved.data["assistants"] if item["id"] == "openai")
+    assert openai["model"] == "gpt-4.1-mini"
+    assert openai["max_output_tokens"] == 256
+    assert secret not in json.dumps(saved.data)
+    assert "assistant_keys" not in saved.data
+
+    refused = ceo.post(
+        "/api/assistants/settings/",
+        {"providers": {"openai": {"model": "not-a-model"}}},
+        format="json",
+    )
+    assert refused.status_code == status.HTTP_400_BAD_REQUEST

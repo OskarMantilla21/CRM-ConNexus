@@ -18,7 +18,10 @@ import { isOrgAdmin } from '$lib/admin.js';
  * @type {import('./$types').PageServerLoad}
  */
 export function load({ locals }) {
-  return { can_manage: isOrgAdmin(/** @type {any} */ (locals).profile) };
+  return {
+    can_manage: isOrgAdmin(/** @type {any} */ (locals).profile),
+    org_name: /** @type {any} */ (locals).org?.name || ''
+  };
 }
 
 /**

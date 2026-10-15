@@ -548,6 +548,11 @@ export const messages = {
     pt: 'Faça isto antes de qualquer coisa'
   },
   Document: { es: 'Documento', pt: 'Documento' },
+  Download: { es: 'Descargar', pt: 'Baixar' },
+  'This file type opens when you download it.': {
+    es: 'Este tipo de archivo se abre al descargarlo.',
+    pt: 'Este tipo de arquivo abre quando você o baixa.'
+  },
   Done: { es: 'Hecho', pt: 'Concluído' },
   'done {date}': { es: 'hecha el {date}', pt: 'concluída em {date}' },
   'Drag a card, or use "Move to" on it, to change its {what}. Moving a ticket to Closed closes it, so an approval rule can refuse it.':
@@ -738,10 +743,20 @@ export const messages = {
   },
   'Move {name} to': { es: 'Mover {name} a', pt: 'Mover {name} para' },
   'Needs a first reply': { es: 'Necesita una primera respuesta', pt: 'Precisa de uma primeira resposta' },
-  'New article': { es: 'Nuevo artículo', pt: 'Novo artigo' },
+  'New article': { es: 'Nueva solución', pt: 'Nova solução' },
   'New support ticket': { es: 'Nuevo ticket de soporte', pt: 'Novo chamado de suporte' },
   'New task': { es: 'Nueva tarea', pt: 'Nova tarefa' },
   'New ticket': { es: 'Nuevo ticket', pt: 'Novo chamado' },
+  'The request': { es: 'La solicitud', pt: 'A solicitação' },
+  'Who it is for': { es: 'Para quién es', pt: 'Para quem é' },
+  'What broke, how urgent it is, and who it is for.': {
+    es: 'Qué falló, qué tan urgente es y para quién es.',
+    pt: 'O que falhou, qual a urgência e para quem é.'
+  },
+  'What to do, when, and which record it belongs to.': {
+    es: 'Qué hay que hacer, cuándo y a qué registro pertenece.',
+    pt: 'O que fazer, quando e a qual registro pertence.'
+  },
   'Newest first': { es: 'Más recientes primero', pt: 'Mais recentes primeiro' },
   'Next month': { es: 'Mes siguiente', pt: 'Mês seguinte' },
   'next reply target': {
@@ -967,6 +982,11 @@ export const messages = {
     pt: 'configurações da organização'
   },
   overdue: { es: 'vencida', pt: 'vencida' },
+  'overdue ones': { es: 'vencidos', pt: 'vencidos' },
+  "Overdue and due this week follow each ticket's resolution target.": {
+    es: 'Vencido y vence esta semana salen del plazo de resolución.',
+    pt: 'Vencido e vence esta semana saem do prazo de resolução.'
+  },
   'Owner or admin only': {
     es: 'Solo el responsable o un administrador',
     pt: 'Só o responsável ou um administrador'
@@ -1068,7 +1088,7 @@ export const messages = {
   'Rule: {name}': { es: 'Regla: {name}', pt: 'Regra: {name}' },
   'Rules that gate a close': { es: 'Reglas que frenan un cierre', pt: 'Regras que bloqueiam um fechamento' },
   Running: { es: 'En curso', pt: 'Em andamento' },
-  'Save article': { es: 'Guardar artículo', pt: 'Salvar artigo' },
+  'Save article': { es: 'Guardar solución', pt: 'Salvar solução' },
   'Save ticket': { es: 'Guardar ticket', pt: 'Salvar chamado' },
   'Saved reply': { es: 'Respuesta guardada', pt: 'Resposta salva' },
   'Say the symptom the way a customer would report it, not the fix.': {

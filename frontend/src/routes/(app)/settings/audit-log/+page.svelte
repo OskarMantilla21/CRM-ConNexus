@@ -79,7 +79,7 @@
             <option value="">{tx('All events')}</option>
             {#each data.eventTypes as t (t.value)}
               <option value={t.value} selected={data.filters.event_type === t.value}>
-                {t.label}
+                {t.value === 'FILE_DELETED' ? tx('File or document deleted') : t.label}
               </option>
             {/each}
           </select>
@@ -161,7 +161,9 @@
                 {@const webhookId = auditWebhookId(e)}
                 <tr>
                   <td data-m="title">
-                    <div class="v2-table-primary">{e.event_label}</div>
+                    <div class="v2-table-primary">
+                      {e.event_type === 'FILE_DELETED' ? tx('File or document deleted') : e.event_label}
+                    </div>
                     {#if detail || webhookId}
                       <div class="v2-table-secondary">
                         {detail}

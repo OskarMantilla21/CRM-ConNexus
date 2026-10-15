@@ -202,6 +202,19 @@ export const messages = {
   'Defaults': { es: 'Valores predeterminados', pt: 'Padrões' },
   'Delete permanently': { es: 'Eliminar de forma permanente', pt: 'Excluir permanentemente' },
   'Delete this product for good?': { es: '¿Eliminar este producto para siempre?', pt: 'Excluir este produto de vez?' },
+  'Delete this invoice?': { es: '¿Eliminar esta factura?', pt: 'Excluir esta fatura?' },
+  'Delete this template?': { es: '¿Eliminar esta plantilla?', pt: 'Excluir este modelo?' },
+  'Could not delete this invoice.': { es: 'No se pudo eliminar esta factura.', pt: 'Não foi possível excluir esta fatura.' },
+  'Could not delete this template.': { es: 'No se pudo eliminar esta plantilla.', pt: 'Não foi possível excluir este modelo.' },
+  'File or document deleted': { es: 'Archivo o documento eliminado', pt: 'Arquivo ou documento excluído' },
+  'Deleted files and documents': { es: 'Archivos y documentos eliminados', pt: 'Arquivos e documentos excluídos' },
+  'Deleted {kind} "{name}".': { es: 'Eliminó {kind} "{name}".', pt: 'Excluiu {kind} "{name}".' },
+  'invoice template': { es: 'plantilla de factura', pt: 'modelo de fatura' },
+  'document': { es: 'documento', pt: 'documento' },
+  'Invoices that use it print with the org default, or the built-in layout if none is set.': {
+    es: 'Las facturas que la usan se imprimen con la predeterminada, o con el diseño integrado si no hay otra.',
+    pt: 'As faturas que a usam são impressas com o padrão, ou com o layout integrado se não houver outro.'
+  },
   'Deleted {n} sample record.': { es: 'Se eliminó {n} registro de ejemplo.', pt: 'Excluído {n} registro de exemplo.' },
   'Deleted {n} sample records.': { es: 'Se eliminaron {n} registros de ejemplo.', pt: 'Excluídos {n} registros de exemplo.' },
   'Delivered': { es: 'Entregado', pt: 'Entregue' },
@@ -321,9 +334,94 @@ export const messages = {
   'New estimate': { es: 'Nuevo presupuesto', pt: 'Novo orçamento' },
   'New invoice': { es: 'Nueva factura', pt: 'Nova fatura' },
   'New product': { es: 'Nuevo producto', pt: 'Novo produto' },
+  'Add catalogue': { es: 'Añadir catálogo', pt: 'Adicionar catálogo' },
+  'A PDF of the range, the way you upload a document.': {
+    es: 'Un PDF de la gama, como cuando subes un documento.',
+    pt: 'Um PDF da linha, como quando você envia um documento.'
+  },
+  'A cover for the catalogue. PNG, JPG, GIF or WebP.': {
+    es: 'Una portada para el catálogo. PNG, JPG, GIF o WebP.',
+    pt: 'Uma capa para o catálogo. PNG, JPG, GIF ou WebP.'
+  },
+  'A picture of the product. PNG, JPG, GIF or WebP.': {
+    es: 'Una imagen del producto. PNG, JPG, GIF o WebP.',
+    pt: 'Uma imagem do produto. PNG, JPG, GIF ou WebP.'
+  },
+  'A product': { es: 'Un producto', pt: 'Um produto' },
+  'A product catalogue': { es: 'Un catálogo de productos', pt: 'Um catálogo de produtos' },
+  'Catalogue': { es: 'Catálogo', pt: 'Catálogo' },
+  'Catalogue PDF': { es: 'Catálogo en PDF', pt: 'Catálogo em PDF' },
+  'Choose a PDF.': { es: 'Elige un PDF.', pt: 'Escolha um PDF.' },
+  'Choose a photo in PNG, JPG, GIF or WebP.': {
+    es: 'Elige una foto en PNG, JPG, GIF o WebP.',
+    pt: 'Escolha uma foto em PNG, JPG, GIF ou WebP.'
+  },
+  'Cover photo': { es: 'Foto de portada', pt: 'Foto de capa' },
+  'Download PDF': { es: 'Descargar PDF', pt: 'Baixar PDF' },
+  'Download photo': { es: 'Descargar foto', pt: 'Baixar foto' },
+  'Edit catalogue': { es: 'Editar catálogo', pt: 'Editar catálogo' },
+  File: { es: 'Archivo', pt: 'Arquivo' },
+  'Hidden from the catalogue': { es: 'Oculto del catálogo', pt: 'Oculto do catálogo' },
+  'Listed, anyone in the org can open it.': {
+    es: 'Visible: cualquiera de la organización puede abrirlo.',
+    pt: 'Visível: qualquer pessoa da organização pode abri-lo.'
+  },
+  'One thing you sell, with its price.': {
+    es: 'Una cosa que vendes, con su precio.',
+    pt: 'Uma coisa que você vende, com o preço.'
+  },
+  'Optional. A data sheet or a one-product catalogue.': {
+    es: 'Opcional. Una ficha técnica o el catálogo de este producto.',
+    pt: 'Opcional. Uma ficha técnica ou o catálogo deste produto.'
+  },
+  Photo: { es: 'Foto', pt: 'Foto' },
+  'Pool range, 2026': { es: 'Gama de piscina, 2026', pt: 'Linha de piscina, 2026' },
+  Size: { es: 'Tamaño', pt: 'Tamanho' },
+  'Spec sheet (PDF)': { es: 'Ficha en PDF', pt: 'Ficha em PDF' },
+  'The catalogue needs its PDF.': {
+    es: 'El catálogo necesita su PDF.',
+    pt: 'O catálogo precisa do PDF.'
+  },
+  'The PDF itself. It opens here the same way a document does.': {
+    es: 'El PDF en sí. Se abre aquí igual que un documento.',
+    pt: 'O PDF em si. Ele abre aqui do mesmo jeito que um documento.'
+  },
+  'This catalogue is not a line on an invoice. It stays on this list so anyone can open the PDF and the photo.': {
+    es: 'Este catálogo no es una línea de factura. Se queda en esta lista para que cualquiera abra el PDF y la foto.',
+    pt: 'Este catálogo não é um item de fatura. Ele fica nesta lista para qualquer pessoa abrir o PDF e a foto.'
+  },
+  'This file type opens when you download it.': {
+    es: 'Este tipo de archivo se abre al descargarlo.',
+    pt: 'Este tipo de arquivo abre quando você o baixa.'
+  },
+  'What are you adding?': { es: '¿Qué estás añadiendo?', pt: 'O que você está adicionando?' },
   'New schedule': { es: 'Nueva programación', pt: 'Novo agendamento' },
   'New tag': { es: 'Nueva etiqueta', pt: 'Nova etiqueta' },
   'New template': { es: 'Nueva plantilla', pt: 'Novo modelo' },
+  'Your company': { es: 'Tu empresa', pt: 'Sua empresa' },
+  'Address, phone and email come from the organisation.': {
+    es: 'La dirección, el teléfono y el correo salen de la organización.',
+    pt: 'O endereço, o telefone e o e-mail vêm da organização.'
+  },
+  'Invoice': { es: 'Factura', pt: 'Fatura' },
+  'Sample customer': { es: 'Cliente de ejemplo', pt: 'Cliente de exemplo' },
+  'The customer is filled in on the invoice, not on the template.': {
+    es: 'El cliente se llena en la factura, no en la plantilla.',
+    pt: 'O cliente é preenchido na fatura, não no modelo.'
+  },
+  'Invoice #': { es: 'Factura n.º', pt: 'Fatura n.º' },
+  'Invoice date': { es: 'Fecha de la factura', pt: 'Data da fatura' },
+  'Sample date': { es: 'Fecha de ejemplo', pt: 'Data de exemplo' },
+  'Description': { es: 'Descripción', pt: 'Descrição' },
+  'Quantity': { es: 'Cantidad', pt: 'Quantidade' },
+  'Price': { es: 'Precio', pt: 'Preço' },
+  'Sample service': { es: 'Servicio de ejemplo', pt: 'Serviço de exemplo' },
+  'Sample lines, so the table has a shape.': {
+    es: 'Líneas de ejemplo, para que la tabla tenga forma.',
+    pt: 'Linhas de exemplo, para a tabela ter forma.'
+  },
+  'Yours sincerely,': { es: 'Atentamente,', pt: 'Atenciosamente,' },
+  'Copyright': { es: 'Derechos de autor', pt: 'Direitos autorais' },
   'New token': { es: 'Nuevo token', pt: 'Novo token' },
   'New webhook': { es: 'Nuevo webhook', pt: 'Novo webhook' },
   'Newer': { es: 'Más recientes', pt: 'Mais recentes' },

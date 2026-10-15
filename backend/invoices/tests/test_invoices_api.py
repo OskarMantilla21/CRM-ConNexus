@@ -7,6 +7,7 @@ import pytest
 from django.utils import timezone
 
 from accounts.models import Account
+from common.audit_log import SecurityAuditLog
 from contacts.models import Contact
 from invoices.models import (
     Estimate,
@@ -303,10 +304,36 @@ class TestInvoiceDetailView:
         assert data["error"] is False
         assert data["message"] == "Invoice updated successfully"
 
-    def test_delete_invoice_not_supported(self, admin_client, invoice):
-        """InvoiceDetailView does not implement DELETE; expect 405."""
+    def test_delete_invoice(self, admin_client, invoice):
         response = admin_client.delete(f"/api/invoices/{invoice.id}/")
-        assert response.status_code == 405
+        assert response.status_code == 200
+        assert response.json()["message"] == "Invoice deleted"
+        assert not Invoice.objects.filter(id=invoice.id).exists()
+        row = SecurityAuditLog.objects.get(event_type="FILE_DELETED")
+        assert row.metadata["kind"] == "invoice"
+        assert row.metadata["record_id"] == str(invoice.id)
+        assert row.metadata["name"] == invoice.invoice_number
+        listed = admin_client.get("/api/org/audit-log/?event_type=FILE_DELETED")
+        assert listed.status_code == 200
+        match = next(
+            entry
+            for entry in listed.json()["results"]
+            if entry["details"]["record_id"] == str(invoice.id)
+        )
+        assert match["event_label"] == "File or document deleted"
+        assert match["details"]["name"] == invoice.invoice_number
+        assert "description" not in match
+
+    def test_delete_invoice_hidden_from_another_org(self, org_b_client, invoice):
+        response = org_b_client.delete(f"/api/invoices/{invoice.id}/")
+        assert response.status_code == 404
+        assert Invoice.objects.filter(id=invoice.id).exists()
+        assert not SecurityAuditLog.objects.filter(event_type="FILE_DELETED").exists()
+
+    def test_delete_invoice_hidden_from_a_member(self, user_client, invoice):
+        response = user_client.delete(f"/api/invoices/{invoice.id}/")
+        assert response.status_code == 404
+        assert Invoice.objects.filter(id=invoice.id).exists()
 
     def test_cross_org(self, org_b_client, invoice):
         """org_b_client must not access an invoice belonging to org_a."""
@@ -2550,6 +2577,11 @@ class TestInvoiceTemplateDetailView:
         data = response.json()
         assert data["error"] is False
         assert not InvoiceTemplate.objects.filter(id=template.id).exists()
+        row = SecurityAuditLog.objects.get(
+            event_type="FILE_DELETED", metadata__record_id=str(template.id)
+        )
+        assert row.metadata["kind"] == "invoice template"
+        assert row.metadata["name"] == "Default Template"
 
     def test_delete_nonexistent_template(self, admin_client):
         fake_id = uuid.uuid4()
@@ -3908,6 +3940,22 @@ class TestPublicPortalIsReachableAnonymously:
             "this is the emailed customer link."
         )
         assert response.json()["invoice_number"] == invoice.invoice_number
+
+    def test_invoice_link_includes_the_deposit_account(self, client, invoice):
+        """The customer page says where to send the money, and nothing else
+        from the organisation profile."""
+        invoice.org.bank_name = "Banco de Bogotá"
+        invoice.org.bank_account_number = "0123 4567 8901"
+        invoice.org.save(update_fields=["bank_name", "bank_account_number"])
+
+        response = client.get(f"/api/public/invoice/{invoice.public_token}/")
+
+        assert response.status_code == 200
+        org = response.json()["org"]
+        assert org["bank_name"] == "Banco de Bogotá"
+        assert org["bank_account_number"] == "0123 4567 8901"
+        assert "tax_id" not in org
+        assert "email" not in org
 
     def test_estimate_link_is_reachable(self, client, estimate):
         response = client.get(f"/api/public/estimate/{estimate.public_token}/")

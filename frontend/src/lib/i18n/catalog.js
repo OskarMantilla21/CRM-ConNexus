@@ -19,7 +19,7 @@ export const messages = {
   Serve: { es: 'Atender', pt: 'Atender' },
   Tasks: { es: 'Tareas', pt: 'Tarefas' },
   Tickets: { es: 'Tickets', pt: 'Chamados' },
-  'Knowledge base': { es: 'Base de conocimiento', pt: 'Base de conhecimento' },
+  'Knowledge base': { es: 'Soluciones', pt: 'Soluções' },
   Documents: { es: 'Documentos', pt: 'Documentos' },
   Bill: { es: 'Cobrar', pt: 'Faturar' },
   Invoices: { es: 'Facturas', pt: 'Faturas' },
@@ -29,11 +29,14 @@ export const messages = {
   Settings: { es: 'Ajustes', pt: 'Ajustes' },
   Search: { es: 'Buscar', pt: 'Buscar' },
   Notifications: { es: 'Notificaciones', pt: 'Notificações' },
-  'Your profile': { es: 'Mi perfil', pt: 'Meu perfil' },
+  'Your profile': { es: 'Tu perfil', pt: 'Seu perfil' },
+  'Account settings': { es: 'Ajustes de cuenta', pt: 'Ajustes da conta' },
   Help: { es: 'Ayuda', pt: 'Ajuda' },
+  Assistant: { es: 'Asistente', pt: 'Assistente' },
   'Download app': { es: 'Descargar la app', pt: 'Baixar o app' },
   'Sign out': { es: 'Salir', pt: 'Sair' },
-  'Switch organisation': { es: 'Cambiar de empresa', pt: 'Trocar de empresa' },
+  'Sign out of this account': { es: 'Cerrar sesión', pt: 'Encerrar sessão' },
+  'Switch organisation': { es: 'Cambiar de organización', pt: 'Trocar de organização' },
   'Invoice templates': { es: 'Plantillas de factura', pt: 'Modelos de fatura' },
   Main: { es: 'Principal', pt: 'Principal' },
   Sections: { es: 'Secciones', pt: 'Seções' },
@@ -50,6 +53,7 @@ export const messages = {
   Actions: { es: 'Acciones', pt: 'Ações' },
   'Go to Today': { es: 'Ir a Hoy', pt: 'Ir para Hoje' },
   'Go to Tasks': { es: 'Ir a Tareas', pt: 'Ir para Tarefas' },
+  'Go to Tickets': { es: 'Ir a Tickets', pt: 'Ir para Chamados' },
   'Go to Invoices': { es: 'Ir a Facturas', pt: 'Ir para Faturas' },
   'Search deals, accounts, people, tickets, invoices…': {
     es: 'Busca negocios, cuentas, personas, tickets, facturas…',
@@ -129,6 +133,28 @@ export const messages = {
   Overdue: { es: 'Vencido', pt: 'Vencido' },
   'All invoices': { es: 'Todas las facturas', pt: 'Todas as faturas' },
   Account: { es: 'Cuenta', pt: 'Conta' },
+  Bank: { es: 'Banco', pt: 'Banco' },
+  'Account number for deposits': {
+    es: 'Número de cuenta para depósitos',
+    pt: 'Número da conta para depósitos'
+  },
+  'Where deposits arrive': { es: 'Dónde llegan los depósitos', pt: 'Onde os depósitos chegam' },
+  'The number deposits are paid into. You can change it later.': {
+    es: 'El número al que se pagan los depósitos. Puedes cambiarlo después.',
+    pt: 'O número para o qual os depósitos são pagos. Você pode mudá-lo depois.'
+  },
+  'Only an admin can change the account deposits are paid into.': {
+    es: 'Solo un administrador puede cambiar la cuenta a la que llegan los depósitos.',
+    pt: 'Só um administrador pode mudar a conta para a qual os depósitos chegam.'
+  },
+  'Use letters, digits, spaces and hyphens, at least 4 characters.': {
+    es: 'Usa letras, dígitos, espacios y guiones, al menos 4 caracteres.',
+    pt: 'Use letras, dígitos, espaços e hifens, pelo menos 4 caracteres.'
+  },
+  'No customer accounts in this organisation yet.': {
+    es: 'Todavía no hay cuentas de cliente en esta organización.',
+    pt: 'Ainda não há contas de cliente nesta organização.'
+  },
   Accepted: { es: 'Aceptado', pt: 'Aceito' },
   'All estimates': { es: 'Todos los presupuestos', pt: 'Todos os orçamentos' },
   Published: { es: 'Publicado', pt: 'Publicado' },
@@ -364,6 +390,7 @@ export const messages = {
   'You are {role} here': { es: 'Aquí eres {role}', pt: 'Aqui você é {role}' },
   Switch: { es: 'Cambiar', pt: 'Trocar' },
   Access: { es: 'Acceso', pt: 'Acesso' },
+  'Full access': { es: 'Acceso total', pt: 'Acesso total' },
   Role: { es: 'Rol', pt: 'Papel' },
   'Set by an admin. You cannot change your own role.': {
     es: 'Lo define un administrador. No puedes cambiar tu propio rol.',

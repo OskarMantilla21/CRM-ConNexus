@@ -59,7 +59,8 @@ body {
 .invoice-title {
     font-size: 32px;
     font-weight: bold;
-    color: #222;
+    /* #3B82F6 is replaced with the template primary colour in pdf.py. */
+    color: #3B82F6;
     margin-bottom: 10px;
     letter-spacing: 0.5px;
 }
@@ -79,7 +80,8 @@ body {
 .logo-text {
     font-size: 32px;
     font-weight: 700;
-    color: #2c5475;
+    /* #1E40AF is replaced with the template secondary colour in pdf.py. */
+    color: #1E40AF;
     letter-spacing: 1px;
 }
 
@@ -133,13 +135,13 @@ body {
 }
 
 .line-items-table th {
-    background-color: #d1d9e1;
+    background-color: #3B82F6;
     text-align: left;
     padding: 10px 12px;
     font-size: 14px;
     font-weight: 700;
-    border: 1px solid #bcc4cc;
-    color: #222;
+    border: 1px solid #1E40AF;
+    color: #fff;
 }
 
 .line-items-table th.qty-col,
@@ -223,6 +225,10 @@ body {
     color: #000;
 }
 
+.totals-table .grand-total .totals-value {
+    color: #3B82F6;
+}
+
 .totals-table .paid {
     color: #16a34a;
 }
@@ -235,7 +241,7 @@ body {
 }
 
 .totals-table .amount-due .totals-value {
-    color: #0056b3;
+    color: #1E40AF;
 }
 
 /* Footer Text */

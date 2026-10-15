@@ -22,11 +22,12 @@ from cases.help_center_views import PublicHelpCenterView
 from cases.kb_text import snippet
 from cases.portal_views import published_articles
 from common.assistants import (
-    ASSISTANTS,
     AssistantRefused,
     AssistantUnreachable,
     converse,
     key_for,
+    preferred,
+    provider_runtime,
 )
 from common.request_meta import client_ip
 from common.validators import flexible_phone_validator
@@ -245,7 +246,8 @@ def answer(org, turns):
         return SPECIALIST_SENTENCE, False
 
     try:
-        raw = converse(provider, api_key, build_prompt(org), _for_model(turns))
+        model, limit = provider_runtime(org, provider)
+        raw = converse(provider, api_key, build_prompt(org), _for_model(turns), model, limit)
     except (AssistantRefused, AssistantUnreachable):
         _record(org, turns, SPECIALIST_SENTENCE)
         return SPECIALIST_SENTENCE, False
@@ -290,11 +292,10 @@ def _for_model(turns):
 
 
 def _connected(org):
-    for item in ASSISTANTS:
-        key = key_for(org, item["id"])
-        if key:
-            return item["id"], key
-    return None, None
+    provider = preferred(org)
+    if not provider:
+        return None, None
+    return provider, key_for(org, provider)
 
 
 def _must_transfer(turns):

@@ -104,6 +104,7 @@ class SecurityAuditLog(BaseModel):
         ("CALENDAR_FEED_DISABLED", "Calendar Feed Disabled"),
         ("API_TOKEN_CREATED", "API Token Created"),
         ("API_TOKEN_REVOKED", "API Token Revoked"),
+        ("FILE_DELETED", "File or document deleted"),
     )
 
     event_type = models.CharField(max_length=50, choices=EVENT_TYPES, db_index=True)
@@ -487,6 +488,28 @@ class AuditLogger:
                 "scopes": list(pat.scopes or []),
                 "owner_id": str(owner.id),
                 "owner_name": owner.name or owner.email,
+            },
+            request=request,
+        )
+
+    def file_deleted(self, user, org, kind, record_id, name, request=None):
+        """Log one file or document after it has been removed.
+
+        ``kind`` is a short English noun (``document``, ``invoice``, or
+        ``invoice template``). ``name`` is what the screen showed. The row
+        is the only place that name survives, and the audit log is where a
+        CEO reads who removed it. Call this after the delete has succeeded.
+        """
+        safe_name = " ".join(str(name or "").split())[:200] or kind
+        self._log(
+            "FILE_DELETED",
+            user=user,
+            org=org,
+            description=f"Deleted {kind} {safe_name}",
+            metadata={
+                "kind": kind,
+                "record_id": str(record_id),
+                "name": safe_name,
             },
             request=request,
         )

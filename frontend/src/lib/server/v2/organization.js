@@ -49,6 +49,8 @@ export const EDITABLE_FIELDS = [
   'email',
   'website',
   'tax_id',
+  'bank_name',
+  'bank_account_number',
   'default_currency',
   'default_country',
   'timezone'
@@ -108,6 +110,23 @@ export async function getOrgSettings({ cookies }) {
  */
 export function updateOrgSettings({ cookies }, body) {
   return apiRequest('/org/settings/', { method: 'PATCH', body }, { cookies });
+}
+
+/**
+ * Save the organisation's deposit account when the form included those fields.
+ *
+ * Absent means the inputs were disabled, which is how a non-admin sees the
+ * number without being able to change it. An empty number is a real clear.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {FormData} form
+ */
+export async function saveDepositAccount(event, form) {
+  if (!form.has('bank_account_number')) return;
+  await updateOrgSettings(event, {
+    bank_name: form.get('bank_name')?.toString().trim() ?? '',
+    bank_account_number: form.get('bank_account_number')?.toString().trim() ?? ''
+  });
 }
 
 /**

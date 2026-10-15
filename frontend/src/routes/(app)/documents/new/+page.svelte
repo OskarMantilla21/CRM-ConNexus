@@ -4,6 +4,7 @@
   import { SvelteSet } from 'svelte/reactivity';
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import FilePreview from '$lib/v2/components/FilePreview.svelte';
   import { TriangleAlert, Upload, Users, Lock } from '@lucide/svelte';
   import '$lib/i18n/pages/serve.js';
   import { tx } from '$lib/i18n/translate.js';
@@ -32,6 +33,8 @@
   // A rejected submit cannot re-fill a file input (browsers forbid it), so the
   // file is always chosen fresh. We only track whether one is currently picked.
   let fileName = $state('');
+  /** @type {File | null} */
+  let picked = $state(null);
   // SvelteSet is reactive on mutation, so `.add()`/`.delete()` below re-render
   // the checkboxes and the reach line without reassigning the whole set.
   let sharedTo = new SvelteSet((previous.shared_to ?? []).map(String));
@@ -55,9 +58,25 @@
 
   let reach = $derived(sharedTo.size + sharedTeams.size);
 
+  let audience = $derived.by(() => {
+    const people = (data.people ?? [])
+      .filter((/** @type {{ id: string }} */ p) => sharedTo.has(String(p.id)))
+      .map((/** @type {{ name: string }} */ p) => p.name);
+    const teams = (data.teams ?? [])
+      .filter((/** @type {{ id: string }} */ t) => sharedTeams.has(String(t.id)))
+      .map((/** @type {{ name: string }} */ t) => t.name);
+    const names = [...people, ...teams];
+    if (names.length) return names.join(', ');
+    if (reach > 0) {
+      return `${tx('Reaches')} ${reach} ${reach === 1 ? tx('person or team') : tx('people and teams')}`;
+    }
+    return tx('Only you and admins, until you share it.');
+  });
+
   function onFile(/** @type {Event} */ ev) {
     const input = /** @type {HTMLInputElement} */ (ev.currentTarget);
-    fileName = input.files?.[0]?.name ?? '';
+    picked = input.files?.[0] ?? null;
+    fileName = picked?.name ?? '';
     touched.file = true;
   }
 
@@ -79,7 +98,7 @@
   };
 </script>
 
-<PageHeader title={tx('Upload a document')} center>
+<PageHeader title={tx('Upload a document')} center width="calc(720px + 2 * var(--v2-pad))">
   {#snippet crumb()}<a href={resolve('/documents')}>{tx('Documents')}</a> ›{/snippet}
   {#snippet sub()}
     {tx('Add a file, then choose who can open it. Nobody sees it until you share it.')}
@@ -88,7 +107,7 @@
 
 <div class="v2-scroll v2-pad" style="padding-top:18px">
   <form
-    class="v2-form"
+    class="v2-form v2-create"
     method="POST"
     action="?/create"
     enctype="multipart/form-data"
@@ -149,6 +168,15 @@
             ? tx('Selected: {name}', { name: fileName })
             : tx('PDFs, sheets, docs. Whatever you send people often.')}
         </p>
+      {/if}
+      {#if picked}
+        <div class="picked-preview">
+          <FilePreview
+            file={picked}
+            title={title}
+            rows={[{ label: tx('Who can open it'), value: audience }]}
+          />
+        </div>
       {/if}
     </div>
 
@@ -263,5 +291,8 @@
   }
   .share-opt input {
     flex: none;
+  }
+  .picked-preview {
+    margin-top: 12px;
   }
 </style>

@@ -4,7 +4,8 @@ import {
   sendInvoice,
   markInvoicePaid,
   cancelInvoice,
-  duplicateInvoice
+  duplicateInvoice,
+  deleteInvoice
 } from '$lib/server/v2/invoices.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { tx } from '$lib/i18n/translate.js';
@@ -83,5 +84,19 @@ export const actions = {
     const newId = created?.invoice?.id;
     if (newId) redirect(303, `/invoices/${newId}`);
     return { duplicated: true };
+  },
+
+  /** Remove it. Lines and payments go with it. A hidden invoice stays a 404. */
+  delete: async ({ cookies, params }) => {
+    try {
+      await deleteInvoice({ cookies }, params.id);
+    } catch (/** @type {any} */ err) {
+      if (err?.status !== 404) {
+        return fail(400, {
+          error: readableError(err, tx('Could not delete this invoice.'))
+        });
+      }
+    }
+    redirect(303, '/invoices');
   }
 };

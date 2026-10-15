@@ -613,6 +613,27 @@ export const messages = {
   'New contact': { es: 'Nuevo contacto', pt: 'Novo contato' },
   'New goal': { es: 'Nuevo objetivo', pt: 'Nova meta' },
   'New lead': { es: 'Nuevo prospecto', pt: 'Novo lead' },
+  'About the person': { es: 'La persona', pt: 'A pessoa' },
+  'The company': { es: 'La empresa', pt: 'A empresa' },
+  Assignment: { es: 'Asignación', pt: 'Atribuição' },
+  'Where they are': { es: 'Dónde están', pt: 'Onde ficam' },
+  'The deal': { es: 'El negocio', pt: 'O negócio' },
+  'Name, a way to reach them, and the company they work at.': {
+    es: 'El nombre, cómo contactarlos y la empresa en la que trabajan.',
+    pt: 'O nome, como falar com eles e a empresa em que trabalham.'
+  },
+  'The company name, a way to reach them, and who owns the account.': {
+    es: 'El nombre de la empresa, cómo contactarla y quién lleva la cuenta.',
+    pt: 'O nome da empresa, como falar com ela e quem cuida da conta.'
+  },
+  'Name, a way to reach them, and the company they belong to.': {
+    es: 'El nombre, cómo contactarlos y la empresa a la que pertenecen.',
+    pt: 'O nome, como falar com eles e a empresa à qual pertencem.'
+  },
+  'Name, account, amount, and when you expect it to close.': {
+    es: 'El nombre, la cuenta, el importe y cuándo esperas cerrarlo.',
+    pt: 'O nome, a conta, o valor e quando você espera fechar.'
+  },
   'Next step': { es: 'Siguiente paso', pt: 'Próximo passo' },
   'No {name} yet': { es: 'Aún no hay {name}', pt: 'Ainda não há {name}' },
   'No accounts yet': { es: 'Aún no hay cuentas', pt: 'Ainda não há contas' },

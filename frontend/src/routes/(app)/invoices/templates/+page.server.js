@@ -1,5 +1,9 @@
 import { fail } from '@sveltejs/kit';
-import { listInvoiceTemplates, setDefaultTemplate } from '$lib/server/v2/templates.js';
+import {
+  listInvoiceTemplates,
+  setDefaultTemplate,
+  deleteInvoiceTemplate
+} from '$lib/server/v2/templates.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { isOrgAdmin } from '$lib/admin.js';
 import { tx } from '$lib/i18n/translate.js';
@@ -43,5 +47,24 @@ export const actions = {
       });
     }
     return { defaulted: true };
+  },
+
+  /** Remove a template. Admins only; the API 403s everyone else. */
+  remove: async ({ cookies, request }) => {
+    const form = await request.formData();
+    const id = form.get('id')?.toString();
+    if (!id) return fail(400, { error: tx('Which template? None was given.') });
+
+    try {
+      await deleteInvoiceTemplate({ cookies }, id);
+    } catch (/** @type {any} */ err) {
+      return fail(err?.status === 403 ? 403 : 400, {
+        error:
+          err?.status === 403
+            ? tx('Only an administrator can change invoice templates.')
+            : readableError(err, tx('Could not delete this template.'))
+      });
+    }
+    return { removed: true };
   }
 };

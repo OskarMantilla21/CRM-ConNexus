@@ -38,7 +38,7 @@ export async function load({ cookies, url }) {
       account_name: c.account?.name ?? ''
     })),
     products: products.results
-      .filter((p) => p.is_active)
+      .filter((p) => p.is_active && p.kind !== 'catalog')
       .map((p) => ({ id: p.id, name: p.name, sku: p.sku, price: p.price })),
     deals: deals.results.map((d) => ({ id: d.id, name: d.name, account_id: d.account.id })),
     prefill

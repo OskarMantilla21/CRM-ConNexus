@@ -219,13 +219,16 @@ class _ProductRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                money(
-                  product.price,
-                  Currency.fromString(product.currency).symbol,
+              if (product.kind == 'catalog')
+                const StatusBadge(label: 'Catalogue', color: AppColors.gray500)
+              else
+                Text(
+                  money(
+                    product.price,
+                    Currency.fromString(product.currency).symbol,
+                  ),
+                  style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
                 ),
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
-              ),
             ],
           ),
           const SizedBox(height: 6),

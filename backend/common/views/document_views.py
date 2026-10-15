@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from common import swagger_params
+from common.audit_log import audit_log
 from common.models import Document, Profile, Teams
 from common.permissions import HasOrgContext, is_org_admin
 from common.serializer import (
@@ -343,7 +344,21 @@ class DocumentDetailView(APIView):
         document = self.get_object(pk)
         if not self._may_delete(document):
             return self._forbidden()
+        deleted_id = document.id
+        deleted_name = document.title or ""
+        if not str(deleted_name).strip():
+            stored = getattr(document.document_file, "name", "") or ""
+            deleted_name = stored.replace("\\", "/").rsplit("/", 1)[-1]
+        deleted_org = document.org
         document.delete()
+        audit_log.file_deleted(
+            request.user,
+            deleted_org,
+            "document",
+            deleted_id,
+            deleted_name,
+            request,
+        )
         return Response(
             {"error": False, "message": "Document deleted Successfully"},
             status=status.HTTP_200_OK,
@@ -452,6 +467,27 @@ class DocumentDetailView(APIView):
         )
 
 
+def download_filename(document):
+    """The title, with the stored file's extension when the title lacks it.
+
+    The stored path is a timestamped upload name nobody chose, so the download
+    is named after the title. A title usually has no extension. Without one
+    the browser saves "Q3 pricing" and a preview cannot tell a PDF from a
+    sheet. The extension comes from the file the server stored, not from the
+    caller.
+    """
+    stored = document.document_file.name or ""
+    leaf = stored.rsplit("/", 1)[-1]
+    ext = leaf.rsplit(".", 1)[-1].lower() if "." in leaf else ""
+    title = document.title or "document"
+    for ch in ("\r", "\n", '"', "/", "\\"):
+        title = title.replace(ch, "")
+    title = title.strip() or "document"
+    if ext and not title.lower().endswith("." + ext):
+        return f"{title}.{ext}"
+    return title
+
+
 class DocumentDownloadView(APIView):
     """Stream a document's file to somebody allowed to read the record.
 
@@ -493,7 +529,5 @@ class DocumentDownloadView(APIView):
         return FileResponse(
             document.document_file,
             as_attachment=True,
-            # `title` is the human name and the only one either client shows.
-            # The stored name is a timestamped upload path nobody chose.
-            filename=document.title or "document",
+            filename=download_filename(document),
         )

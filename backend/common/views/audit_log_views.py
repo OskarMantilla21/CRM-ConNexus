@@ -75,6 +75,8 @@ EVENT_DETAILS = {
     "RECORD_MERGED": ("entity", "kept_id", "kept_name", "merged_id", "merged_name"),
     "API_TOKEN_CREATED": _API_TOKEN_DETAILS,
     "API_TOKEN_REVOKED": _API_TOKEN_DETAILS,
+    # The deleted row is gone, so this is the name the CEO still sees.
+    "FILE_DELETED": ("kind", "record_id", "name"),
 }
 
 PUBLIC_PREFIX = "/api/public/"

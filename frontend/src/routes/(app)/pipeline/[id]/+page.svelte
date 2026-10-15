@@ -187,6 +187,12 @@
       <dd>{tx(deal.stage_label)}</dd>
       <dt>{tx('Value')}</dt>
       <dd class="v2-num">{money(deal.amount, deal.currency)}</dd>
+      <dt>{tx('Account number for deposits')}</dt>
+      <dd class="v2-num">
+        {data.deposit?.bank_account_number
+          ? [data.deposit.bank_name, data.deposit.bank_account_number].filter(Boolean).join(' · ')
+          : '—'}
+      </dd>
       <dt>{tx('Probability')}</dt>
       <dd class="v2-num">{deal.probability}%</dd>
       <dt>{tx('Expected close')}</dt>

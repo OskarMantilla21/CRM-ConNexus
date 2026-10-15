@@ -11,8 +11,10 @@
    * a confirm. Both are admin-only, enforced by the API.
    */
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import ProductFiles from '$lib/v2/components/ProductFiles.svelte';
   import { tx } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
+  import { untrack } from 'svelte';
   import { enhance } from '$app/forms';
   import { ChevronRight, Lock, Trash2 } from '@lucide/svelte';
 
@@ -22,9 +24,23 @@
   let values = $derived(form?.values ?? data.product ?? {});
   let usedOn = $derived(data.product?.used_on ?? 0);
   let confirming = $state(false);
+  let kind = $state(
+    untrack(() => ((form?.values?.kind ?? data.product?.kind) === 'catalog' ? 'catalog' : 'product'))
+  );
+  let name = $state(untrack(() => form?.values?.name ?? data.product?.name ?? ''));
+  let price = $state(
+    untrack(() => form?.values?.price ?? (data.product?.price != null ? String(data.product.price) : ''))
+  );
+  let currency = $state(untrack(() => form?.values?.currency ?? data.product?.currency ?? 'USD'));
+  let sku = $state(untrack(() => form?.values?.sku ?? data.product?.sku ?? ''));
 </script>
 
-<PageHeader title={tx('Edit product')} record center width="62ch">
+<PageHeader
+  title={kind === 'catalog' ? tx('Edit catalogue') : tx('Edit product')}
+  record
+  center
+  width="calc(720px + 2 * var(--v2-pad))"
+>
   {#snippet crumb()}
     <a href={resolve('/invoices/products')}>{tx('Products')}</a>
     <ChevronRight size={12} />
@@ -52,9 +68,10 @@
     <form
       method="POST"
       action="?/save"
+      enctype="multipart/form-data"
       use:enhance
       class="v2-pad"
-      style="padding-top:18px;padding-bottom:36px;max-width:62ch;margin-left:auto;margin-right:auto"
+      style="padding-top:18px;padding-bottom:36px;max-width:720px;margin-left:auto;margin-right:auto"
     >
       {#if form?.error}
         <p style="color:var(--v2-rust);font-size:12.5px;margin:0 0 14px" role="alert">
@@ -62,43 +79,64 @@
         </p>
       {/if}
 
+      <ProductFiles
+        bind:kind
+        title={name}
+        imageHref={data.product?.image_preview ?? ''}
+        imageName={data.product?.image_name ?? ''}
+        catalogHref={data.product?.catalog_preview ?? ''}
+        catalogName={data.product?.catalog_name ?? ''}
+      />
+      <input type="hidden" name="has_catalog" value={data.product?.catalog_preview ? '1' : ''} />
+
       <label class="v2-field">
         <span class="v2-label">{tx('Name')}</span>
-        <input class="v2-input" name="name" required maxlength="255" value={values.name ?? ''} />
+        <input class="v2-input" name="name" required maxlength="255" bind:value={name} />
       </label>
 
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <label class="v2-field" style="flex:2;min-width:180px">
-          <span class="v2-label">{tx('List price')}</span>
-          <input
-            class="v2-input"
-            name="price"
-            type="number"
-            min="0"
-            step="0.01"
-            required
-            value={values.price ?? ''}
-          />
-        </label>
-        <label class="v2-field" style="flex:1;min-width:130px">
-          <span class="v2-label">{tx('Currency')}</span>
-          <select class="v2-input" name="currency" value={values.currency ?? 'USD'}>
-            {#each data.currencies as c (c.code)}
-              <option value={c.code}>{c.label}</option>
-            {/each}
-          </select>
-        </label>
-      </div>
+      {#if kind === 'product'}
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <label class="v2-field" style="flex:2;min-width:180px">
+            <span class="v2-label">{tx('List price')}</span>
+            <input
+              class="v2-input"
+              name="price"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              bind:value={price}
+            />
+          </label>
+          <label class="v2-field" style="flex:1;min-width:130px">
+            <span class="v2-label">{tx('Currency')}</span>
+            <select class="v2-input" name="currency" bind:value={currency}>
+              {#each data.currencies as c (c.code)}
+                <option value={c.code}>{c.label}</option>
+              {/each}
+            </select>
+          </label>
+        </div>
+      {:else}
+        <input type="hidden" name="price" value={price || '0'} />
+        <input type="hidden" name="currency" value={currency} />
+        <input type="hidden" name="sku" value={sku} />
+        <p class="v2-hint">
+          {tx('This catalogue is not a line on an invoice. It stays on this list so anyone can open the PDF and the photo.')}
+        </p>
+      {/if}
 
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <label class="v2-field" style="flex:1;min-width:160px">
           <span class="v2-label">{tx('Category')}</span>
           <input class="v2-input" name="category" maxlength="100" value={values.category ?? ''} />
         </label>
-        <label class="v2-field" style="flex:1;min-width:160px">
-          <span class="v2-label">{tx('SKU')}</span>
-          <input class="v2-input" name="sku" maxlength="100" value={values.sku ?? ''} />
-        </label>
+        {#if kind === 'product'}
+          <label class="v2-field" style="flex:1;min-width:160px">
+            <span class="v2-label">{tx('SKU')}</span>
+            <input class="v2-input" name="sku" maxlength="100" bind:value={sku} />
+          </label>
+        {/if}
       </div>
 
       <label class="v2-field">
@@ -108,8 +146,16 @@
           name="is_active"
           value={values.is_active === false ? 'false' : 'true'}
         >
-          <option value="true">{tx('Sellable, appears in the line-item picker')}</option>
-          <option value="false">{tx('Retired, kept for history, hidden from the picker')}</option>
+          <option value="true">
+            {kind === 'catalog'
+              ? tx('Listed, anyone in the org can open it.')
+              : tx('Sellable, appears in the line-item picker')}
+          </option>
+          <option value="false">
+            {kind === 'catalog'
+              ? tx('Hidden from the catalogue')
+              : tx('Retired, kept for history, hidden from the picker')}
+          </option>
         </select>
         {#if usedOn > 0}
           <span class="v2-sub" style="font-size:11.5px">
@@ -134,7 +180,7 @@
     <!-- Delete lives in its own form so it never carries the edit fields. -->
     <div
       class="v2-pad"
-      style="padding-top:0;padding-bottom:40px;max-width:62ch;margin-left:auto;margin-right:auto"
+      style="padding-top:0;padding-bottom:40px;max-width:720px;margin-left:auto;margin-right:auto"
     >
       <div class="danger">
         {#if !confirming}

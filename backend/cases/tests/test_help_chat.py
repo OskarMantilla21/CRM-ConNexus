@@ -94,7 +94,7 @@ class TestChat:
     ):
         seen = {}
 
-        def _capture(provider, api_key, system, turns):
+        def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
             seen["provider"] = provider
             seen["api_key"] = api_key
             seen["system"] = system
@@ -155,7 +155,7 @@ class TestChat:
         acme.save(update_fields=["assistant_keys"])
         seen = {}
 
-        def _capture(provider, api_key, system, turns):
+        def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
             seen["provider"] = provider
             return "¿Cuántas personas lo usarían?"
 
@@ -240,7 +240,7 @@ class TestChat:
         assert lead.org == acme
 
     def test_a_leaked_prompt_is_replaced(self, anon, acme, monkeypatch):
-        def _echo(provider, api_key, system, turns):
+        def _echo(provider, api_key, system, turns, model=None, max_output_tokens=None):
             return system + api_key
 
         monkeypatch.setattr("cases.help_chat.converse", _echo)
@@ -253,7 +253,7 @@ class TestChat:
     def test_a_staff_token_does_not_change_the_org(self, anon, acme, org_b, monkeypatch):
         seen = {}
 
-        def _capture(provider, api_key, system, turns):
+        def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
             seen["system"] = system
             return "Hola."
 
@@ -282,7 +282,7 @@ class TestChat:
     def test_client_system_role_is_dropped(self, anon, acme, monkeypatch):
         seen = {}
 
-        def _capture(provider, api_key, system, turns):
+        def _capture(provider, api_key, system, turns, model=None, max_output_tokens=None):
             seen["turns"] = turns
             return "¿Qué necesitas resolver?"
 

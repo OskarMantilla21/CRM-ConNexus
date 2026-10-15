@@ -16,14 +16,11 @@ export async function getAssistants({ cookies }) {
 /**
  * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
  * @param {string} provider
- * @param {string} apiKey
+ * @param {string | Record<string, unknown>} apiKeyOrBody
  */
-export async function connectAssistant({ cookies }, provider, apiKey) {
-  return apiRequest(
-    `/assistants/${provider}/connect/`,
-    { method: 'POST', body: { api_key: apiKey } },
-    { cookies }
-  );
+export async function connectAssistant({ cookies }, provider, apiKeyOrBody) {
+  const body = typeof apiKeyOrBody === 'string' ? { api_key: apiKeyOrBody } : apiKeyOrBody;
+  return apiRequest(`/assistants/${provider}/connect/`, { method: 'POST', body }, { cookies });
 }
 
 /**
@@ -32,6 +29,27 @@ export async function connectAssistant({ cookies }, provider, apiKey) {
  */
 export async function disconnectAssistant({ cookies }, provider) {
   return apiRequest(`/assistants/${provider}/disconnect/`, { method: 'POST', body: {} }, { cookies });
+}
+
+/**
+ * Prove a key without storing it. Omit `apiKey` to retest the stored one.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {string} provider
+ * @param {{ api_key?: string, model?: string, max_output_tokens?: number }} body
+ */
+export async function testAssistant({ cookies }, provider, body) {
+  return apiRequest(`/assistants/${provider}/test/`, { method: 'POST', body }, { cookies });
+}
+
+/**
+ * Default provider, model and token cap. This body has no key.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {Record<string, unknown>} body
+ */
+export async function saveAssistantSettings({ cookies }, body) {
+  return apiRequest('/assistants/settings/', { method: 'POST', body }, { cookies });
 }
 
 /**
@@ -50,7 +68,7 @@ export async function getScreenAssistant({ cookies }) {
 
 /**
  * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
- * @param {{ question: string, path: string, screen: Record<string, unknown> }} body
+ * @param {{ question: string, path: string, screen: Record<string, unknown>, model?: string, attachment?: string, filename?: string }} body
  */
 export async function askScreen({ cookies }, body) {
   return apiRequest('/assistants/screen/', { method: 'POST', body }, { cookies });

@@ -5,10 +5,12 @@
   import Pill from '$lib/v2/components/Pill.svelte';
   import { money, longDate, relativeDays, daysSince } from '$lib/v2/format.js';
   import { INVOICE_STATUS_TONE, invoiceStatusLabel } from '$lib/v2/enums.js';
+  import FilePreview from '$lib/v2/components/FilePreview.svelte';
+  import { invoiceRevision } from '$lib/v2/invoice-preview.js';
   import { tx, choiceLabel } from '$lib/i18n/translate.js';
   import '$lib/i18n/pages/bill.js';
   import { enhance } from '$app/forms';
-  import { ChevronRight } from '@lucide/svelte';
+  import { ChevronRight, Trash2 } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
   let { data, form } = $props();
@@ -25,6 +27,38 @@
       ? ['Draft', 'Sent', 'Viewed']
       : PATH.slice(0, PATH.indexOf(invoice.status) + 1)
   );
+
+  /**
+   * The PDF the customer receives, drawn the same way a stored document is.
+   * The stamp includes the lines, so editing one fetches a new file.
+   */
+  let previewHref = $derived.by(() => {
+    const lines = lineItems
+      .map((li) => `${li.name}|${li.detail}|${li.quantity}|${li.rate}|${li.amount}`)
+      .join(';');
+    const rev = invoiceRevision({
+      status: invoice.status,
+      total: invoice.total_amount,
+      due: invoice.amount_due,
+      paid: invoice.amount_paid,
+      discount: invoice.discount_amount,
+      tax: invoice.tax_amount,
+      shipping: invoice.shipping_amount,
+      dueDate: invoice.due_date,
+      issued: invoice.issued_date,
+      notes: invoice.notes,
+      terms: invoice.terms,
+      lines
+    });
+    return `${resolve(`/invoices/${invoice.id}/pdf`)}?preview=1&v=${rev}`;
+  });
+
+  let previewRows = $derived([
+    { label: tx('Account'), value: invoice.account.name },
+    { label: tx('Status'), value: invoiceStatusLabel(invoice.status) },
+    { label: tx('Due'), value: longDate(invoice.due_date) },
+    { label: tx('Outstanding'), value: money(invoice.amount_due, invoice.currency) }
+  ]);
 
   /** A form submit that flips `busy` so the buttons show they are working. */
   const working = () => {
@@ -61,6 +95,11 @@
         <button class="v2-btn" disabled={busy} style="color:var(--v2-rust)">{tx('Cancel')}</button>
       </form>
     {/if}
+    <form method="POST" action="?/delete" use:enhance={working} style="display:inline">
+      <button class="v2-btn" disabled={busy} style="color:var(--v2-rust)">
+        <Trash2 size={14} />{tx('Delete')}
+      </button>
+    </form>
   {/snippet}
 </PageHeader>
 
@@ -141,6 +180,15 @@
               due: longDate(invoice.due_date)
             })}
           </span>
+        </div>
+
+        <div style="margin-bottom:18px">
+          <FilePreview
+            src={previewHref}
+            name="{invoice.invoice_number}.pdf"
+            title={invoice.invoice_number}
+            rows={previewRows}
+          />
         </div>
 
         <div class="v2-card" style="overflow:hidden;margin-bottom:18px">

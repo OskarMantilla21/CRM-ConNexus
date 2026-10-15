@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Count, Q, Sum
-from django.http import HttpResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from drf_spectacular.utils import extend_schema
@@ -24,6 +24,7 @@ from common.custom_fields import validate_payload as validate_custom_fields_payl
 from common.lookups import get_on_visible_record_or_404
 from common.models import Attachments, Comment, CustomFieldDefinition
 from common.money import currency_block, group_by_currency
+from common.audit_log import audit_log
 from common.permissions import HasOrgContext, is_org_admin
 from common.serializer import (
     AttachmentsSerializer,
@@ -49,6 +50,7 @@ from invoices.pdf import (
     generate_invoice_filename,
     generate_invoice_pdf,
 )
+from invoices.product_files import product_download_name
 from invoices.permissions import (
     get_estimate_or_error,
     get_invoice_or_error,
@@ -302,7 +304,7 @@ class InvoiceListView(APIView, LimitOffsetPagination):
 
 
 class InvoiceDetailView(APIView):
-    """Retrieve and update a single invoice"""
+    """Retrieve, update, and delete a single invoice"""
 
     permission_classes = (IsAuthenticated, HasOrgContext)
     model = Invoice
@@ -362,6 +364,52 @@ class InvoiceDetailView(APIView):
                 str(request.profile.org.id),
             )
         return response
+
+    @extend_schema(tags=["Invoices"], operation_id="invoices_destroy")
+    def delete(self, request, pk, format=None):
+        """Remove the invoice, its lines and its payments.
+
+        Whoever may open the invoice may delete it. A hidden invoice, another
+        org's, and a missing id all answer the same 404. Comments and files
+        hang off a generic relation, so they do not cascade and are removed
+        in the same transaction. An estimate or a time entry only drops the
+        link.
+        """
+        with transaction.atomic():
+            invoice, error = get_invoice_or_error(
+                request, pk, queryset=Invoice.objects.select_for_update()
+            )
+            if error:
+                return error
+
+            content_type = ContentType.objects.get_for_model(Invoice)
+            Comment.objects.filter(
+                content_type=content_type,
+                object_id=invoice.id,
+                org=invoice.org,
+            ).delete()
+            Attachments.objects.filter(
+                content_type=content_type,
+                object_id=invoice.id,
+                org=invoice.org,
+            ).delete()
+            deleted_id = invoice.id
+            deleted_name = invoice.invoice_number or invoice.invoice_title
+            deleted_org = invoice.org
+            invoice.delete()
+
+        audit_log.file_deleted(
+            request.user,
+            deleted_org,
+            "invoice",
+            deleted_id,
+            deleted_name,
+            request,
+        )
+        return Response(
+            {"error": False, "message": "Invoice deleted"},
+            status=status.HTTP_200_OK,
+        )
 
     def _update(self, request, pk):
         """``(response, saved_invoice_or_None)``, run inside the transaction."""
@@ -1075,6 +1123,46 @@ class ProductDetailView(APIView):
         return Response(
             {"error": False, "message": "Product deleted"},
             status=status.HTTP_200_OK,
+        )
+
+
+class ProductFileView(APIView):
+    """Stream a product photo or its catalogue PDF.
+
+    Reading the catalogue is open to every member, the same as the product
+    list. The file is still org-scoped: another tenant's id is a 404. The
+    response is an attachment. The frontend preview route is what switches a
+    photo or a PDF to inline, and it refuses every other type.
+    """
+
+    permission_classes = (IsAuthenticated, HasOrgContext)
+
+    @extend_schema(tags=["Products"], operation_id="products_file")
+    def get(self, request, pk):
+        product = Product.objects.filter(id=pk, org=request.profile.org).first()
+        if not product:
+            return Response(
+                {"error": True, "message": "Product not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        which = request.query_params.get("which")
+        if which == "image":
+            field_name = "image"
+        elif which == "catalog":
+            field_name = "catalog_file"
+        else:
+            return Response(
+                {"error": True, "message": "Unknown file."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        stored = getattr(product, field_name)
+        if not stored:
+            raise Http404("That product has no file.")
+        stored.open("rb")
+        return FileResponse(
+            stored,
+            as_attachment=True,
+            filename=product_download_name(product, field_name),
         )
 
 
@@ -1802,7 +1890,18 @@ class InvoiceTemplateDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        deleted_id = template.id
+        deleted_name = template.name
+        deleted_org = template.org
         template.delete()
+        audit_log.file_deleted(
+            request.user,
+            deleted_org,
+            "invoice template",
+            deleted_id,
+            deleted_name,
+            request,
+        )
         return Response(
             {"error": False, "message": "Template deleted"},
             status=status.HTTP_200_OK,

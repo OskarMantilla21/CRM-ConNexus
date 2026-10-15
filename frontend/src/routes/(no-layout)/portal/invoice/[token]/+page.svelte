@@ -153,6 +153,14 @@
           <dd class="v2-num">{inv.invoice_number}</dd>
           <dt>{tx('Amount')}</dt>
           <dd class="v2-num">{money(inv.amount_due, inv.currency)}</dd>
+          {#if inv.org?.bank_account_number}
+            <dt>{tx('Account number for deposits')}</dt>
+            <dd class="v2-num">{inv.org.bank_account_number}</dd>
+            {#if inv.org.bank_name}
+              <dt>{tx('Bank')}</dt>
+              <dd>{inv.org.bank_name}</dd>
+            {/if}
+          {/if}
         </dl>
       </section>
     {/if}

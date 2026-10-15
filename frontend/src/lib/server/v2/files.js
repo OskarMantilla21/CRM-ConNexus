@@ -39,22 +39,59 @@ export function documentHref(id) {
 }
 
 /**
- * Stream one file down from the API with the caller's token attached.
+ * Where a page links to a product photo or its catalogue PDF.
  *
- * The body is piped rather than buffered so a large file does not sit in this
- * process's memory, and the upstream's own `Content-Disposition` is passed
- * through, because the backend is the one that knows what the file is called.
+ * `which` is `image` or `catalog`. The route streams the file; add
+ * `&preview=1` to draw a photo or a PDF in the page.
  *
- * Upstream status codes are passed through as they are: a 404 means no file
- * this caller may see (the attachment download answers it for a file on a
- * record they cannot open too, so it does not confirm the file exists), and a
- * 403 is a refusal the endpoint chose to state.
- * Flattening either into a 500 would turn a correct refusal into a bug report.
- *
- * @param {{ cookies: import('@sveltejs/kit').Cookies, request: Request }} event
- * @param {string} path Upstream path under `/api`, e.g. `/attachments/<id>/download/`
+ * @param {string|null|undefined} id
+ * @param {'image' | 'catalog'} which
+ * @returns {string|null}
  */
-export async function streamDownload({ cookies, request }, path) {
+export function productFileHref(id, which) {
+  if (!id) return null;
+  const slot = which === 'catalog' ? 'catalog' : 'image';
+  return `/api/invoices/products/${id}/file?which=${slot}`;
+}
+
+/**
+ * Extensions a preview may render in the page. HTML and SVG stay a download:
+ * same-origin inline HTML would run as this app.
+ */
+const PREVIEW_TYPES = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  pdf: 'application/pdf',
+  txt: 'text/plain; charset=utf-8',
+  csv: 'text/plain; charset=utf-8',
+  md: 'text/plain; charset=utf-8'
+};
+
+/** @param {string | null} header */
+function filenameFromDisposition(header) {
+  if (!header) return '';
+  const star = /filename\*=UTF-8''([^;]+)/i.exec(header);
+  if (star) {
+    try {
+      return decodeURIComponent(star[1].replace(/"/g, ''));
+    } catch {
+      return star[1];
+    }
+  }
+  const plain = /filename="?([^";]+)"?/i.exec(header);
+  return plain ? plain[1] : '';
+}
+
+/**
+ * @param {{ cookies: import('@sveltejs/kit').Cookies, request: Request }} event
+ * @param {string} path
+ * @param {{ preview?: boolean }} [options] `preview` serves an image, PDF or
+ *   plain text inline. Anything else keeps the download disposition.
+ */
+export async function streamDownload({ cookies, request }, path, options = {}) {
   const accessToken = cookies.get('jwt_access');
   if (!accessToken) return new Response('Unauthorized', { status: 401 });
 
@@ -70,11 +107,26 @@ export async function streamDownload({ cookies, request }, path) {
     });
   }
 
+  const upstreamType = upstream.headers.get('Content-Type') || 'application/octet-stream';
+  const upstreamDisposition = upstream.headers.get('Content-Disposition') || 'attachment';
+  let contentType = upstreamType;
+  let disposition = upstreamDisposition;
+  if (options.preview) {
+    const name = filenameFromDisposition(upstreamDisposition);
+    const ext = name.split('.').pop()?.toLowerCase() ?? '';
+    const safe = PREVIEW_TYPES[ext];
+    if (safe) {
+      contentType = safe;
+      disposition = `inline; filename="${name.replace(/[\r\n"]/g, '')}"`;
+    }
+  }
+
   return new Response(upstream.body, {
     status: 200,
     headers: {
-      'Content-Type': upstream.headers.get('Content-Type') || 'application/octet-stream',
-      'Content-Disposition': upstream.headers.get('Content-Disposition') || 'attachment',
+      'Content-Type': contentType,
+      'Content-Disposition': disposition,
+      'X-Content-Type-Options': 'nosniff',
       // The response is one tenant's private file. Nothing in front of this
       // may keep a copy of it.
       'Cache-Control': 'private, no-store'

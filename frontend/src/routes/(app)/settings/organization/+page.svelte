@@ -144,6 +144,12 @@
             <dd>{address || '—'}</dd>
             <dt>{tx('Tax ID')}</dt>
             <dd class="v2-num" style="font-size:12px">{org.tax_id || '—'}</dd>
+            <dt>{tx('Account number for deposits')}</dt>
+            <dd class="v2-num" style="font-size:12px">
+              {org.bank_account_number
+                ? [org.bank_name, org.bank_account_number].filter(Boolean).join(' · ')
+                : '—'}
+            </dd>
             <dt>{tx('Email')}</dt>
             <dd>{org.email || '—'}</dd>
             <dt>{tx('Phone')}</dt>

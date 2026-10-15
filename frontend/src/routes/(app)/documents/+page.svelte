@@ -23,11 +23,13 @@
    */
   import { page } from '$app/state';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
+  import FilePreview from '$lib/v2/components/FilePreview.svelte';
+  import DocThumb from '$lib/v2/components/DocThumb.svelte';
   import StatCard from '$lib/v2/components/StatCard.svelte';
   import FilterBar from '$lib/v2/components/FilterBar.svelte';
   import EmptyState from '$lib/v2/components/EmptyState.svelte';
   import { count, relativeDays } from '$lib/v2/format.js';
-  import { FileText, FileSpreadsheet, File, Users, Upload, Lock, Pencil } from '@lucide/svelte';
+  import { FileText, Users, Upload, Lock, Pencil } from '@lucide/svelte';
   import '$lib/i18n/pages/serve.js';
   import { tx } from '$lib/i18n/translate.js';
 
@@ -39,9 +41,6 @@
   // Uploading is open to any org member (the server checks only auth + org), so
   // the Upload button shows for everyone. Editing/deleting are the narrow writes
   //. Those are gated per row by `can_write` (creator or admin) below.
-
-  const ICON = { pdf: FileText, sheet: FileSpreadsheet, text: FileText };
-  const iconFor = (kind) => ICON[kind] ?? File;
 
   /** kB and MB, never bytes. Nobody reads a file size in bytes. A missing file
       has no size the server could read, so it shows an em dash, not "0 kB". */
@@ -60,6 +59,34 @@
    * separately below because "the Support team" is the thing that was chosen,
    * and flattening it to three names loses the reason.
    */
+  /** @type {any} */
+  let openDoc = $state(null);
+  /** @type {HTMLElement | null} */
+  let dialog = $state(null);
+  /** @type {HTMLElement | null} */
+  let returnFocus = null;
+
+  function openPreview(/** @type {any} */ doc, /** @type {Event} */ event) {
+    returnFocus = /** @type {HTMLElement} */ (event.currentTarget);
+    openDoc = doc;
+  }
+
+  function closePreview() {
+    openDoc = null;
+    returnFocus?.focus();
+    returnFocus = null;
+  }
+
+  $effect(() => {
+    if (!openDoc) return;
+    dialog?.focus();
+    const onKey = (/** @type {KeyboardEvent} */ event) => {
+      if (event.key === 'Escape') closePreview();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   function reachLabel(d) {
     const names = d.shared_to.map((p) => p.name.split(' ')[0]);
     if (!names.length) return d.teams.length ? '' : tx('Nobody yet');
@@ -69,6 +96,24 @@
       n: names.length - 2
     });
   }
+
+  /** The full audience, for the preview. The table keeps the short form. */
+  function audienceOf(d) {
+    if (!d.shared_to.length && !d.teams.length) return tx('Only the uploader and admins');
+    const people = reachLabel(d);
+    const teams = d.teams.map((/** @type {{ name: string }} */ t) => t.name).join(', ');
+    return [people, teams].filter(Boolean).join(' · ');
+  }
+
+  let previewRows = $derived(
+    openDoc
+      ? [
+          { label: tx('Uploaded by'), value: openDoc.created_by.name },
+          { label: tx('Who can open it'), value: audienceOf(openDoc) },
+          { label: tx('Added'), value: relativeDays(openDoc.created_at) }
+        ]
+      : []
+  );
 </script>
 
 <PageHeader title={tx('Documents')}>
@@ -131,21 +176,41 @@
         </thead>
         <tbody>
           {#each documents as d (d.id)}
-            {@const Icon = iconFor(d.file_kind)}
             <tr class:archived={d.status === 'inactive'}>
               <td style="white-space:normal;max-width:420px">
                 <span class="doc">
-                  <Icon size={14} style="color:var(--v2-slate);flex:none" />
+                  {#if d.preview_href}
+                    <div
+                      class="thumb-btn"
+                      role="button"
+                      tabindex="0"
+                      aria-label={tx('Preview')}
+                      onclick={(event) => openPreview(d, event)}
+                      onkeydown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          openPreview(d, event);
+                        }
+                      }}
+                    >
+                      <DocThumb src={d.preview_href} name={d.document_file} title={d.title} />
+                    </div>
+                  {/if}
                   <span>
-                    <!-- Still not a media URL: `download_href` is a route on
-                         this origin that streams the file from an endpoint
-                         gated by the same read predicate as the record. A
-                         `/media/` link would be readable by every tenant and
-                         would 403 for the person entitled to it. -->
+                    <!-- The title opens a preview of this document. Download,
+                         inside that dialog, is still a route on this origin
+                         that streams the file after the record's own read
+                         check. A `/media/` link would be readable by every
+                         tenant and would 403 for the person entitled to it. -->
                     {#if d.download_href}
-                      <a class="v2-table-primary title" href={d.download_href} download>
+                      <button
+                        type="button"
+                        class="v2-table-primary title"
+                        aria-haspopup="dialog"
+                        onclick={(event) => openPreview(d, event)}
+                      >
                         {d.title}
-                      </a>
+                      </button>
                     {:else}
                       <span class="v2-table-primary">{d.title}</span>
                     {/if}
@@ -206,11 +271,56 @@
   {/if}
 </div>
 
+{#if openDoc}
+  <div
+    class="v2-scrim"
+    role="presentation"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) closePreview();
+    }}
+  >
+    <div
+      class="doc-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="doc-preview-title"
+      tabindex="-1"
+      bind:this={dialog}
+    >
+      <header>
+        <h2 id="doc-preview-title">{openDoc.title}</h2>
+        <a class="v2-btn" href={openDoc.download_href} download>{tx('Download')}</a>
+        <button class="v2-btn" type="button" onclick={closePreview}>{tx('Close')}</button>
+      </header>
+      <FilePreview
+        flush
+        src={openDoc.preview_href}
+        name={openDoc.document_file}
+        title={openDoc.title}
+        size={openDoc.size_bytes}
+        rows={previewRows}
+      />
+    </div>
+  </div>
+{/if}
+
 <style>
   .doc {
     display: flex;
-    gap: 8px;
-    align-items: flex-start;
+    gap: 10px;
+    align-items: center;
+  }
+  .thumb-btn {
+    flex: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .thumb-btn:focus-visible {
+    outline: 2px solid var(--v2-ember);
+    outline-offset: 2px;
   }
   .path {
     font-family: var(--v2-mono);
@@ -219,14 +329,48 @@
 
   /* A block so the whole title line is the tap target on a phone, where the
      row is a card and there is no second column to aim at. */
-  a.title {
+  button.title {
     display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
     color: inherit;
+    font: inherit;
+    text-align: left;
     text-decoration: none;
+    cursor: pointer;
   }
 
-  a.title:hover {
+  button.title:hover {
     text-decoration: underline;
+  }
+
+  .doc-dialog {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+    background: var(--v2-card);
+    border: 1px solid var(--v2-line);
+    border-radius: 14px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+  }
+  .doc-dialog header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--v2-line);
+  }
+  .doc-dialog h2 {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: 650;
   }
 
   .reach {

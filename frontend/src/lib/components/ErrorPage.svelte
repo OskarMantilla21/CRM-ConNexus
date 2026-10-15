@@ -3,7 +3,7 @@
   import { asInternalPath } from '$lib/utils/paths.js';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/ui/button/index.js';
-  import { ArrowLeft, Home, Compass, Users, FileText, Ticket, BarChart3 } from '@lucide/svelte';
+  import { ArrowLeft, Home, Compass, Users, Ticket, BarChart3 } from '@lucide/svelte';
   import { tx } from '$lib/i18n/translate.js';
 
   /**
@@ -43,8 +43,7 @@
     { href: '/', label: 'Dashboard', icon: BarChart3 },
     { href: '/leads', label: 'Leads', icon: Users },
     { href: '/contacts', label: 'Contacts', icon: Users },
-    { href: '/tickets', label: 'Tickets', icon: Ticket },
-    { href: '/tasks', label: 'Tasks', icon: FileText }
+    { href: '/tickets', label: 'Tickets', icon: Ticket }
   ];
 
   function goBack() {

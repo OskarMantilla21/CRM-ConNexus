@@ -130,10 +130,23 @@ class TestDocumentDownload:
     def test_the_download_is_named_after_the_title(
         self, admin_client, admin_user, org_a
     ):
-        """The stored path is a timestamped upload name nobody chose."""
+        """The stored path is a timestamped upload name nobody chose.
+
+        The extension stays, because a preview decides from it whether the
+        bytes can be shown in the page. The uploaded file here is probe.txt.
+        """
         doc = _doc(org_a, admin_user, title="Q3 pricing")
         response = admin_client.get(_doc_url(doc.pk))
-        assert "Q3 pricing" in response["Content-Disposition"]
+        assert 'filename="Q3 pricing.txt"' in response["Content-Disposition"]
+
+    def test_a_title_that_already_names_the_type_is_not_doubled(
+        self, admin_client, admin_user, org_a
+    ):
+        doc = _doc(org_a, admin_user, title="Q3 pricing.txt")
+        response = admin_client.get(_doc_url(doc.pk))
+        header = response["Content-Disposition"]
+        assert "Q3 pricing.txt.txt" not in header
+        assert ".txt" in header
 
 
 @pytest.mark.django_db
