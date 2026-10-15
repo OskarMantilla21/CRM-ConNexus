@@ -3941,6 +3941,22 @@ class TestPublicPortalIsReachableAnonymously:
         )
         assert response.json()["invoice_number"] == invoice.invoice_number
 
+    def test_invoice_link_includes_the_deposit_account(self, client, invoice):
+        """The customer page says where to send the money, and nothing else
+        from the organisation profile."""
+        invoice.org.bank_name = "Banco de Bogotá"
+        invoice.org.bank_account_number = "0123 4567 8901"
+        invoice.org.save(update_fields=["bank_name", "bank_account_number"])
+
+        response = client.get(f"/api/public/invoice/{invoice.public_token}/")
+
+        assert response.status_code == 200
+        org = response.json()["org"]
+        assert org["bank_name"] == "Banco de Bogotá"
+        assert org["bank_account_number"] == "0123 4567 8901"
+        assert "tax_id" not in org
+        assert "email" not in org
+
     def test_estimate_link_is_reachable(self, client, estimate):
         response = client.get(f"/api/public/estimate/{estimate.public_token}/")
         assert response.status_code == 200

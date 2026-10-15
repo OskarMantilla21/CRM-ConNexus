@@ -133,6 +133,28 @@ export const messages = {
   Overdue: { es: 'Vencido', pt: 'Vencido' },
   'All invoices': { es: 'Todas las facturas', pt: 'Todas as faturas' },
   Account: { es: 'Cuenta', pt: 'Conta' },
+  Bank: { es: 'Banco', pt: 'Banco' },
+  'Account number for deposits': {
+    es: 'Número de cuenta para depósitos',
+    pt: 'Número da conta para depósitos'
+  },
+  'Where deposits arrive': { es: 'Dónde llegan los depósitos', pt: 'Onde os depósitos chegam' },
+  'The number deposits are paid into. You can change it later.': {
+    es: 'El número al que se pagan los depósitos. Puedes cambiarlo después.',
+    pt: 'O número para o qual os depósitos são pagos. Você pode mudá-lo depois.'
+  },
+  'Only an admin can change the account deposits are paid into.': {
+    es: 'Solo un administrador puede cambiar la cuenta a la que llegan los depósitos.',
+    pt: 'Só um administrador pode mudar a conta para a qual os depósitos chegam.'
+  },
+  'Use letters, digits, spaces and hyphens, at least 4 characters.': {
+    es: 'Usa letras, dígitos, espacios y guiones, al menos 4 caracteres.',
+    pt: 'Use letras, dígitos, espaços e hifens, pelo menos 4 caracteres.'
+  },
+  'No customer accounts in this organisation yet.': {
+    es: 'Todavía no hay cuentas de cliente en esta organización.',
+    pt: 'Ainda não há contas de cliente nesta organização.'
+  },
   Accepted: { es: 'Aceptado', pt: 'Aceito' },
   'All estimates': { es: 'Todos los presupuestos', pt: 'Todos os orçamentos' },
   Published: { es: 'Publicado', pt: 'Publicado' },

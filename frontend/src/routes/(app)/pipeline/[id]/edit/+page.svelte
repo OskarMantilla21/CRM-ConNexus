@@ -55,6 +55,7 @@
   import Pill from '$lib/v2/components/Pill.svelte';
   import { OPPORTUNITY_TYPE_LABEL, AGING_TONE, AGING_LABEL } from '$lib/v2/enums.js';
   import { money, longDate } from '$lib/v2/format.js';
+  import { depositAccountError } from '$lib/v2/bank-account.js';
   import { ChevronRight, TriangleAlert, Lock } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -72,6 +73,13 @@
   }));
 
   let form = $state(untrack(() => ({ ...data.form })));
+  let deposit = $state(
+    untrack(() => ({
+      bank_name: data.deposit?.bank_name ?? '',
+      bank_account_number: data.deposit?.bank_account_number ?? ''
+    }))
+  );
+  const canEditDeposit = untrack(() => Boolean(data.deposit?.can_edit));
   let touched = $state(/** @type {Record<string, boolean>} */ ({}));
   let submitted = $state(false);
   let saved = $state(false);
@@ -103,6 +111,8 @@
     const e = {};
     if (!form.name.trim()) e.name = tx('Give the deal a name you would recognise in a list.');
     if (!form.account) e.account = tx('A deal has to belong to an account.');
+    const depositError = depositAccountError(deposit.bank_account_number);
+    if (depositError) e.bank_account_number = tx(depositError);
 
     /* Only validate what the form can actually send. When the amount is
        server-calculated the input is disabled, so a complaint about it would
@@ -260,6 +270,44 @@
             <option value={key}>{label}</option>
           {/each}
         </select>
+      </div>
+    </div>
+
+    <div class="pair">
+      <div class="v2-field">
+        <label for="f-bank-account">{tx('Account number for deposits')}</label>
+        <input
+          id="f-bank-account"
+          name={canEditDeposit ? 'bank_account_number' : undefined}
+          class="v2-input v2-num"
+          maxlength="40"
+          autocomplete="off"
+          spellcheck="false"
+          disabled={!canEditDeposit}
+          bind:value={deposit.bank_account_number}
+          onblur={() => (touched.bank_account_number = true)}
+          aria-invalid={show('bank_account_number') ? 'true' : undefined}
+        />
+        {#if show('bank_account_number')}
+          <p class="v2-error">{errors.bank_account_number}</p>
+        {:else}
+          <p class="v2-hint">
+            {canEditDeposit
+              ? tx('The number deposits are paid into. You can change it later.')
+              : tx('Only an admin can change the account deposits are paid into.')}
+          </p>
+        {/if}
+      </div>
+      <div class="v2-field">
+        <label for="f-bank">{tx('Bank')}</label>
+        <input
+          id="f-bank"
+          name={canEditDeposit ? 'bank_name' : undefined}
+          class="v2-input"
+          maxlength="120"
+          disabled={!canEditDeposit}
+          bind:value={deposit.bank_name}
+        />
       </div>
     </div>
 

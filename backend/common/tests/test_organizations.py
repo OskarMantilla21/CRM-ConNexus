@@ -553,6 +553,49 @@ class TestOrgSettingsView:
         org_a.refresh_from_db()
         assert org_a.company_name == "ACME Corp"
 
+    def test_patch_org_settings_deposit_account(self, admin_client, org_a):
+        """An admin can set the bank account deposits are paid into."""
+        response = admin_client.patch(
+            self.url,
+            {"bank_name": "Banco de Bogotá", "bank_account_number": "0123 4567 8901"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["bank_account_number"] == "0123 4567 8901"
+        assert response.data["bank_name"] == "Banco de Bogotá"
+        org_a.refresh_from_db()
+        assert org_a.bank_account_number == "0123 4567 8901"
+        assert org_a.bank_name == "Banco de Bogotá"
+
+    def test_patch_org_settings_deposit_account_rejects_a_fragment(
+        self, admin_client, org_a
+    ):
+        """A couple of digits is not an account number."""
+        response = admin_client.patch(
+            self.url,
+            {"bank_account_number": "12"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        org_a.refresh_from_db()
+        assert org_a.bank_account_number == ""
+
+    def test_patch_org_settings_deposit_account_can_be_cleared(
+        self, admin_client, org_a
+    ):
+        org_a.bank_account_number = "0123456789"
+        org_a.bank_name = "Banco"
+        org_a.save(update_fields=["bank_account_number", "bank_name"])
+        response = admin_client.patch(
+            self.url,
+            {"bank_name": "", "bank_account_number": ""},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        org_a.refresh_from_db()
+        assert org_a.bank_account_number == ""
+        assert org_a.bank_name == ""
+
     # ── Reads: what the settings page shows, and what it must never show ──────
 
     def test_get_org_settings_member_can_read(self, user_client, org_a, user_profile):

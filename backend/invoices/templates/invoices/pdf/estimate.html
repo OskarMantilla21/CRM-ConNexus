@@ -38,6 +38,9 @@
                 {% if org.country %}
                 <p>{{ org.country }}</p>
                 {% endif %}
+                {% if org.bank_account_number %}
+                <p>Deposits: {% if org.bank_name %}{{ org.bank_name }} · {% endif %}{{ org.bank_account_number }}</p>
+                {% endif %}
             </div>
             <div class="address-block to-address">
                 <h3>Prepared For</h3>

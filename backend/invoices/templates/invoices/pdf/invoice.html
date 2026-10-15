@@ -32,6 +32,9 @@
                 {% if org.website %}
                 <p>Web: <a href="{{ org.website }}">{{ org.website }}</a></p>
                 {% endif %}
+                {% if org.bank_account_number %}
+                <p>Deposits: {% if org.bank_name %}{{ org.bank_name }} · {% endif %}{{ org.bank_account_number }}</p>
+                {% endif %}
             </div>
 
             <div class="invoice-branding">

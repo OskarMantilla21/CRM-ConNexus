@@ -2,12 +2,23 @@ import { tx, choiceLabel } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/sell.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { deleteDeal, getDeal } from '$lib/server/v2/deals.js';
+import { getOrgSettings } from '$lib/server/v2/organization.js';
 import { invoiceFromDeal } from '$lib/server/v2/invoices.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load(event) {
-  return await getDeal(event, event.params.id);
+  const [deal, settings] = await Promise.all([
+    getDeal(event, event.params.id),
+    getOrgSettings(event).catch(() => ({ org: {} }))
+  ]);
+  return {
+    ...deal,
+    deposit: {
+      bank_name: settings.org?.bank_name ?? '',
+      bank_account_number: settings.org?.bank_account_number ?? ''
+    }
+  };
 }
 
 /** @type {import('./$types').Actions} */

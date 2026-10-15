@@ -6,6 +6,7 @@
   import { enhance } from '$app/forms';
   import PageHeader from '$lib/v2/components/PageHeader.svelte';
   import { money } from '$lib/v2/format.js';
+  import { depositAccountError } from '$lib/v2/bank-account.js';
   import { TriangleAlert } from '@lucide/svelte';
 
   /** @type {{ data: any, form: any }} */
@@ -41,12 +42,16 @@
       pipeline: data.defaults.pipeline,
       stage: data.defaults.stage,
       assigned_to: data.defaults.assigned_to,
+      bank_name: data.deposit?.bank_name ?? '',
+      bank_account_number: data.deposit?.bank_account_number ?? '',
       // A rejected submit comes back with what was typed. Retyping eight
       // fields because the ninth collided is how people learn to distrust a
       // create page.
       ...(untrack(() => result?.values) ?? {})
     }))
   );
+
+  const canEditDeposit = untrack(() => Boolean(data.deposit?.can_edit));
 
   /** @type {any[]} */
   const pipelines = untrack(() => data.pipelines);
@@ -77,6 +82,8 @@
     const e = {};
     if (!form.name.trim()) e.name = tx('Give the deal a name you would recognise in a list.');
     if (!form.account) e.account = tx('Pick the account this deal belongs to.');
+    const depositError = depositAccountError(form.bank_account_number);
+    if (depositError) e.bank_account_number = tx(depositError);
 
     const amount = Number(form.amount);
     if (form.amount === '') e.amount = tx('How much is it worth?');
@@ -193,6 +200,53 @@
         {/each}
       </select>
       {#if show('account')}<p class="v2-error" id="e-account">{errors.account}</p>{/if}
+      {#if data.accounts.length === 0}
+        <p class="v2-hint">
+          {tx('No customer accounts in this organisation yet.')}
+          <a href={resolve('/accounts/new')}>{tx('New account')}</a>
+        </p>
+      {/if}
+    </div>
+
+    <div class="v2-field">
+      <label for="f-bank-account">{tx('Account number for deposits')}</label>
+      <input
+        id="f-bank-account"
+        name={canEditDeposit ? 'bank_account_number' : undefined}
+        class="v2-input v2-num"
+        maxlength="40"
+        autocomplete="off"
+        spellcheck="false"
+        inputmode="text"
+        disabled={!canEditDeposit}
+        bind:value={form.bank_account_number}
+        onblur={() => (touched.bank_account_number = true)}
+        aria-invalid={show('bank_account_number') ? 'true' : undefined}
+        aria-describedby={show('bank_account_number') ? 'e-bank-account' : 'h-bank-account'}
+        placeholder="0123 4567 8901"
+      />
+      {#if show('bank_account_number')}
+        <p class="v2-error" id="e-bank-account">{errors.bank_account_number}</p>
+      {:else}
+        <p class="v2-hint" id="h-bank-account">
+          {canEditDeposit
+            ? tx('The number deposits are paid into. You can change it later.')
+            : tx('Only an admin can change the account deposits are paid into.')}
+        </p>
+      {/if}
+    </div>
+
+    <div class="v2-field">
+      <label for="f-bank">{tx('Bank')}</label>
+      <input
+        id="f-bank"
+        name={canEditDeposit ? 'bank_name' : undefined}
+        class="v2-input"
+        maxlength="120"
+        disabled={!canEditDeposit}
+        bind:value={form.bank_name}
+        placeholder={tx('Bank')}
+      />
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">

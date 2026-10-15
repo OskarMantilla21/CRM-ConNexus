@@ -847,6 +847,7 @@ export const messages = {
   Organization: { es: 'Organización', pt: 'Organização' },
   'One field to check': { es: 'Un campo por revisar', pt: 'Um campo para conferir' },
   'Two fields to check': { es: 'Dos campos por revisar', pt: 'Dois campos para conferir' },
+  '{n} fields to check': { es: '{n} campos por revisar', pt: '{n} campos para conferir' },
   'Nothing has been saved yet.': { es: 'Todavía no se ha guardado nada.', pt: 'Nada foi salvo ainda.' },
   'What customers see': { es: 'Lo que ven los clientes', pt: 'O que os clientes veem' },
   'Printed on every invoice and estimate. Changes apply from now on; documents already sent keep what they were sent with.':
