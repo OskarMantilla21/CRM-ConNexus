@@ -1,5 +1,10 @@
 # AI agents
 
+The right-hand question panel calling the ConNexus agent system is a separate piece of work.
+The research and the API contract live in
+`documentacion/integracion-panel-ia-connexus.md`. This page is the other direction: an outside
+agent calling this CRM.
+
 An AI agent talks to ConNexus-CRM the same way any other program does: over the REST API under
 `/api/`, authenticated with a personal access token. There is no separate agent protocol, no
 agent-specific endpoint, and no service account. The agent is a normal API client, so RLS, RBAC

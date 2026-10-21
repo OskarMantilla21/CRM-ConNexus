@@ -11,9 +11,12 @@ import re
 
 from common.assistants import (
     ASSISTANTS,
+    CUSTOM_ID,
     MODEL_CHOICES,
+    base_url_for,
     connected_ids,
     converse,
+    display_name,
     key_for,
     preferred,
     provider_runtime,
@@ -95,7 +98,7 @@ Atender: Tickets (/tickets) son el trabajo y el soporte. La cola muestra Vencido
 
 Cobrar: Facturas (/invoices), presupuestos (/invoices/estimates), recurrentes (/invoices/recurring) y productos (/invoices/products). Un pago guarda medio, fecha, monto y referencia, sin el número de la tarjeta. Informes y plantillas están en ese mismo grupo.
 
-Administrar: Empleados (/team) es donde se invita o crea un empleado y donde se edita, suspende o elimina. Un administrador solo crea empleados. Un empleado no crea cuentas. El CEO crea administradores en Ajustes, pestaña Seguridad y accesos. Ajustes (/settings) concentra la configuración global: integraciones de IA (solo el CEO), datos generales de la organización, y seguridad (roles, contraseñas y auditoría). Embudos, etiquetas, campos, formularios, centro de ayuda, horarios, aprobaciones y webhooks están en Ajustes, pestaña Producto. Las claves de IA no se configuran en ninguna otra pantalla.
+Administrar: Empleados (/team) es donde se invita o crea un empleado y donde se edita, suspende o elimina. Un administrador solo crea empleados. Un empleado no crea cuentas. El CEO crea administradores en Ajustes, pestaña Seguridad y accesos. Ajustes (/settings) concentra la configuración global: integraciones de IA (solo el CEO), datos generales de la organización, y seguridad (roles, contraseñas y auditoría). Embudos, etiquetas, campos, formularios, centro de ayuda, horarios, aprobaciones y webhooks están en Ajustes, pestaña Producto. El CEO pega una clave en Ajustes de cuenta (/profile) y el CRM reconoce la IA. En Integraciones de IA también se conecta cualquier otra IA: nombre, dirección https, modelo y clave.
 
 Para todos: perfil (/profile) cambia el nombre, el teléfono, el idioma y, si hay varias, la empresa. Notificaciones (/notifications) son solo las de esa persona. La búsqueda es Ctrl+K donde el menú la muestra. Entrar es con usuario y contraseña.
 """
@@ -115,7 +118,7 @@ def connected(org):
     provider = preferred(org)
     if not provider:
         return {"connected": False, "models": []}
-    name = next(item["name"] for item in ASSISTANTS if item["id"] == provider)
+    name = display_name(org, provider)
     model, _limit = provider_runtime(org, provider)
     return {
         "connected": True,
@@ -142,6 +145,7 @@ def ask(org, path, question, screen, profile=None, *, model=None, attachment=Non
     if api_key in text:
         text = text.replace(api_key, "")
     stored, limit = provider_runtime(org, chosen)
+    target = base_url_for(org, chosen)
     answer = converse(
         chosen,
         api_key,
@@ -149,6 +153,7 @@ def ask(org, path, question, screen, profile=None, *, model=None, attachment=Non
         [{"role": "user", "content": text}],
         requested or stored,
         limit,
+        **({"base_url": target} if target else {}),
     )
     if api_key in answer or "assistant_keys" in answer.lower():
         raise ScreenNotConnected()
@@ -200,6 +205,17 @@ def _model_choices(org):
     for item in ASSISTANTS:
         if item["id"] not in linked:
             continue
+        if item["id"] == CUSTOM_ID or item["id"] == "anthropic":
+            model, _limit = provider_runtime(org, item["id"])
+            if model and model != "claude":
+                rows.append(
+                    {
+                        "id": model,
+                        "provider": item["id"],
+                        "name": display_name(org, item["id"]),
+                    }
+                )
+            continue
         for model in MODEL_CHOICES.get(item["id"], ()):
             rows.append({"id": model, "provider": item["id"], "name": item["name"]})
     return rows
@@ -211,7 +227,14 @@ def _resolve(org, model):
     if isinstance(model, str):
         wanted = model.strip()
         for item in ASSISTANTS:
-            if item["id"] in connected_ids(org) and wanted in MODEL_CHOICES.get(item["id"], ()):
+            if item["id"] not in connected_ids(org):
+                continue
+            if item["id"] == CUSTOM_ID or item["id"] == "anthropic":
+                stored, _limit = provider_runtime(org, item["id"])
+                if wanted == stored:
+                    return item["id"], wanted
+                continue
+            if wanted in MODEL_CHOICES.get(item["id"], ()):
                 return item["id"], wanted
     return fallback, None
 

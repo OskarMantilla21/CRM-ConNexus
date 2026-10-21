@@ -11,16 +11,24 @@ from rest_framework.throttling import SimpleRateThrottle
 from rest_framework.views import APIView
 
 from common.assistants import (
+    CUSTOM_ID,
     MODEL_CHOICES,
     AssistantRefused,
     AssistantUnreachable,
+    anthropic_model,
+    base_url_for,
     brief,
+    clean_base_url,
+    clean_display_name,
     clean_limit,
+    clean_model_name,
     complete,
+    display_name,
     drop_key,
     key_for,
     known,
     provider_runtime,
+    providers_for_key,
     public_list,
     set_default_provider,
     store_key,
@@ -70,7 +78,11 @@ def _optional_runtime(provider, data):
     model = None
     if "model" in data and data.get("model") not in (None, ""):
         model = data.get("model")
-        if model not in MODEL_CHOICES.get(provider, ()):
+        if provider == CUSTOM_ID:
+            model = clean_model_name(model)
+            if model is None:
+                return None, None, True
+        elif model not in MODEL_CHOICES.get(provider, ()):
             return None, None, True
     limit = None
     if "max_output_tokens" in data and data.get("max_output_tokens") not in (None, ""):
@@ -80,6 +92,26 @@ def _optional_runtime(provider, data):
     return model, limit, False
 
 
+def _custom_target(data, *, require_name):
+    """Name and https address for the other-AI card, or None when they are bad.
+
+    ``require_name`` is false for a connection test that only needs the address.
+    """
+    if not isinstance(data, dict):
+        return None
+    base_url = clean_base_url(data.get("base_url"))
+    if base_url is None:
+        return None
+    raw_name = data.get("name") if data.get("name") not in (None, "") else data.get("label")
+    if require_name or raw_name not in (None, ""):
+        name = clean_display_name(raw_name)
+        if name is None:
+            return None
+    else:
+        name = ""
+    return {"name": name, "base_url": base_url}
+
+
 def _clean_key(value):
     if not isinstance(value, str):
         return None
@@ -87,6 +119,68 @@ def _clean_key(value):
     if len(key) < 8 or len(key) > 512 or any(ord(ch) < 32 for ch in key):
         return None
     return key
+
+
+class AssistantFromKeyView(APIView):
+    """Connect whichever assistant the pasted key belongs to.
+
+    The body is only the key. The prefix names the provider. A plain ``sk-``
+    key is tried as OpenAI and then DeepSeek, because both use that shape.
+    A network failure stops there. A refusal tries the next candidate.
+    """
+
+    permission_classes = (IsAuthenticated, HasOrgContext)
+
+    def post(self, request):
+        refused = _ceo_refused(request)
+        if refused:
+            return refused
+        data = request.data if isinstance(request.data, dict) else {}
+        api_key = _clean_key(data.get("api_key"))
+        if api_key is None:
+            return Response({"error": "key_refused"}, status=400)
+        candidates = providers_for_key(api_key)
+        if not candidates:
+            return Response({"error": "unknown_ai"}, status=400)
+        org = request.profile.org
+        for provider in candidates:
+            fetched = None
+            if provider == "anthropic":
+                try:
+                    fetched = anthropic_model(api_key)
+                except AssistantRefused:
+                    continue
+                except AssistantUnreachable:
+                    return Response({"error": "unreachable"}, status=502)
+            use_model, use_limit = provider_runtime(org, provider)
+            if fetched:
+                use_model = fetched
+            try:
+                complete(
+                    provider,
+                    api_key,
+                    "Reply with the single word OK.",
+                    use_model,
+                    use_limit,
+                )
+            except AssistantRefused:
+                continue
+            except AssistantUnreachable:
+                return Response({"error": "unreachable"}, status=502)
+            store_key(org, provider, api_key)
+            org.refresh_from_db()
+            if fetched:
+                update_provider_settings(org, provider, model=fetched)
+                org.refresh_from_db()
+            set_default_provider(org, provider)
+            return Response(
+                {
+                    "connected": True,
+                    "provider": provider,
+                    "name": display_name(org, provider),
+                }
+            )
+        return Response({"error": "key_refused"}, status=400)
 
 
 class AssistantListView(APIView):
@@ -109,28 +203,53 @@ class AssistantConnectView(APIView):
         if not known(provider):
             return Response({"error": "unknown"}, status=404)
         data = request.data if isinstance(request.data, dict) else {}
-        api_key = _clean_key(data.get("api_key"))
-        if api_key is None:
-            return Response({"error": "key_refused"}, status=400)
+        data_key = data.get("api_key")
+        org = request.profile.org
+        if provider == CUSTOM_ID and not data_key:
+            api_key = key_for(org, provider)
+            if not api_key:
+                return Response({"error": "key_refused"}, status=400)
+        else:
+            api_key = _clean_key(data_key)
+            if api_key is None:
+                return Response({"error": "key_refused"}, status=400)
         model, limit, invalid = _optional_runtime(provider, data)
         if invalid:
             return Response({"error": "invalid"}, status=400)
-        org = request.profile.org
+        custom = None
+        if provider == CUSTOM_ID:
+            custom = _custom_target(data, require_name=True)
+            if custom is None or model is None:
+                return Response({"error": "address"}, status=400)
         use_model, use_limit = provider_runtime(org, provider)
         if model is not None:
             use_model = model
         if limit is not None:
             use_limit = limit
         try:
-            complete(provider, api_key, "Reply with the single word OK.", use_model, use_limit)
+            complete(
+                provider,
+                api_key,
+                "Reply with the single word OK.",
+                use_model,
+                use_limit,
+                **({"base_url": custom["base_url"]} if custom else {}),
+            )
         except AssistantRefused:
             return Response({"error": "key_refused"}, status=400)
         except AssistantUnreachable:
             return Response({"error": "unreachable"}, status=502)
         store_key(org, provider, api_key)
-        if model is not None or limit is not None:
+        if custom is not None or model is not None or limit is not None:
             org.refresh_from_db()
-            update_provider_settings(org, provider, model=model, limit=limit)
+            update_provider_settings(
+                org,
+                provider,
+                model=model,
+                limit=limit,
+                name=None if custom is None else custom["name"],
+                base_url=None if custom is None else custom["base_url"],
+            )
         return Response({"connected": True, "provider": provider})
 
 
@@ -179,8 +298,26 @@ class AssistantTestView(APIView):
             use_model = model
         if limit is not None:
             use_limit = limit
+        base_url = None
+        if provider == CUSTOM_ID:
+            if data.get("base_url"):
+                custom = _custom_target(data, require_name=False)
+                if custom is None or use_model in (None, ""):
+                    return Response({"error": "address"}, status=400)
+                base_url = custom["base_url"]
+            else:
+                base_url = base_url_for(org, provider)
+                if not base_url or use_model in (None, ""):
+                    return Response({"error": "address"}, status=400)
         try:
-            complete(provider, api_key, "Reply with the single word OK.", use_model, use_limit)
+            complete(
+                provider,
+                api_key,
+                "Reply with the single word OK.",
+                use_model,
+                use_limit,
+                **({"base_url": base_url} if base_url else {}),
+            )
         except AssistantRefused:
             return Response({"error": "key_refused"}, status=400)
         except AssistantUnreachable:
@@ -216,13 +353,31 @@ class AssistantSettingsView(APIView):
                 model, limit, invalid = _optional_runtime(provider, row)
                 if invalid:
                     return Response({"error": "invalid"}, status=400)
-                if "model" in row or "max_output_tokens" in row:
-                    updates.append((provider, model, limit))
+                custom = None
+                if provider == CUSTOM_ID and (
+                    "base_url" in row or "name" in row or "label" in row
+                ):
+                    custom = _custom_target(row, require_name=True)
+                    if custom is None:
+                        return Response({"error": "address"}, status=400)
+                if (
+                    "model" in row
+                    or "max_output_tokens" in row
+                    or custom is not None
+                ):
+                    updates.append((provider, model, limit, custom))
         if default_change is not None:
             set_default_provider(org, default_change)
             org.refresh_from_db()
-        for provider, model, limit in updates:
-            update_provider_settings(org, provider, model=model, limit=limit)
+        for provider, model, limit, custom in updates:
+            update_provider_settings(
+                org,
+                provider,
+                model=model,
+                limit=limit,
+                name=None if custom is None else custom["name"],
+                base_url=None if custom is None else custom["base_url"],
+            )
             org.refresh_from_db()
         return Response(public_list(org))
 
@@ -250,7 +405,15 @@ class AssistantAskView(APIView):
         text = brief(today.get("queue") or [], question)
         model, limit = provider_runtime(request.profile.org, provider)
         try:
-            answer = complete(provider, api_key, text, model, limit)
+            target = base_url_for(request.profile.org, provider)
+            answer = complete(
+                provider,
+                api_key,
+                text,
+                model,
+                limit,
+                **({"base_url": target} if target else {}),
+            )
         except AssistantRefused:
             return Response({"error": "key_refused"}, status=400)
         except AssistantUnreachable:

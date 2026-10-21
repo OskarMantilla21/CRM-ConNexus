@@ -4,7 +4,7 @@ import { connectAssistant, disconnectAssistant } from '$lib/server/v2/assistants
 import { tx } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/sell.js';
 
-const PROVIDERS = new Set(['gemini', 'grok', 'openai']);
+const PROVIDERS = new Set(['gemini', 'grok', 'openai', 'groq']);
 
 /** @param {any} err */
 function assistantError(err) {

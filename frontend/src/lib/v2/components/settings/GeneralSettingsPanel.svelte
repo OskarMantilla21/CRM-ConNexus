@@ -10,6 +10,7 @@
   import { enhance } from '$app/forms';
   import { resolve } from '$app/paths';
   import { tx } from '$lib/i18n/translate.js';
+  import '$lib/i18n/pages/migrate.js';
   import { CURRENCY_CODES } from '$lib/constants/filters.js';
 
   /** @type {{ data: any, form: any }} */
@@ -118,6 +119,12 @@
     <a href={resolve('/settings/organization')}>{tx('Organization')}</a>
     — {tx('The company details printed on every invoice and estimate.')}
   </p>
+  {#if data.role === 'CEO'}
+    <p class="v2-sub" style="margin-top:8px;font-size:12px">
+      <a href={resolve('/settings/migrate')}>{tx('Move records')}</a>
+      — {tx('Bring records in from another company, or send this company\'s records out.')}
+    </p>
+  {/if}
 </div>
 
 <style>

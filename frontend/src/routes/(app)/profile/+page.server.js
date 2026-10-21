@@ -3,13 +3,44 @@ import { apiRequest } from '$lib/api-helpers.js';
 import { readableError } from '$lib/server/v2/form-errors.js';
 import { tx } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/bill.js';
+import '$lib/i18n/pages/public.js';
 import { getProfile } from '$lib/server/v2/profile.js';
+import { connectFromKey, disconnectAssistant, getAssistants } from '$lib/server/v2/assistants.js';
+
+const ASSISTANT_IDS = new Set([
+  'gemini',
+  'grok',
+  'openai',
+  'custom',
+  'groq',
+  'openrouter',
+  'deepseek',
+  'anthropic'
+]);
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** @param {any} err */
+function assistantError(err) {
+  const code = err?.body?.error;
+  if (code === 'unknown_ai') return tx('This key does not say which AI it is.');
+  if (code === 'ceo_only') return tx('Only the CEO connects assistants.');
+  if (code === 'key_refused') return tx('The key was refused. Check it and try again.');
+  if (code === 'unreachable') return tx('The assistant did not answer. Try again.');
+  return tx('The assistant did not answer. Try again.');
+}
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
-  return await getProfile({ cookies });
+  const profile = await getProfile({ cookies });
+  if (profile.profile?.role !== 'CEO') return profile;
+  try {
+    const assistants = await getAssistants({ cookies });
+    const using = Array.isArray(assistants?.using) ? assistants.using : [];
+    return { ...profile, assistants: { using } };
+  } catch {
+    return { ...profile, assistants: { using: [], unavailable: true } };
+  }
 }
 
 /** @type {import('./$types').Actions} */
@@ -101,5 +132,45 @@ export const actions = {
     });
 
     throw redirect(303, '/profile');
+  },
+
+  /**
+   * Paste one API key. The backend names the assistant from the key and stores
+   * it on the company. The key is not returned and is not put back in the form.
+   */
+  connectAi: async ({ cookies, locals, request }) => {
+    if (locals.profile?.role !== 'CEO') {
+      return fail(403, { scope: 'ai', message: tx('Only the CEO connects assistants.') });
+    }
+    const form = await request.formData();
+    const apiKey = form.get('api_key')?.toString().trim() ?? '';
+    if (apiKey.length < 8 || apiKey.length > 512) {
+      return fail(400, { scope: 'ai', message: tx('The key was refused. Check it and try again.') });
+    }
+    try {
+      const result = await connectFromKey({ cookies }, apiKey);
+      return { scope: 'ai', connected: true, name: result?.name || '' };
+    } catch (/** @type {any} */ err) {
+      const status = err?.status === 400 || err?.status === 403 ? err.status : 502;
+      return fail(status, { scope: 'ai', message: assistantError(err) });
+    }
+  },
+
+  disconnectAi: async ({ cookies, locals, request }) => {
+    if (locals.profile?.role !== 'CEO') {
+      return fail(403, { scope: 'ai', message: tx('Only the CEO connects assistants.') });
+    }
+    const form = await request.formData();
+    const provider = form.get('provider')?.toString() ?? '';
+    if (!ASSISTANT_IDS.has(provider)) {
+      return fail(400, { scope: 'ai', message: tx('The assistant did not answer. Try again.') });
+    }
+    try {
+      await disconnectAssistant({ cookies }, provider);
+    } catch (/** @type {any} */ err) {
+      const status = err?.status === 400 || err?.status === 403 ? err.status : 502;
+      return fail(status, { scope: 'ai', message: assistantError(err) });
+    }
+    return { scope: 'ai', disconnected: true };
   }
 };

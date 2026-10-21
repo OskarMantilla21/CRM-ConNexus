@@ -339,7 +339,7 @@ def test_grok_conversation_is_not_stored(monkeypatch):
         captured["body"] = json.loads(request.data.decode())
         return _Body()
 
-    monkeypatch.setattr("common.assistants.urllib.request.urlopen", _open)
+    monkeypatch.setattr("common.assistants._send", _open)
     text = converse(
         "grok",
         "grok-secret-key",

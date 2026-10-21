@@ -582,6 +582,7 @@ class TestTheListPayload:
         assert len(body["accounts_list"]) == 1
         assert "contacts_list" in body
         assert body["users"][0]["user__email"] == admin_user.email
+        assert body["users"][0]["user__name"] == admin_user.name
 
     def test_slim_drops_the_catalogues(self, admin_client, org_a):
         Account.objects.create(name="Acme", org=org_a)
@@ -590,18 +591,20 @@ class TestTheListPayload:
         assert "contacts_list" not in body
         assert "totals" in body
 
-    def test_a_member_is_only_offered_admins_to_assign_to(
-        self, user_client, admin_user, admin_profile, other_profile, org_a
+    def test_a_member_can_assign_a_task_to_any_person(
+        self, user_client, admin_user, admin_profile, regular_user, other_profile, org_a
     ):
-        """Same narrowing the detail view has always applied.
+        """The picker lists every active person in the company.
 
-        `other_profile` is a second plain member, and its absence from the
-        answer is the point. Otherwise this would pass on an empty list.
+        `other_profile` is a second plain member. Their presence is the
+        point: a colleague who is not an admin can still be assigned.
         """
         emails = [
             row["user__email"] for row in user_client.get("/api/tasks/").json()["users"]
         ]
-        assert emails == [admin_user.email]
+        assert emails == sorted(
+            [admin_user.email, regular_user.email, other_profile.user.email]
+        )
 
     def test_the_list_does_not_cost_a_query_per_row(
         self, admin_client, admin_user, org_a, django_assert_num_queries

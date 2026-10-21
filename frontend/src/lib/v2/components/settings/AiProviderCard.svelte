@@ -27,7 +27,7 @@
 <section class="v2-card card">
   <div class="head">
     <div>
-      <b>{item.name}</b>
+      <b>{item.label ? item.name : tx(item.name)}</b>
       <p class="v2-sub">{tx(item.summary)}</p>
     </div>
     {#if item.connected}
@@ -39,6 +39,34 @@
 
   <form method="POST" use:enhance={onsubmit}>
     <input type="hidden" name="provider" value={item.id} />
+    {#if item.custom}
+      <label class="v2-label" for={'label-' + item.id}>{tx('Assistant name')}</label>
+      <input
+        id={'label-' + item.id}
+        class="v2-input"
+        name="label"
+        type="text"
+        maxlength="40"
+        required
+        autocomplete="off"
+        value={item.label || ''}
+      />
+      <label class="v2-label" for={'url-' + item.id}>{tx('API address')}</label>
+      <input
+        id={'url-' + item.id}
+        class="v2-input"
+        name="base_url"
+        type="text"
+        inputmode="url"
+        maxlength="200"
+        required
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="https://api.example.com/v1"
+        value={item.base_url || ''}
+      />
+      <p class="v2-sub note">{tx('https address, for example https://api.example.com/v1')}</p>
+    {/if}
     <label class="v2-label" for={'key-' + item.id}>{tx('API key')}</label>
     <input
       id={'key-' + item.id}
@@ -55,11 +83,25 @@
     <div class="grid">
       <div>
         <label class="v2-label" for={'model-' + item.id}>{tx('Model')}</label>
-        <select id={'model-' + item.id} class="v2-input" name="model">
-          {#each item.models || [] as model (model)}
-            <option value={model} selected={model === item.model}>{model}</option>
-          {/each}
-        </select>
+        {#if item.custom}
+          <input
+            id={'model-' + item.id}
+            class="v2-input"
+            name="model"
+            type="text"
+            maxlength="80"
+            required
+            autocomplete="off"
+            spellcheck="false"
+            value={item.model || ''}
+          />
+        {:else}
+          <select id={'model-' + item.id} class="v2-input" name="model">
+            {#each item.models || [] as model (model)}
+              <option value={model} selected={model === item.model}>{model}</option>
+            {/each}
+          </select>
+        {/if}
       </div>
       <div>
         <label class="v2-label" for={'tokens-' + item.id}>{tx('Output token limit')}</label>

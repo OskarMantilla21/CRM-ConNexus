@@ -1089,6 +1089,7 @@ export const messages = {
   contact: { es: 'contacto', pt: 'contato' },
   contacts: { es: 'contactos', pt: 'contatos' },
   account: { es: 'cuenta', pt: 'conta' },
+  deal: { es: 'negocio', pt: 'negócio' },
   ticket: { es: 'ticket', pt: 'chamado' },
   Preview: { es: 'Vista previa', pt: 'Pré-visualizar' },
   'Import {kind} from CSV': {
@@ -1568,6 +1569,59 @@ export const messages = {
   "OpenAI's assistant. It summarises what needs you today.": {
     es: 'El asistente de OpenAI. Resume lo que te necesita hoy.',
     pt: 'O assistente da OpenAI. Resume o que precisa de você hoje.'
+  },
+  "Groq's assistant. Paste the API key from the Groq console.": {
+    es: 'El asistente de Groq. Pega la clave de API de la consola de Groq.',
+    pt: 'O assistente da Groq. Cole a chave de API do console da Groq.'
+  },
+  'Other AI': { es: 'Otra IA', pt: 'Outra IA' },
+  'Any assistant with an OpenAI-compatible chat API. Paste its https address, the model name and the key.': {
+    es: 'Cualquier asistente con la API de chat compatible con OpenAI. Pega su dirección https, el nombre del modelo y la clave.',
+    pt: 'Qualquer assistente com a API de chat compatível com a OpenAI. Cole o endereço https, o nome do modelo e a chave.'
+  },
+  'Assistant name': { es: 'Nombre del asistente', pt: 'Nome do assistente' },
+  'API address': { es: 'Dirección de la API', pt: 'Endereço da API' },
+  'https address, for example https://api.example.com/v1': {
+    es: 'Dirección https, por ejemplo https://api.example.com/v1',
+    pt: 'Endereço https, por exemplo https://api.example.com/v1'
+  },
+  'Check the name, the address and the model.': {
+    es: 'Revisa el nombre, la dirección y el modelo.',
+    pt: 'Confira o nome, o endereço e o modelo.'
+  },
+  'AI assistant': { es: 'Asistente de IA', pt: 'Assistente de IA' },
+  'Paste the API key. The account recognizes which AI it is and connects it.': {
+    es: 'Pega la clave de API. La cuenta reconoce cuál IA es y la conecta.',
+    pt: 'Cole a chave de API. A conta reconhece qual IA é e a conecta.'
+  },
+  'This key does not say which AI it is.': {
+    es: 'Esta clave no dice cuál IA es.',
+    pt: 'Esta chave não diz qual IA é.'
+  },
+  'Connected to {name}.': { es: 'Conectada a {name}.', pt: 'Conectada a {name}.' },
+  'Connected now': { es: 'Conectada ahora', pt: 'Conectada agora' },
+  Connect: { es: 'Conectar', pt: 'Conectar' },
+  Disconnect: { es: 'Desconectar', pt: 'Desconectar' },
+  'API key': { es: 'Clave', pt: 'Chave' },
+  'The key stays on the server. This page does not show it again.': {
+    es: 'La clave se queda en el servidor. Esta pantalla no la vuelve a mostrar.',
+    pt: 'A chave fica no servidor. Esta tela não a mostra de novo.'
+  },
+  'Only the CEO connects assistants.': {
+    es: 'Solo el CEO conecta asistentes.',
+    pt: 'Só o CEO conecta assistentes.'
+  },
+  'The key was refused. Check it and try again.': {
+    es: 'La clave fue rechazada. Revísala e inténtalo de nuevo.',
+    pt: 'A chave foi recusada. Confira e tente de novo.'
+  },
+  'The assistant did not answer. Try again.': {
+    es: 'El asistente no respondió. Inténtalo de nuevo.',
+    pt: 'O assistente não respondeu. Tente de novo.'
+  },
+  'Assistants could not be loaded.': {
+    es: 'No se pudo cargar la lista de asistentes.',
+    pt: 'Não foi possível carregar a lista de assistentes.'
   },
   'Organization name': { es: 'Nombre de la organización', pt: 'Nome da organização' },
   'Base currency': { es: 'Moneda base', pt: 'Moeda base' },

@@ -66,9 +66,18 @@
     };
   };
 
-  // `form` is shared by both actions; the switch action tags its failures.
-  let editError = $derived(form?.scope === 'switch' ? '' : (form?.message ?? ''));
+  // `form` is shared by the actions; each one tags its own failures.
+  let editError = $derived(
+    form?.scope === 'switch' || form?.scope === 'ai' ? '' : (form?.message ?? '')
+  );
   let switchError = $derived(form?.scope === 'switch' ? (form?.message ?? '') : '');
+  let aiError = $derived(form?.scope === 'ai' ? (form?.message ?? '') : '');
+  let aiOk = $derived(
+    form?.scope === 'ai' && form?.connected
+      ? tx('Connected to {name}.', { name: form.name || '' })
+      : ''
+  );
+  let assistants = $derived(data.assistants?.using || []);
 </script>
 
 <PageHeader title={name} record>
@@ -256,6 +265,51 @@
             </div>
           </div>
         </div>
+
+        {#if p.role === 'CEO'}
+          <div class="v2-label" style="margin-bottom:10px">{tx('AI assistant')}</div>
+          <div class="v2-card" style="padding:17px 18px;margin-bottom:20px">
+            <p class="v2-sub" style="font-size:12.5px;margin:0 0 12px">
+              {tx('Paste the API key. The account recognizes which AI it is and connects it.')}
+            </p>
+            {#if data.assistants?.unavailable}
+              <p class="v2-error" style="margin:0 0 12px">{tx('Assistants could not be loaded.')}</p>
+            {/if}
+            {#each assistants as item (item.id)}
+              <div class="v2-setting" style="padding-left:0;padding-right:0">
+                <div class="v2-setting-body">
+                  <b>{item.name}</b>
+                  <span class="v2-sub" style="font-size:11.5px">{tx('Connected now')}</span>
+                </div>
+                <form method="POST" action="?/disconnectAi" use:enhance class="v2-inline-form">
+                  <input type="hidden" name="provider" value={item.id} />
+                  <button class="v2-btn v2-btn-sm" type="submit">{tx('Disconnect')}</button>
+                </form>
+              </div>
+            {/each}
+            <form method="POST" action="?/connectAi" use:enhance>
+              <div class="v2-field">
+                <label for="ai-key">{tx('API key')}</label>
+                <input
+                  id="ai-key"
+                  name="api_key"
+                  type="password"
+                  autocomplete="off"
+                  class="v2-input"
+                  maxlength="512"
+                />
+                <p class="v2-hint">{tx('The key stays on the server. This page does not show it again.')}</p>
+              </div>
+              {#if aiError}
+                <p class="v2-error" style="margin-top:10px">{aiError}</p>
+              {/if}
+              {#if aiOk}
+                <p class="v2-sub" style="margin-top:10px">{aiOk}</p>
+              {/if}
+              <button class="v2-btn v2-btn-primary" type="submit" style="margin-top:14px">{tx('Connect')}</button>
+            </form>
+          </div>
+        {/if}
 
         <div class="v2-label" style="margin-bottom:10px">{tx('Where your work shows up')}</div>
         <div class="v2-card" style="overflow:hidden">

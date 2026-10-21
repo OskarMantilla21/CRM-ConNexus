@@ -105,6 +105,7 @@ class SecurityAuditLog(BaseModel):
         ("API_TOKEN_CREATED", "API Token Created"),
         ("API_TOKEN_REVOKED", "API Token Revoked"),
         ("FILE_DELETED", "File or document deleted"),
+        ("ORG_DATA_MIGRATED", "Company records moved"),
     )
 
     event_type = models.CharField(max_length=50, choices=EVENT_TYPES, db_index=True)
@@ -263,6 +264,30 @@ class AuditLogger:
             description="User logged out",
             request=request,
         )
+
+    def org_data_migrated(self, user, source, destination, moved, request=None):
+        """A CEO moved every business record from one company to another.
+
+        One row on each company, so the audit log of the company they left and
+        the company that received the records both show the move.
+        """
+        metadata = {
+            "source_org_id": str(source.id),
+            "source_org_name": source.name,
+            "destination_org_id": str(destination.id),
+            "destination_org_name": destination.name,
+            "moved": moved,
+        }
+        description = f"Moved records from {source.name} to {destination.name}"
+        for org in (source, destination):
+            self._log(
+                "ORG_DATA_MIGRATED",
+                user=user,
+                org=org,
+                description=description,
+                metadata=metadata,
+                request=request,
+            )
 
     def org_switch(self, user, from_org, to_org, request=None):
         """Log organization switch."""

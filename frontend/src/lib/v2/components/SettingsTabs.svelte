@@ -19,7 +19,7 @@
       search: '',
       label: 'General',
       ceo: false,
-      prefixes: ['/settings/organization']
+      prefixes: ['/settings/organization', '/settings/migrate']
     },
     {
       id: 'ia',
