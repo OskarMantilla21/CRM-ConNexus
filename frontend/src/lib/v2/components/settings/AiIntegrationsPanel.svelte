@@ -1,6 +1,7 @@
 <script>
   /**
-   * AI integrations. The only place a provider key, model or token cap is set.
+   * AI integrations. Named providers and the address form live here.
+   * The account page also accepts a key and names the assistant from it.
    * Today can ask a connected assistant. It does not configure one.
    */
   import { enhance } from '$app/forms';
@@ -20,7 +21,14 @@
   };
 
   let list = $derived(data.assistants?.assistants || []);
-  let connected = $derived(list.filter((/** @type {{ connected?: boolean }} */ item) => item.connected));
+  let connected = $derived.by(() => {
+    const rows = list.filter((/** @type {{ connected?: boolean, id: string }} */ item) => item.connected);
+    const seen = new Set(rows.map((/** @type {{ id: string }} */ item) => item.id));
+    for (const item of data.assistants?.using || []) {
+      if (item?.id && !seen.has(item.id)) rows.push(item);
+    }
+    return rows;
+  });
 </script>
 
 <div class="v2-pad" style="padding-top:18px;padding-bottom:32px;max-width:760px">

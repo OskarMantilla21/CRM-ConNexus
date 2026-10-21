@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from accounts.models import Account
 from cases.models import Case
-from common.models import Attachments, Comment, Tags, Teams
+from common.models import Attachments, Comment, Profile, Tags, Teams, User
 from contacts.models import Contact
 from leads.models import Lead
 from opportunity.models import Opportunity
@@ -1405,15 +1405,19 @@ class TestTaskDetailCreatedByCoverage:
         assert "users_excluding_team" in data
 
     def test_detail_non_admin_users_section(
-        self, admin_client, user_client, user_profile, admin_user, org_a
+        self, admin_client, user_client, user_profile, admin_user, regular_user, org_a
     ):
-        """A non-admin assignee gets `users_mention` and a narrowed `users`.
+        """A non-admin assignee gets `users_mention` and every colleague.
 
-        Someone who did not create the task can mention its creator, and is
-        offered the org's admins to reassign to, not the whole org. This
-        also used to assert `AttributeError`: the mention list was built from
+        Someone who did not create the task can mention its creator, and
+        can hand the task to any active person in the company. This also
+        used to assert `AttributeError`: the mention list was built from
         `created_by.user.email`, and `created_by` is the `User`.
         """
+        colleague = User.objects.create_user(
+            email="colleague@test.com", password="testpass123"
+        )
+        Profile.objects.create(user=colleague, org=org_a, role="USER", is_active=True)
         create_resp = admin_client.post(
             "/api/tasks/",
             {
@@ -1428,7 +1432,11 @@ class TestTaskDetailCreatedByCoverage:
         task = Task.objects.get(title="Non Admin Detail Task")
         body = user_client.get(f"/api/tasks/{task.id}/").json()
         assert body["users_mention"] == [{"username": admin_user.email}]
-        assert [u["user_details"]["email"] for u in body["users"]] == [admin_user.email]
+        assert [u["user_details"]["email"] for u in body["users"]] == [
+            admin_user.email,
+            "colleague@test.com",
+            regular_user.email,
+        ]
 
 
 @pytest.mark.django_db

@@ -10,7 +10,7 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from common.assistants import AssistantRefused, complete
+from common.assistants import AssistantRefused, AssistantUnreachable, complete
 from common.models import Profile, User
 from common.serializer import OrgAwareRefreshToken
 
@@ -36,7 +36,7 @@ def test_only_the_ceo_sees_the_list(org_a):
     listed = ceo.get("/api/assistants/")
     assert listed.status_code == status.HTTP_200_OK
     ids = [item["id"] for item in listed.data["assistants"]]
-    assert ids == ["gemini", "grok", "openai"]
+    assert ids == ["gemini", "grok", "openai", "groq", "custom"]
     assert all(item["connected"] is False for item in listed.data["assistants"])
     assert "assistant_keys" not in listed.data
     assert "api_key" not in json.dumps(listed.data)
@@ -153,7 +153,7 @@ def test_grok_request_does_not_store_the_exchange(monkeypatch):
         captured["body"] = json.loads(request.data.decode())
         return _Body()
 
-    monkeypatch.setattr("common.assistants.urllib.request.urlopen", _open)
+    monkeypatch.setattr("common.assistants._send", _open)
     text = complete("grok", "grok-secret-key", "Reply with the single word OK.")
     assert text == "OK"
     assert captured["url"] == "https://api.x.ai/v1/responses"
@@ -206,3 +206,360 @@ def test_settings_and_a_connection_test_never_return_the_key(org_a, monkeypatch)
         format="json",
     )
     assert refused.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "http://api.example.com/v1",
+        "https://localhost/v1",
+        "https://127.0.0.1/v1",
+        "https://10.1.2.3/v1",
+        "https://db/v1",
+        "https://user:pass@api.example.com/v1",
+        "https://api.example.com/v1?token=1",
+        "file:///etc/passwd",
+    ],
+)
+def test_a_custom_address_must_be_public_https(raw):
+    from common.assistants import clean_base_url
+
+    assert clean_base_url(raw) is None
+
+
+def test_a_custom_address_keeps_the_api_base():
+    from common.assistants import clean_base_url
+
+    assert (
+        clean_base_url("https://api.example.com/v1/chat/completions")
+        == "https://api.example.com/v1"
+    )
+    assert clean_base_url("https://api.deepseek.com") == "https://api.deepseek.com"
+
+
+def test_custom_call_posts_chat_completions(monkeypatch):
+    import socket
+
+    captured = {}
+
+    class _Body:
+        def read(self):
+            return json.dumps(
+                {"choices": [{"message": {"content": "OK"}}]}
+            ).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def _lookup(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 0))]
+
+    def _open(request, timeout=0):
+        captured["url"] = request.full_url
+        captured["auth"] = request.get_header("Authorization")
+        captured["body"] = json.loads(request.data.decode())
+        return _Body()
+
+    monkeypatch.setattr("common.assistants.socket.getaddrinfo", _lookup)
+    monkeypatch.setattr("common.assistants._send", _open)
+    text = complete(
+        "custom",
+        "custom-secret-key",
+        "Reply with the single word OK.",
+        model="deepseek-chat",
+        base_url="https://api.example.com/v1",
+    )
+    assert text == "OK"
+    assert captured["url"] == "https://api.example.com/v1/chat/completions"
+    assert captured["auth"] == "Bearer custom-secret-key"
+    assert captured["body"]["model"] == "deepseek-chat"
+    assert "custom-secret-key" not in captured["body"]["messages"][1]["content"]
+
+
+def test_custom_call_refuses_a_host_that_resolves_privately(monkeypatch):
+    import socket
+
+    def _lookup(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("10.0.0.1", 0))]
+
+    monkeypatch.setattr("common.assistants.socket.getaddrinfo", _lookup)
+    with pytest.raises(AssistantRefused):
+        complete(
+            "custom",
+            "custom-secret-key",
+            "Reply with the single word OK.",
+            model="deepseek-chat",
+            base_url="https://evil.example/v1",
+        )
+
+
+@pytest.mark.django_db
+def test_the_ceo_connects_any_openai_compatible_assistant(org_a, org_b, monkeypatch):
+    monkeypatch.setattr(
+        "common.views.assistant_views.complete", lambda *args, **kwargs: "OK"
+    )
+    ceo = _person(org_a, "ceo.custom@test.com", "CEO")
+    other = _person(org_b, "ceo.custom.other@test.com", "CEO")
+    secret = "custom-secret-key"
+    body = {
+        "api_key": secret,
+        "name": "DeepSeek",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+        "max_output_tokens": 256,
+    }
+
+    refused = ceo.post(
+        "/api/assistants/custom/connect/",
+        {**body, "base_url": "http://api.deepseek.com/v1"},
+        format="json",
+    )
+    assert refused.status_code == status.HTTP_400_BAD_REQUEST
+    assert refused.data["error"] == "address"
+    org_a.refresh_from_db()
+    assert not org_a.assistant_keys
+
+    connected = ceo.post("/api/assistants/custom/connect/", body, format="json")
+    assert connected.status_code == status.HTTP_200_OK
+    assert secret not in json.dumps(connected.data)
+
+    listed = ceo.get("/api/assistants/")
+    custom = next(item for item in listed.data["assistants"] if item["id"] == "custom")
+    assert custom["connected"] is True
+    assert custom["name"] == "DeepSeek"
+    assert custom["label"] == "DeepSeek"
+    assert custom["base_url"] == "https://api.deepseek.com/v1"
+    assert custom["model"] == "deepseek-chat"
+    assert secret not in json.dumps(listed.data)
+
+    org_a.refresh_from_db()
+    assert org_a.assistant_keys["custom"] == secret
+    assert org_a.assistant_keys["_config"]["custom"]["name"] == "DeepSeek"
+
+    other_list = other.get("/api/assistants/")
+    other_custom = next(
+        item for item in other_list.data["assistants"] if item["id"] == "custom"
+    )
+    assert other_custom["connected"] is False
+    org_b.refresh_from_db()
+    assert not org_b.assistant_keys
+
+
+def test_a_key_prefix_names_the_provider():
+    from common.assistants import identify_key, providers_for_key
+
+    assert identify_key("xai-abc12345") == "grok"
+    assert identify_key("AIzaSyabc123") == "gemini"
+    assert identify_key("sk-ant-abc12345") == "anthropic"
+    assert identify_key("sk-or-abc12345") == "openrouter"
+    assert identify_key("gsk_abc12345") == "groq"
+    assert identify_key("sk-proj-abc12345") == "openai"
+    assert identify_key("sk-svcacct-abc12") == "openai"
+    assert identify_key("sk-admin-abc123") == "openai"
+    assert identify_key("sk-abc12345") == "openai"
+    assert identify_key("opaque-secret") is None
+    assert providers_for_key("sk-abc12345") == ["openai", "deepseek"]
+    assert providers_for_key("sk-proj-abc12345") == ["openai"]
+    assert providers_for_key("sk-ant-abc12345") == ["anthropic"]
+    assert providers_for_key("opaque-secret") == []
+
+
+def _json_body(payload):
+    class _Body:
+        def read(self):
+            return json.dumps(payload).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    return _Body()
+
+
+def test_groq_and_claude_use_their_own_addresses(monkeypatch):
+    captured = {}
+
+    def _open(request, timeout=0):
+        captured["url"] = request.full_url
+        captured["auth"] = request.get_header("Authorization")
+        captured["api_key"] = request.get_header("X-api-key")
+        captured["body"] = json.loads(request.data.decode())
+        return _json_body(
+            {
+                "choices": [{"message": {"content": "OK"}}],
+                "content": [{"type": "text", "text": "OK"}],
+            }
+        )
+
+    def _lookup(host, port, *args, **kwargs):
+        import socket
+
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 0))]
+
+    monkeypatch.setattr("common.assistants.socket.getaddrinfo", _lookup)
+    monkeypatch.setattr("common.assistants._send", _open)
+    assert complete("groq", "gsk_secretkey", "Hi") == "OK"
+    assert captured["url"] == "https://api.groq.com/openai/v1/chat/completions"
+    assert captured["auth"] == "Bearer gsk_secretkey"
+    assert captured["body"]["model"] == "openai/gpt-oss-120b"
+    assert "gsk_secretkey" not in json.dumps(captured["body"])
+
+    assert complete("anthropic", "sk-ant-secret", "Hi", model="claude-from-list") == "OK"
+    assert captured["url"] == "https://api.anthropic.com/v1/messages"
+    assert captured["api_key"] == "sk-ant-secret"
+    assert captured["body"]["model"] == "claude-from-list"
+    assert "sk-ant-secret" not in json.dumps(captured["body"])
+
+
+def test_claude_model_comes_from_the_models_list(monkeypatch):
+    from common.assistants import anthropic_model
+
+    def _open(request, timeout=0):
+        assert request.full_url.startswith("https://api.anthropic.com/v1/models")
+        assert request.get_header("X-api-key") == "sk-ant-secret"
+        return _json_body({"data": [{"id": "claude-from-list"}]})
+
+    monkeypatch.setattr("common.assistants._send", _open)
+    assert anthropic_model("sk-ant-secret") == "claude-from-list"
+
+
+@pytest.mark.django_db
+def test_pasting_a_key_connects_the_assistant_it_names(org_a, org_b, monkeypatch):
+    calls = []
+
+    def _complete(provider, api_key, *args, **kwargs):
+        calls.append(provider)
+        plain = api_key.startswith("sk-") and not api_key.startswith(
+            ("sk-proj-", "sk-svcacct-", "sk-admin-", "sk-ant-", "sk-or-")
+        )
+        if provider == "openai" and plain:
+            raise AssistantRefused()
+        return "OK"
+
+    monkeypatch.setattr("common.views.assistant_views.complete", _complete)
+    monkeypatch.setattr(
+        "common.views.assistant_views.anthropic_model",
+        lambda api_key: "claude-from-list",
+    )
+    ceo = _person(org_a, "ceo.fromkey@test.com", "CEO")
+    member = _person(org_a, "user.fromkey@test.com", "USER")
+    other = _person(org_b, "ceo.fromkey.other@test.com", "CEO")
+
+    denied = member.post(
+        "/api/assistants/from-key/",
+        {"api_key": "xai-secret-key"},
+        format="json",
+    )
+    assert denied.status_code == status.HTTP_403_FORBIDDEN
+
+    unknown = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "opaque-secret-key"},
+        format="json",
+    )
+    assert unknown.status_code == status.HTTP_400_BAD_REQUEST
+    assert unknown.data == {"error": "unknown_ai"}
+    assert calls == []
+    org_a.refresh_from_db()
+    assert not org_a.assistant_keys
+
+    grok = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "xai-secret-key"},
+        format="json",
+    )
+    assert grok.status_code == status.HTTP_200_OK
+    assert grok.data["provider"] == "grok"
+    assert grok.data["name"] == "Grok"
+    assert "xai-secret-key" not in json.dumps(grok.data)
+    org_a.refresh_from_db()
+    assert org_a.assistant_keys["grok"] == "xai-secret-key"
+    assert org_a.assistant_keys["_config"]["default_provider"] == "grok"
+
+    gemini = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "AIzaSy-secret-key"},
+        format="json",
+    )
+    assert gemini.data["provider"] == "gemini"
+    openai = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "sk-proj-secret-key"},
+        format="json",
+    )
+    assert openai.data["provider"] == "openai"
+    assert calls[-1] == "openai"
+
+    before = len(calls)
+    deepseek = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "sk-legacy-secret"},
+        format="json",
+    )
+    assert deepseek.data["provider"] == "deepseek"
+    assert calls[before:] == ["openai", "deepseek"]
+    org_a.refresh_from_db()
+    assert org_a.assistant_keys["deepseek"] == "sk-legacy-secret"
+    assert "openai" not in org_a.assistant_keys or org_a.assistant_keys["openai"] == "sk-proj-secret-key"
+
+    claude = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "sk-ant-secret-key"},
+        format="json",
+    )
+    assert claude.status_code == status.HTTP_200_OK
+    assert claude.data["provider"] == "anthropic"
+    assert claude.data["name"] == "Claude"
+    assert "sk-ant-secret-key" not in json.dumps(claude.data)
+    assert calls[-1] == "anthropic"
+    org_a.refresh_from_db()
+    assert org_a.assistant_keys["anthropic"] == "sk-ant-secret-key"
+    assert org_a.assistant_keys["_config"]["models"]["anthropic"] == "claude-from-list"
+    assert org_a.assistant_keys["_config"]["default_provider"] == "anthropic"
+
+    listed = ceo.get("/api/assistants/")
+    ids = [item["id"] for item in listed.data["assistants"]]
+    assert ids == ["gemini", "grok", "openai", "groq", "custom"]
+    using = {item["id"] for item in listed.data["using"]}
+    assert {"grok", "gemini", "openai", "deepseek", "anthropic"} <= using
+    blob = json.dumps(listed.data)
+    for secret in (
+        "xai-secret-key",
+        "AIzaSy-secret-key",
+        "sk-proj-secret-key",
+        "sk-legacy-secret",
+        "sk-ant-secret-key",
+    ):
+        assert secret not in blob
+
+    other_list = other.get("/api/assistants/")
+    assert other_list.data["using"] == []
+    org_b.refresh_from_db()
+    assert not org_b.assistant_keys
+
+
+@pytest.mark.django_db
+def test_a_network_failure_does_not_try_another_provider(org_a, monkeypatch):
+    calls = []
+
+    def _complete(provider, *args, **kwargs):
+        calls.append(provider)
+        raise AssistantUnreachable()
+
+    monkeypatch.setattr("common.views.assistant_views.complete", _complete)
+    ceo = _person(org_a, "ceo.unreachable@test.com", "CEO")
+    response = ceo.post(
+        "/api/assistants/from-key/",
+        {"api_key": "sk-legacy-secret"},
+        format="json",
+    )
+    assert response.status_code == status.HTTP_502_BAD_GATEWAY
+    assert response.data == {"error": "unreachable"}
+    assert calls == ["openai"]
+    org_a.refresh_from_db()
+    assert not org_a.assistant_keys

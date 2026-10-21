@@ -4,6 +4,7 @@ from common.views.assistant_views import (
     AssistantAskView,
     AssistantConnectView,
     AssistantDisconnectView,
+    AssistantFromKeyView,
     AssistantListView,
     AssistantScreenView,
     AssistantSettingsView,
@@ -43,6 +44,7 @@ from common.views.notification_views import (
     NotificationReadAllView,
     NotificationReadView,
 )
+from common.views.org_migration_views import OrgMigrationView
 from common.views.org_settings_views import (
     HelpCenterSettingsView,
     OrgSettingsView,
@@ -88,6 +90,7 @@ urlpatterns = [
     path("assistants/", AssistantListView.as_view(), name="assistants"),
     path("assistants/screen/", AssistantScreenView.as_view(), name="assistant_screen"),
     path("assistants/settings/", AssistantSettingsView.as_view(), name="assistant_settings"),
+    path("assistants/from-key/", AssistantFromKeyView.as_view(), name="assistant_from_key"),
     path(
         "assistants/<slug:provider>/test/",
         AssistantTestView.as_view(),
@@ -144,6 +147,7 @@ urlpatterns = [
     # Organization and profile management
     path("org/", OrgProfileCreateView.as_view()),
     path("org/settings/", OrgSettingsView.as_view(), name="org_settings"),
+    path("org/migrate/", OrgMigrationView.as_view(), name="org_migrate"),
     # Static reference data, org-free by design: the first caller is a user
     # creating their first org and has no org claim yet.
     path("org/timezones/", TimezoneListView.as_view(), name="timezone_list"),

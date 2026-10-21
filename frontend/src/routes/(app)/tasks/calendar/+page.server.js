@@ -1,6 +1,10 @@
-import { listTasks } from '$lib/server/v2/tasks.js';
+import { fail } from '@sveltejs/kit';
+import { listTasks, updateTask } from '$lib/server/v2/tasks.js';
 import '$lib/i18n/pages/serve.js';
 import { tx } from '$lib/i18n/translate.js';
+
+const TASK_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * The task calendar: the third face of Tasks, after the list and the boards.
@@ -146,6 +150,26 @@ export async function load(event) {
     truncated: (totals?.matched ?? results.length) > results.length
   };
 }
+
+/** Dropping a task on a day changes only its due date. */
+export const actions = {
+  move: async (event) => {
+    const form = await event.request.formData();
+    const id = form.get('id')?.toString() ?? '';
+    const due = form.get('due_date')?.toString() ?? '';
+    if (!TASK_ID.test(id) || !DAY.test(due)) {
+      return fail(400, { message: tx('Could not move this task.') });
+    }
+    try {
+      await updateTask(event, id, { due_date: due });
+    } catch (/** @type {any} */ err) {
+      return fail(err?.status === 403 ? 403 : 400, {
+        message: tx('Could not move this task.')
+      });
+    }
+    return { moved: true };
+  }
+};
 
 /** `YYYY-MM` for a (possibly out-of-range) month index, normalised. */
 function monthParam(/** @type {number} */ year, /** @type {number} */ month) {

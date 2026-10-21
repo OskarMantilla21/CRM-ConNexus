@@ -100,7 +100,7 @@ function toPerson(profile) {
   const user = profile?.user_details ?? profile?.user ?? {};
   return {
     id: profile?.id ?? '',
-    name: user.name || user.email || profile?.user__email || '',
+    name: user.name || profile?.user__name || user.email || profile?.user__email || '',
     email: user.email || profile?.user__email || ''
   };
 }
@@ -236,8 +236,7 @@ export async function getTask({ cookies }, id) {
       email: row.email ?? ''
     })),
     activity: buildTaskActivity(response),
-    // Who this task could be handed to. The API narrows it to admins for a
-    // non-admin, which is the same list the v1 detail page used.
+    // Who this task could be handed to: every active person in the company.
     owners: (response.users ?? []).map(toPerson)
   };
 }

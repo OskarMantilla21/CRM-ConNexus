@@ -24,6 +24,17 @@ export async function connectAssistant({ cookies }, provider, apiKeyOrBody) {
 }
 
 /**
+ * Paste a key. The API names the assistant from the key and stores it.
+ * The key is not kept in this module and is not in the response.
+ *
+ * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
+ * @param {string} apiKey
+ */
+export async function connectFromKey({ cookies }, apiKey) {
+  return apiRequest('/assistants/from-key/', { method: 'POST', body: { api_key: apiKey } }, { cookies });
+}
+
+/**
  * @param {{ cookies: import('@sveltejs/kit').Cookies }} event
  * @param {string} provider
  */

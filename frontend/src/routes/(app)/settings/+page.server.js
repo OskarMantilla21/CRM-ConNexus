@@ -16,7 +16,14 @@ import { tx } from '$lib/i18n/translate.js';
 import '$lib/i18n/pages/sell.js';
 import '$lib/i18n/pages/bill.js';
 
-const PROVIDERS = new Set(['gemini', 'grok', 'openai']);
+const PROVIDERS = new Set(['gemini', 'grok', 'openai', 'groq', 'custom']);
+const KEY_PROVIDERS = new Set([
+  ...PROVIDERS,
+  'groq',
+  'openrouter',
+  'deepseek',
+  'anthropic'
+]);
 const LOGO_LIMIT = 2 * 1024 * 1024;
 
 /** @param {any} err */
@@ -26,6 +33,7 @@ function assistantError(err) {
   if (code === 'key_refused') return tx('The key was refused. Check it and try again.');
   if (code === 'not_connected') return tx('Connect that assistant first.');
   if (code === 'invalid') return tx('Check the model and the token limit.');
+  if (code === 'address') return tx('Check the name, the address and the model.');
   if (code === 'unreachable') return tx('The assistant did not answer. Try again.');
   return tx('The assistant did not answer. Try again.');
 }
@@ -45,6 +53,20 @@ function runtimeFromForm(form) {
     body.max_output_tokens = limit;
   }
   return body;
+}
+
+/**
+ * Name and address for the other-AI card. Built-in providers send neither.
+ *
+ * @param {FormData} form
+ * @param {string} provider
+ */
+function customFromForm(form, provider) {
+  if (provider !== 'custom') return { ok: true, fields: {} };
+  const name = form.get('label')?.toString().trim() || '';
+  const baseUrl = form.get('base_url')?.toString().trim() || '';
+  if (!name || !baseUrl) return { ok: false, fields: {} };
+  return { ok: true, fields: { name, base_url: baseUrl } };
 }
 
 /** @type {import('./$types').PageServerLoad} */
@@ -92,12 +114,20 @@ export const actions = {
     const form = await request.formData();
     const provider = form.get('provider')?.toString() || '';
     const runtime = runtimeFromForm(form);
-    if (!PROVIDERS.has(provider) || !runtime) {
-      return fail(400, { action: 'test', provider, error: tx('Check the model and the token limit.') });
+    const custom = customFromForm(form, provider);
+    if (!PROVIDERS.has(provider) || !runtime || !custom.ok || (provider === 'custom' && !runtime.model)) {
+      return fail(400, {
+        action: 'test',
+        provider,
+        error:
+          provider === 'custom'
+            ? tx('Check the name, the address and the model.')
+            : tx('Check the model and the token limit.')
+      });
     }
     const apiKey = form.get('api_key')?.toString().trim() || '';
     /** @type {Record<string, unknown>} */
-    const body = { ...runtime };
+    const body = { ...runtime, ...custom.fields };
     if (apiKey) body.api_key = apiKey;
     try {
       await testAssistant({ cookies }, provider, body);
@@ -119,15 +149,27 @@ export const actions = {
     const provider = form.get('provider')?.toString() || '';
     const apiKey = form.get('api_key')?.toString().trim() || '';
     const runtime = runtimeFromForm(form);
-    if (!PROVIDERS.has(provider) || apiKey.length < 8 || !runtime) {
+    const custom = customFromForm(form, provider);
+    const keyOk = provider === 'custom' ? apiKey.length === 0 || (apiKey.length >= 8 && apiKey.length <= 512) : apiKey.length >= 8;
+    if (provider === 'custom' && (!custom.ok || !runtime?.model)) {
+      return fail(400, {
+        action: 'connect',
+        provider,
+        error: tx('Check the name, the address and the model.')
+      });
+    }
+    if (!PROVIDERS.has(provider) || !keyOk || !runtime) {
       return fail(400, {
         action: 'connect',
         provider,
         error: tx('The key was refused. Check it and try again.')
       });
     }
+    /** @type {Record<string, unknown>} */
+    const body = { ...runtime, ...custom.fields };
+    if (apiKey) body.api_key = apiKey;
     try {
-      await connectAssistant({ cookies }, provider, { api_key: apiKey, ...runtime });
+      await connectAssistant({ cookies }, provider, body);
     } catch (/** @type {any} */ err) {
       return fail(err?.status === 403 ? 403 : 400, {
         action: 'connect',
@@ -145,11 +187,19 @@ export const actions = {
     const form = await request.formData();
     const provider = form.get('provider')?.toString() || '';
     const runtime = runtimeFromForm(form);
-    if (!PROVIDERS.has(provider) || !runtime) {
-      return fail(400, { action: 'limits', provider, error: tx('Check the model and the token limit.') });
+    const custom = customFromForm(form, provider);
+    if (!PROVIDERS.has(provider) || !runtime || !custom.ok || (provider === 'custom' && !runtime.model)) {
+      return fail(400, {
+        action: 'limits',
+        provider,
+        error:
+          provider === 'custom'
+            ? tx('Check the name, the address and the model.')
+            : tx('Check the model and the token limit.')
+      });
     }
     try {
-      await saveAssistantSettings({ cookies }, { providers: { [provider]: runtime } });
+      await saveAssistantSettings({ cookies }, { providers: { [provider]: { ...runtime, ...custom.fields } } });
     } catch (/** @type {any} */ err) {
       return fail(400, { action: 'limits', provider, error: assistantError(err) });
     }
@@ -179,7 +229,7 @@ export const actions = {
     }
     const form = await request.formData();
     const provider = form.get('default_provider')?.toString() || '';
-    if (provider && !PROVIDERS.has(provider)) {
+    if (provider && !KEY_PROVIDERS.has(provider)) {
       return fail(400, { action: 'default', error: tx('Check the model and the token limit.') });
     }
     try {

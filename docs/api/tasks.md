@@ -66,7 +66,7 @@ lies").
   "totals": {"count": 24, "open": 18, "overdue": 3, "due_today": 1, "due_this_week": 5, "no_due_date": 6, "unassigned": 2},
   "status": [["New", "New"], ["In Progress", "In Progress"], ["Completed", "Completed"]],
   "priority": [["Low", "Low"], ["Medium", "Medium"], ["High", "High"]],
-  "users": [{"id": "...", "user__email": "..."}],
+  "users": [{"id": "...", "user__email": "...", "user__name": "..."}],
   "accounts_list": [ { "...": "AccountSerializer" } ],
   "contacts_list": [ { "...": "ContactSerializer" } ]
 }
@@ -124,8 +124,8 @@ lookup (`get_task_or_404`, `tasks/access.py:51-65`, a malformed id or a cross-or
 specifically because a `Response` object handed back through this method used to be wrapped in a
 second `Response` and crash with a `500` instead of answering `403` (comment at `:361-364`). The
 response nests the record under `task_obj`, alongside `attachments`, `comments`, `users_mention`,
-`assigned_data`, `custom_field_definitions`, `users` (admins see every active member; non-admins see
-only other admins, the same shape [Cases](cases.md#list-cases) uses for its assignee picker),
+`assigned_data`, `custom_field_definitions`, `users` (every active person in the company, so a
+task can be handed to a colleague who is not an admin),
 `users_excluding_team` and `teams`.
 
 `PUT /api/tasks/{id}/` (`:545-650`) and `PATCH /api/tasks/{id}/` (`:667-781`) both enforce

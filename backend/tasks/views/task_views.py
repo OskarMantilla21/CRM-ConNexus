@@ -216,12 +216,15 @@ class TaskListView(APIView, LimitOffsetPagination):
         # second name for the same list is how clients end up with two.
         context["status"] = Task.STATUS_CHOICES
         context["priority"] = Task.PRIORITY_CHOICES
+        # Every active person in the company can be handed a task. The
+        # write already accepts any of those profiles; the picker has to
+        # offer the same set, including to a member who is not an admin.
         profiles = Profile.objects.filter(
             is_active=True, org=self.request.profile.org
         ).order_by("user__email")
-        if not is_org_admin(self.request.profile):
-            profiles = profiles.filter(role="ADMIN")
-        context["users"] = list(profiles.values("id", "user__email"))
+        # The name is what the picker shows. The email stays so an empty name
+        # still has something to fall back to.
+        context["users"] = list(profiles.values("id", "user__email", "user__name"))
         # The catalogues are for the parent picker and grow with the org, not
         # with the page, `?slim=true` omits them for callers that only want
         # the list. Each offers exactly the records its own detail view would
@@ -402,14 +405,11 @@ class TaskDetailView(APIView):
             )
         else:
             users_mention = list(self.task_obj.assigned_to.all().values("user__email"))
-        if is_org_admin(self.request.profile):
-            users = Profile.objects.filter(
-                is_active=True, org=self.request.profile.org
-            ).order_by("user__email")
-        else:
-            users = Profile.objects.filter(
-                role="ADMIN", org=self.request.profile.org
-            ).order_by("user__email")
+        # Same people the create form offers: every active profile in
+        # the company, so a member can hand the task to a colleague.
+        users = Profile.objects.filter(
+            is_active=True, org=self.request.profile.org
+        ).order_by("user__email")
 
         team_ids = [user.id for user in self.task_obj.get_team_users]
         all_user_ids = users.values_list("id", flat=True)

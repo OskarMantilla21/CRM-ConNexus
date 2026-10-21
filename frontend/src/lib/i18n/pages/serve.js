@@ -254,6 +254,11 @@ export const messages = {
   Attach: { es: 'Adjuntar', pt: 'Anexar' },
   'Attach a file': { es: 'Adjuntar un archivo', pt: 'Anexar um arquivo' },
   'Attached to': { es: 'Vinculado a', pt: 'Vinculado a' },
+  Nothing: { es: 'Nada', pt: 'Nada' },
+  'An account': { es: 'Una cuenta', pt: 'Uma conta' },
+  'A deal': { es: 'Un negocio', pt: 'Um negócio' },
+  'A ticket': { es: 'Un ticket', pt: 'Um chamado' },
+  'A lead': { es: 'Un prospecto', pt: 'Um lead' },
   'Attachment (optional)': { es: 'Adjunto (opcional)', pt: 'Anexo (opcional)' },
   'Attachment not found': { es: 'No se encontró el adjunto', pt: 'Anexo não encontrado' },
   Attachments: { es: 'Adjuntos', pt: 'Anexos' },
@@ -463,6 +468,14 @@ export const messages = {
   'Could not save this task.': {
     es: 'No se pudo guardar esta tarea.',
     pt: 'Não foi possível salvar esta tarefa.'
+  },
+  'Could not move this task.': {
+    es: 'No se pudo mover esta tarea.',
+    pt: 'Não foi possível mover esta tarefa.'
+  },
+  'Drag a task onto a day to move it there.': {
+    es: 'Arrastra una tarea a un día para pasarla a esa fecha.',
+    pt: 'Arraste uma tarefa para um dia para mudá-la para essa data.'
   },
   'Could not save this ticket.': {
     es: 'No se pudo guardar este ticket.',

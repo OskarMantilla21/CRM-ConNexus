@@ -1,7 +1,7 @@
 """Public sales and support chat for one org's help center.
 
 The visitor never chooses a provider and never sends a key. The reply uses
-whichever assistant the CEO already connected (Gemini first, then Grok) and
+the assistant the CEO saved as the default, or the first one connected, and
 only the org's published articles and active product names. A handoff to a
 person is a Lead in that org, not a sentence on its own.
 
@@ -24,6 +24,7 @@ from cases.portal_views import published_articles
 from common.assistants import (
     AssistantRefused,
     AssistantUnreachable,
+    base_url_for,
     converse,
     key_for,
     preferred,
@@ -247,7 +248,16 @@ def answer(org, turns):
 
     try:
         model, limit = provider_runtime(org, provider)
-        raw = converse(provider, api_key, build_prompt(org), _for_model(turns), model, limit)
+        target = base_url_for(org, provider)
+        raw = converse(
+            provider,
+            api_key,
+            build_prompt(org),
+            _for_model(turns),
+            model,
+            limit,
+            **({"base_url": target} if target else {}),
+        )
     except (AssistantRefused, AssistantUnreachable):
         _record(org, turns, SPECIALIST_SENTENCE)
         return SPECIALIST_SENTENCE, False
